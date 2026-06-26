@@ -1,0 +1,84 @@
+package org.example.project
+
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+@Serializable
+data class JsonConfig(
+    val wifi_ssid: String = "",
+    val wifi_password: String = "",
+    val wifi_station_password: String = "",
+    val conflict_policy: Int = 0,
+    val display_sleep_timeout_ms: Int = 60000,
+    val restore_last_state: Boolean = true,
+    val tabs: List<JsonTab> = emptyList()
+)
+
+@Serializable
+data class JsonTab(
+    val name: String,
+    val label_lines: Int = 2,
+    val label_line_height: Int = 18,
+    val levers: List<JsonLever> = emptyList()
+)
+
+@Serializable
+data class JsonLever(
+    val label: String = "",
+    val type: String = "SPARE",
+    val lcc_event_normal: String = "",
+    val lcc_event_reversed: String = "",
+    val interlocking: List<JsonInterlocking> = emptyList()
+)
+
+@Serializable
+data class JsonInterlocking(
+    val target: Int,
+    val state: String,
+    val alt_target: Int = -1,
+    val alt_state: String = "NORMAL"
+)
+
+object ConfigManager {
+
+    val jsonFormat = Json { 
+        ignoreUnknownKeys = true 
+        isLenient = true
+    }
+
+    val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 0, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}]}]}"""
+
+    var currentConfig: JsonConfig = jsonFormat.decodeFromString(defaultPrototypicalConfigJson)
+
+    fun toJsonString(): String = jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
+
+    fun parseConfig(jsonString: String): List<Pair<String, TabDef>> {
+        val config = jsonFormat.decodeFromString<JsonConfig>(jsonString)
+        
+        return config.tabs.map { jsonTab ->
+            val levers = jsonTab.levers.map { jsonLever ->
+                val type = try {
+                    LeverType.valueOf(jsonLever.type)
+                } catch (e: Exception) {
+                    LeverType.SPARE
+                }
+                
+                val conditions = jsonLever.interlocking.map { condition ->
+                    InterlockingCondition(
+                        targetLeverIndex = condition.target,
+                        requiredState = condition.state == "REVERSED",
+                        altTargetLeverIndex = condition.alt_target,
+                        altRequiredState = condition.alt_state == "REVERSED"
+                    )
+                }
+                
+                LeverDef(
+                    conditions = conditions,
+                    type = type,
+                    label = jsonLever.label
+                )
+            }
+            jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height)
+        }
+    }
+}

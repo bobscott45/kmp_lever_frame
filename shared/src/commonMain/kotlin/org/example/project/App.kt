@@ -1,0 +1,319 @@
+package org.example.project
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+@Preview
+fun App() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        var isConfigMode by remember { mutableStateOf(false) }
+
+        if (isConfigMode) {
+            ConfigurationScreen(
+                onClose = { isConfigMode = false },
+                onSave = { isConfigMode = false }
+            )
+        } else {
+            // Force recreation of tabs if we return from config mode
+            val tabs = remember(isConfigMode) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
+
+            var selectedTabIndex by remember { mutableStateOf(0) }
+            
+            // Hold states and locks for all tabs
+            val allLeverStates = remember(isConfigMode) {
+                mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+            }
+            val allManualLocks = remember(isConfigMode) {
+                mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+            }
+            
+            var errorMessage by remember { mutableStateOf<String?>(null) }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF1E1E1E))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TabRow(
+                        selectedTabIndex = selectedTabIndex,
+                        containerColor = Color(0xFF1a1a1a),
+                        contentColor = Color.White,
+                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
+                    ) {
+                        tabs.forEachIndexed { index, pair ->
+                            Tab(
+                                selected = selectedTabIndex == index,
+                                onClick = { 
+                                    selectedTabIndex = index 
+                                    errorMessage = null // clear error when switching
+                                },
+                                text = { Text(pair.first, fontWeight = FontWeight.Bold) }
+                            )
+                        }
+                    }
+                    
+                    Box(modifier = Modifier.padding(start = 16.dp)) {
+                        var menuExpanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Text("⋮", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Configure") },
+                                onClick = { 
+                                    isConfigMode = true
+                                    menuExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                val currentTabDef = tabs[selectedTabIndex].second
+                val leverStates = allLeverStates[selectedTabIndex]
+                val manualLocks = allManualLocks[selectedTabIndex]
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    currentTabDef.levers.forEachIndexed { index, leverDef ->
+                        val isReversed = leverStates[index]
+                        val isManuallyLocked = manualLocks[index]
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+
+                        LeverComponent(
+                            leverDef = leverDef,
+                            labelLines = currentTabDef.labelLines,
+                            labelLineHeight = currentTabDef.labelLineHeight,
+                            isReversed = isReversed,
+                            isManuallyLocked = isManuallyLocked,
+                            isSystemLocked = isSystemLocked,
+                            onToggle = {
+                                if (isManuallyLocked) {
+                                    errorMessage = "Lever ${index + 1} is manually locked!"
+                                    return@LeverComponent
+                                }
+                                
+                                val attemptingState = !isReversed
+                                if (Interlocking.evaluate(currentTabDef, leverStates, index, attemptingState)) {
+                                    val newStates = leverStates.clone()
+                                    newStates[index] = attemptingState
+                                    allLeverStates[selectedTabIndex] = newStates
+                                    errorMessage = null
+                                } else {
+                                    errorMessage = "Interlocking: Lever ${index + 1} is system locked!"
+                                }
+                            },
+                            onToggleLock = {
+                                val newLocks = manualLocks.clone()
+                                newLocks[index] = !isManuallyLocked
+                                allManualLocks[selectedTabIndex] = newLocks
+                                errorMessage = null
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LeverComponent(
+    leverDef: LeverDef,
+    labelLines: Int,
+    labelLineHeight: Int,
+    isReversed: Boolean,
+    isManuallyLocked: Boolean,
+    isSystemLocked: Boolean,
+    onToggle: () -> Unit,
+    onToggleLock: () -> Unit
+) {
+    val typeColor = when (leverDef.type) {
+        LeverType.HOME_SIGNAL -> Color(0xFF8f2727)
+        LeverType.DISTANT_SIGNAL -> Color(0xFFb08817)
+        LeverType.POINTS -> Color(0xFF000000)
+        LeverType.FACING_POINTS -> Color(0xFF2b58b5)
+        LeverType.BROWN -> Color(0xFF5C4033)
+        LeverType.GREEN -> Color(0xFF228B22)
+        LeverType.SPARE -> Color(0xFFb8b8b8)
+    }
+
+    val (upText, downText) = when (leverDef.type) {
+        LeverType.HOME_SIGNAL, LeverType.DISTANT_SIGNAL -> "ON" to "OFF"
+        else -> "NORMAL" to "THROWN"
+    }
+
+    // Plate Background
+    Column(
+        modifier = Modifier
+            .width(96.dp)
+            .fillMaxHeight()
+            .background(Color(0xFF1a1a1a))
+            .border(
+                width = 2.dp,
+                color = Color(0xFF333333),
+                shape = RoundedCornerShape(topStart = 4.dp)
+            )
+            .padding(vertical = 10.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        // Header (Brass Plate + Color bar)
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height((labelLines * labelLineHeight).dp + 12.dp)
+                    .background(Color(0xFF1a1a1a))
+                    .border(2.dp, Color(0xFF5c421a)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = leverDef.label,
+                    color = Color(0xFFd4af37),
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    lineHeight = labelLineHeight.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(typeColor)
+                    .then(if (typeColor == Color(0xFF000000)) Modifier.border(1.dp, Color(0xFFAAAAAA), RoundedCornerShape(2.dp)) else Modifier)
+            )
+        }
+
+        // Switch Container
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.weight(1f).padding(vertical = 16.dp)
+        ) {
+            Text(
+                text = upText,
+                color = if (!isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Switch Track
+            Box(
+                modifier = Modifier
+                    .width(60.dp)
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFF050505))
+                    .border(2.dp, Color(0xFF2b2b2b), RoundedCornerShape(6.dp))
+                    .clickable { onToggle() }
+            ) {
+                // Knob
+                val positionRatio by animateFloatAsState(
+                    targetValue = if (isReversed) 1f else 0f,
+                    animationSpec = tween(durationMillis = 250),
+                    label = "positionRatio"
+                )
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    val trackHeight = maxHeight
+                    val knobSize = 52.dp
+                    val padding = 4.dp
+                    val offset = padding + (trackHeight - knobSize - padding * 2) * positionRatio
+
+                    Box(
+                        modifier = Modifier
+                            .size(knobSize)
+                            .align(Alignment.TopCenter)
+                            .offset(y = offset)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(typeColor)
+                            .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier)
+                    )
+
+                    // Locking Pin
+                    if (isSystemLocked || isManuallyLocked) {
+                        val emptySpaceCenter = if (!isReversed) {
+                            knobSize + (trackHeight - knobSize) / 2
+                        } else {
+                            (trackHeight - knobSize) / 2
+                        }
+                        val pinHeight = 8.dp
+                        val pinOffsetY = emptySpaceCenter - (pinHeight / 2)
+                        
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .offset(y = pinOffsetY)
+                                .width(24.dp)
+                                .height(pinHeight)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(Color(0xFFcc3333))
+                                .border(1.dp, Color(0xFFdddddd), RoundedCornerShape(2.dp))
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = downText,
+                color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Collar Button
+        val (collarText, collarBg, collarFg) = when {
+            isManuallyLocked -> Triple("LOCKED", Color(0xFFcc3333), Color.White)
+            isSystemLocked -> Triple("INTERLOCK", Color(0xFF252525), Color(0xFFaaaaaa))
+            else -> Triple("UNLOCKED", Color(0xFF252525), Color.White)
+        }
+
+        Button(
+            onClick = onToggleLock,
+            colors = ButtonDefaults.buttonColors(containerColor = collarBg),
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.fillMaxWidth().height(36.dp),
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Text(collarText, color = collarFg, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
