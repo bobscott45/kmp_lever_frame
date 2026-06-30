@@ -31,7 +31,7 @@ fun LeverStatusScreen(
         Column(
             modifier = Modifier
                 .widthIn(max = 400.dp)
-                .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .background(Color(0xFF1E1E1E).copy(alpha = 0.85f), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -56,7 +56,7 @@ fun LeverStatusScreen(
         
         Card(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A).copy(alpha = 0.5f))
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
