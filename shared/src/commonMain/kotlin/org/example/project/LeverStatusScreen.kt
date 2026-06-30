@@ -30,7 +30,7 @@ fun LeverStatusScreen(
     ) {
         Column(
             modifier = Modifier
-                .widthIn(max = 400.dp)
+                .widthIn(max = 500.dp)
                 .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
