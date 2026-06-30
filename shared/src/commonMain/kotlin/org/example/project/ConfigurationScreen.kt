@@ -78,8 +78,12 @@ fun ConfigurationScreen(
                         Text("Export")
                     }
                     TextButton(onClick = {
+                        val prevIp = ConfigManager.currentConfig.jmri_hub_ip
                         ConfigManager.currentConfig = config
                         saveConfigToFile(ConfigManager.toJsonString())
+                        if (prevIp != config.jmri_hub_ip) {
+                            LccNode.initialize()
+                        }
                         onSave()
                     }) {
                         Text("Save", fontWeight = FontWeight.Bold)

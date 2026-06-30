@@ -21,6 +21,7 @@ object GridConnectNetwork {
     val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
 
     private var activeSocket: Socket? = null
+    private var activeServerSocket: ServerSocket? = null
     private var writeChannel: ByteWriteChannel? = null
     private var readChannel: ByteReadChannel? = null
 
@@ -41,7 +42,8 @@ object GridConnectNetwork {
         stop()
         serverJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
+                activeServerSocket = aSocket(selectorManager).tcp().bind(port = port)
+                val serverSocket = activeServerSocket!!
                 _connectionStatus.value = "Listening on port $port"
                 println("GridConnect TCP Server listening on port ${serverSocket.localAddress}")
 
@@ -153,10 +155,14 @@ object GridConnectNetwork {
 
     private fun closeConnection() {
         try {
+            activeServerSocket?.close()
+        } catch (e: Exception) {}
+        try {
             activeSocket?.close()
         } catch (e: Exception) {
             // ignore
         }
+        activeServerSocket = null
         activeSocket = null
         writeChannel = null
         readChannel = null

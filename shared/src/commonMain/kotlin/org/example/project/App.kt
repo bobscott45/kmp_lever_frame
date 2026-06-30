@@ -35,10 +35,7 @@ fun App() {
         if (isConfigMode) {
             ConfigurationScreen(
                 onClose = { isConfigMode = false },
-                onSave = { 
-                    isConfigMode = false 
-                    LccNode.initialize() // Restart network with new settings
-                }
+                onSave = { isConfigMode = false }
             )
         } else if (isStatusMode) {
             SystemStatusScreen(
@@ -62,35 +59,45 @@ fun App() {
             
             LaunchedEffect(isConfigMode) {
                 LccNode.externalEvents.collect { hexEventId ->
-                    tabs.forEachIndexed { tabIdx, tabPair ->
-                        val tabDef = tabPair.second
-                        tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                            var attemptState: Boolean? = null
-                            if (leverDef.lcc_event_normal.isNotBlank()) {
-                                val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
-                                if (normalHex == hexEventId) attemptState = false
-                            }
-                            if (leverDef.lcc_event_reversed.isNotBlank()) {
-                                val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
-                                if (reversedHex == hexEventId) attemptState = true
-                            }
-                            
-                            if (attemptState != null) {
-                                val leverStates = allLeverStates[tabIdx]
-                                if (leverStates[leverIdx] != attemptState) {
-                                    val policy = ConfigManager.currentConfig.conflict_policy
-                                    val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
-                                    
-                                    if (policy == 1 && !isValid) {
-                                        // Ignore due to Strict Policy
+                    try {
+                        tabs.forEachIndexed { tabIdx, tabPair ->
+                            val tabDef = tabPair.second
+                            tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                                var attemptState: Boolean? = null
+                                if (leverDef.lcc_event_normal.isNotBlank()) {
+                                    val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
+                                    if (normalHex == hexEventId) attemptState = false
+                                }
+                                if (leverDef.lcc_event_reversed.isNotBlank()) {
+                                    val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
+                                    if (reversedHex == hexEventId) attemptState = true
+                                }
+                                
+                                if (attemptState != null) {
+                                    println("Matched event $hexEventId to Lever $leverIdx (Attempt State: $attemptState)")
+                                    val leverStates = allLeverStates[tabIdx]
+                                    if (leverStates[leverIdx] != attemptState) {
+                                        val policy = ConfigManager.currentConfig.conflict_policy
+                                        val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
+                                        
+                                        println("Lever $leverIdx state change: policy=$policy, isValid=$isValid")
+                                        
+                                        if (policy == 1 && !isValid) {
+                                            println("External event ignored due to STRICT policy")
+                                        } else {
+                                            val newStates = leverStates.clone()
+                                            newStates[leverIdx] = attemptState
+                                            allLeverStates[tabIdx] = newStates
+                                            println("Applied external event: lever $leverIdx to $attemptState (Policy $policy)")
+                                        }
                                     } else {
-                                        val newStates = leverStates.clone()
-                                        newStates[leverIdx] = attemptState
-                                        allLeverStates[tabIdx] = newStates
+                                        println("Lever $leverIdx is already in state $attemptState")
                                     }
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+                        println("Error processing external event: ${e.message}")
                     }
                 }
             }
