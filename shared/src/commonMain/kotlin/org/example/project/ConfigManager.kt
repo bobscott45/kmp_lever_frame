@@ -2,6 +2,9 @@ package org.example.project
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Serializable
 data class JsonConfig(
@@ -59,7 +62,7 @@ object ConfigManager {
 
     val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 2, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "lcc_master": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}]}]}"""
 
-    var currentConfig: JsonConfig = run {
+    var currentConfig by mutableStateOf(run {
         val loadedJson = loadConfigFromFile()
         if (loadedJson != null) {
             try {
@@ -70,7 +73,7 @@ object ConfigManager {
         } else {
             jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson)
         }
-    }
+    })
 
     fun toJsonString(): String = jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
 

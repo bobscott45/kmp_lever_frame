@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemStatusScreen(onClose: () -> Unit) {
     val ipAddress = remember { getLocalIpAddress() }
@@ -55,11 +56,65 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 StatusItem("TCP Port", port.toString())
                 StatusItem("Network Status", GridConnectNetwork.connectionStatus.collectAsState().value)
                 
+                var policyExpanded by remember { mutableStateOf(false) }
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
-                val policyText = policies[ConfigManager.currentConfig.conflict_policy] ?: "Unknown"
-                StatusItem("External Event Policy", policyText)
                 
-                StatusItem("LCC Master Enabled", if (ConfigManager.currentConfig.lcc_master) "Yes" else "No")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("External Event Policy", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    ExposedDropdownMenuBox(
+                        expanded = policyExpanded,
+                        onExpandedChange = { policyExpanded = !policyExpanded }
+                    ) {
+                        OutlinedTextField(
+                            value = policies[ConfigManager.currentConfig.conflict_policy] ?: "Unknown",
+                            onValueChange = {},
+                            readOnly = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White),
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
+                            modifier = Modifier.menuAnchor().width(200.dp)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = policyExpanded,
+                            onDismissRequest = { policyExpanded = false }
+                        ) {
+                            policies.forEach { (key, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        val newConfig = ConfigManager.currentConfig.copy(conflict_policy = key)
+                                        ConfigManager.currentConfig = newConfig
+                                        saveConfigToFile(ConfigManager.toJsonString())
+                                        policyExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("LCC Master Enabled", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    Switch(
+                        checked = ConfigManager.currentConfig.lcc_master,
+                        onCheckedChange = { 
+                            val newConfig = ConfigManager.currentConfig.copy(lcc_master = it)
+                            ConfigManager.currentConfig = newConfig
+                            saveConfigToFile(ConfigManager.toJsonString())
+                        }
+                    )
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Restore Last State on Startup", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    Switch(
+                        checked = ConfigManager.currentConfig.restore_last_state,
+                        onCheckedChange = { 
+                            val newConfig = ConfigManager.currentConfig.copy(restore_last_state = it)
+                            ConfigManager.currentConfig = newConfig
+                            saveConfigToFile(ConfigManager.toJsonString())
+                        }
+                    )
+                }
                 
                 StatusItem("Platform", getPlatform().name)
             }

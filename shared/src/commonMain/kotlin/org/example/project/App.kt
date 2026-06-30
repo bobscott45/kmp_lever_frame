@@ -34,7 +34,11 @@ fun App() {
         }
 
         // Force recreation of tabs if we return from config mode AND saved changes
-        val tabs = remember(configVersion) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
+        var tabs by remember { mutableStateOf(ConfigManager.parseConfig(ConfigManager.toJsonString())) }
+        
+        LaunchedEffect(configVersion) {
+            tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+        }
 
         var selectedTabIndex by remember { mutableStateOf(0) }
         
@@ -253,7 +257,22 @@ fun App() {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Text("Label: ${leverDef.label.replace("\n", " ")}")
                                 Text("Type: ${leverDef.type.name}")
-                                Text("LCC Enabled: ${if (leverDef.lcc_enabled) "Yes" else "No"}")
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                                    Text("LCC Enabled:")
+                                    Switch(
+                                        checked = leverDef.lcc_enabled,
+                                        onCheckedChange = { checked ->
+                                            val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
+                                            val currentTabJson = newTabsJson[selectedTabIndex].copy()
+                                            val newLeversJson = currentTabJson.levers.toMutableList()
+                                            newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
+                                            val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
+                                            ConfigManager.currentConfig = newConfig
+                                            saveConfigToFile(ConfigManager.toJsonString())
+                                            tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+                                        }
+                                    )
+                                }
                                 Text("Event ID (Normal): ${if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal}")
                                 Text("Event ID (Reversed): ${if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed}")
                                 if (leverDef.conditions.isNotEmpty()) {
