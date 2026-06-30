@@ -7,12 +7,15 @@ import kotlinx.coroutines.Job
 
 object LccNode {
 
-    private const val NODE_ALIAS = "12A" // Using a fixed alias for simplicity, though real nodes allocate it dynamically
+    private var NODE_ALIAS = "12A" // Using a fixed alias for simplicity, though real nodes allocate it dynamically
     
     private var lccJob: Job? = null
 
     fun initialize() {
         val hubIp = ConfigManager.currentConfig.jmri_hub_ip.trim()
+        
+        // Generate pseudo-random alias to avoid JMRI collisions
+        NODE_ALIAS = kotlin.random.Random.nextInt(1, 4096).toString(16).padStart(3, '0').uppercase()
         
         // When initialized (or a client connects), announce our presence
         GridConnectNetwork.onClientConnected = {
@@ -20,6 +23,7 @@ object LccNode {
                 kotlinx.coroutines.delay(500) // Give network time to settle
                 sendAliasMapDefinition()
                 sendInitializationComplete()
+                sendAllProducerIdentified()
             }
         }
 
@@ -139,12 +143,39 @@ object LccNode {
         }
     }
 
+    private fun sendAllProducerIdentified() {
+        ConfigManager.currentConfig.tabs.forEach { tab ->
+            tab.levers.forEach { lever ->
+                if (lever.lcc_event_normal.isNotBlank()) {
+                    sendProducerIdentified(lever.lcc_event_normal)
+                }
+                if (lever.lcc_event_reversed.isNotBlank()) {
+                    sendProducerIdentified(lever.lcc_event_reversed)
+                }
+            }
+        }
+    }
+
+    private fun sendProducerIdentified(eventIdStr: String) {
+        try {
+            val cleanHex = eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
+            if (cleanHex.length == 16) {
+                // Producer Identified CAN MTI is 0x054A -> 1954A prefix
+                val msg = ":X1954A${NODE_ALIAS}N$cleanHex;"
+                GridConnectNetwork.sendMessage(msg)
+                println("Sent Producer Identified: $msg")
+            }
+        } catch (e: Exception) {
+            println("Failed to send Producer Identified for $eventIdStr: ${e.message}")
+        }
+    }
+
     fun produceEvent(eventIdStr: String) {
         if (eventIdStr.isBlank()) return
         
         try {
             // Remove dots and ensure 16 hex characters
-            val cleanHex = eventIdStr.replace(".", "").padStart(16, '0').uppercase()
+            val cleanHex = eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
             if (cleanHex.length == 16) {
                 // PCER MTI is 0x05B4
                 // GridConnect header for OpenLCB PCER with priority 1 is: 195B4
