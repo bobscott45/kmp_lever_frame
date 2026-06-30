@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
 val BrassColor = Color(0xFFD4AF37)
+val PaleBlue = Color(0xFF8CA8C4)
 
 @Composable
 @Preview
@@ -284,7 +285,11 @@ fun App() {
                                             ConfigManager.currentConfig = newConfig
                                             saveConfigToFile(ConfigManager.toJsonString())
                                             tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
-                                        }
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.White,
+                                            checkedTrackColor = PaleBlue
+                                        )
                                     )
                                 }
                                 

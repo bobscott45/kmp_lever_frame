@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -391,7 +392,11 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 Text("Restore Last State", style = MaterialTheme.typography.bodyLarge)
                 Switch(
                     checked = config.restore_last_state,
-                    onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) }
+                    onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = PaleBlue
+                    )
                 )
             }
             Row(
@@ -402,7 +407,11 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 Text("LCC Master", style = MaterialTheme.typography.bodyLarge)
                 Switch(
                     checked = config.lcc_master,
-                    onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) }
+                    onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = PaleBlue
+                    )
                 )
             }
             
@@ -526,7 +535,11 @@ fun MobileLeverCard(
                         Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge)
                         Switch(
                             checked = lever.lcc_enabled,
-                            onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) }
+                            onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = PaleBlue
+                            )
                         )
                     }
 

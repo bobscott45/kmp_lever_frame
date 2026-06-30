@@ -100,7 +100,11 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                             val newConfig = ConfigManager.currentConfig.copy(lcc_master = it)
                             ConfigManager.currentConfig = newConfig
                             saveConfigToFile(ConfigManager.toJsonString())
-                        }
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = PaleBlue
+                        )
                     )
                 }
 
@@ -112,7 +116,11 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                             val newConfig = ConfigManager.currentConfig.copy(restore_last_state = it)
                             ConfigManager.currentConfig = newConfig
                             saveConfigToFile(ConfigManager.toJsonString())
-                        }
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = PaleBlue
+                        )
                     )
                 }
                 
