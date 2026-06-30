@@ -54,6 +54,11 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 StatusItem("IP Address", ipAddress)
                 StatusItem("TCP Port", port.toString())
                 StatusItem("Network Status", GridConnectNetwork.connectionStatus.collectAsState().value)
+                
+                val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
+                val policyText = policies[ConfigManager.currentConfig.conflict_policy] ?: "Unknown"
+                StatusItem("External Event Policy", policyText)
+                
                 StatusItem("Platform", getPlatform().name)
             }
         }

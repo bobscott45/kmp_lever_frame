@@ -340,25 +340,20 @@ fun LeverComponent(
                             .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier)
                     )
 
-                    // Locking Pin
+                    // Locking Collar (sleeve over the lever handle)
                     if (isSystemLocked || isManuallyLocked) {
-                        val emptySpaceCenter = if (!isReversed) {
-                            knobSize + (trackHeight - knobSize) / 2
-                        } else {
-                            (trackHeight - knobSize) / 2
-                        }
-                        val pinHeight = 8.dp
-                        val pinOffsetY = emptySpaceCenter - (pinHeight / 2)
+                        val collarHeight = 16.dp
+                        val collarOffsetY = offset + (knobSize - collarHeight) / 2
                         
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .offset(y = pinOffsetY)
-                                .width(24.dp)
-                                .height(pinHeight)
+                                .offset(y = collarOffsetY)
+                                .width(knobSize + 8.dp)
+                                .height(collarHeight)
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(Color(0xFFcc3333))
-                                .border(1.dp, Color(0xFFdddddd), RoundedCornerShape(2.dp))
+                                .border(1.dp, Color(0xFFaa0000), RoundedCornerShape(2.dp))
                         )
                     }
                 }
