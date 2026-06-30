@@ -40,10 +40,27 @@ fun App() {
         
         // Hold states and locks for all tabs
         val allLeverStates = remember(configVersion) {
-            mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+            val defaultStates = tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray()
+            
+            if (ConfigManager.currentConfig.restore_last_state && configVersion == 0) {
+                val savedStates = ConfigManager.loadSavedLeverStates()
+                if (savedStates != null && savedStates.size == tabs.size && savedStates.map { it.size } == defaultStates.map { it.size }.toList()) {
+                    mutableStateListOf(*savedStates.toTypedArray())
+                } else {
+                    mutableStateListOf(*defaultStates)
+                }
+            } else {
+                mutableStateListOf(*defaultStates)
+            }
         }
         val allManualLocks = remember(configVersion) {
             mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+        }
+        
+        LaunchedEffect(allLeverStates.toList()) {
+            if (ConfigManager.currentConfig.restore_last_state) {
+                ConfigManager.saveCurrentLeverStates(allLeverStates.toList())
+            }
         }
         
         var errorMessage by remember { mutableStateOf<String?>(null) }

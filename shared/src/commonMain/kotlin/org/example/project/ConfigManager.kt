@@ -42,6 +42,11 @@ data class JsonInterlocking(
     val alt_state: String = "NORMAL"
 )
 
+@Serializable
+data class LeverStatesData(
+    val tabs: List<List<Boolean>>
+)
+
 object ConfigManager {
 
     val jsonFormat = Json { 
@@ -96,6 +101,27 @@ object ConfigManager {
                 )
             }
             jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height)
+        }
+    }
+
+    fun loadSavedLeverStates(): List<BooleanArray>? {
+        val jsonString = loadLeverStatesFromFile() ?: return null
+        return try {
+            val data = jsonFormat.decodeFromString<LeverStatesData>(jsonString)
+            data.tabs.map { it.toBooleanArray() }
+        } catch (e: Exception) {
+            println("Failed to load saved lever states: ${e.message}")
+            null
+        }
+    }
+
+    fun saveCurrentLeverStates(states: List<BooleanArray>) {
+        try {
+            val data = LeverStatesData(states.map { it.toList() })
+            val jsonString = jsonFormat.encodeToString(LeverStatesData.serializer(), data)
+            saveLeverStatesToFile(jsonString)
+        } catch (e: Exception) {
+            println("Failed to save lever states: ${e.message}")
         }
     }
 }

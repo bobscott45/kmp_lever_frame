@@ -22,3 +22,11 @@ actual fun loadConfigFromFile(): String? {
     // Placeholder for iOS
     return null
 }
+
+actual fun saveLeverStatesToFile(json: String) {
+    // Placeholder
+}
+
+actual fun loadLeverStatesFromFile(): String? {
+    return null
+}

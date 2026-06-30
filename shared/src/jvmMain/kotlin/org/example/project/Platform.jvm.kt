@@ -45,3 +45,21 @@ actual fun loadConfigFromFile(): String? {
         null
     }
 }
+
+actual fun saveLeverStatesToFile(json: String) {
+    try {
+        java.io.File("leverframe_states.json").writeText(json)
+    } catch (e: Exception) {
+        println("Failed to save states: ${e.message}")
+    }
+}
+
+actual fun loadLeverStatesFromFile(): String? {
+    return try {
+        val file = java.io.File("leverframe_states.json")
+        if (file.exists()) file.readText() else null
+    } catch (e: Exception) {
+        println("Failed to load states: ${e.message}")
+        null
+    }
+}
