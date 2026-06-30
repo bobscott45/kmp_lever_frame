@@ -402,14 +402,15 @@ fun LeverComponent(
                     .clickable { 
                         if (isSystemLocked || isManuallyLocked) {
                             scope.launch {
+                                shakeOffset.snapTo(-5f)
                                 shakeOffset.animateTo(
                                     targetValue = 0f,
                                     animationSpec = keyframes {
                                         durationMillis = 200
-                                        0f at 0
-                                        -5f at 50
-                                        5f at 100
-                                        -5f at 150
+                                        -5f at 0
+                                        5f at 50
+                                        -5f at 100
+                                        5f at 150
                                         0f at 200
                                     }
                                 )
