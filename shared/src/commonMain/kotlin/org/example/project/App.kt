@@ -38,6 +38,7 @@ fun App() {
     MaterialTheme(colorScheme = customColorScheme) {
         var isConfigMode by remember { mutableStateOf(false) }
         var isStatusMode by remember { mutableStateOf(false) }
+        var statusLeverIndex by remember { mutableStateOf<Int?>(null) }
         var configVersion by remember { mutableStateOf(0) }
 
         LaunchedEffect(Unit) {
@@ -139,6 +140,26 @@ fun App() {
             SystemStatusScreen(
                 onClose = { isStatusMode = false }
             )
+        } else if (statusLeverIndex != null) {
+            val index = statusLeverIndex!!
+            val currentTabDef = tabs[selectedTabIndex].second
+            val leverDef = currentTabDef.levers[index]
+            
+            LeverStatusScreen(
+                leverIndex = index,
+                leverDef = leverDef,
+                onClose = { statusLeverIndex = null },
+                onLccEnabledChange = { checked ->
+                    val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
+                    val currentTabJson = newTabsJson[selectedTabIndex].copy()
+                    val newLeversJson = currentTabJson.levers.toMutableList()
+                    newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
+                    val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
+                    ConfigManager.currentConfig = newConfig
+                    saveConfigToFile(ConfigManager.toJsonString())
+                    tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+                }
+            )
         } else {
 
             Column(
@@ -203,7 +224,6 @@ fun App() {
                 val manualLocks = allManualLocks[selectedTabIndex]
                 val policy = ConfigManager.currentConfig.conflict_policy
                 val conflictingLevers = if (policy == 3) Interlocking.getConflictingLevers(currentTabDef, leverStates) else emptyList()
-                var statusLeverIndex by remember { mutableStateOf<Int?>(null) }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -257,69 +277,6 @@ fun App() {
                             }
                         )
                     }
-                }
-                
-                statusLeverIndex?.let { index ->
-                    val leverDef = currentTabDef.levers[index]
-                    AlertDialog(
-                        onDismissRequest = { statusLeverIndex = null },
-                        title = { Text("Lever ${index + 1} Status", color = BrassColor) },
-                        text = {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(text = "Label: ", color = BrassColor, fontWeight = FontWeight.Bold)
-                                Text(text = leverDef.label.replace("\n", " "))
-                                
-                                Text(text = "Type: ", color = BrassColor, fontWeight = FontWeight.Bold)
-                                Text(text = leverDef.type.name)
-                                
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                    Text("LCC Enabled:", color = BrassColor, fontWeight = FontWeight.Bold)
-                                    Switch(
-                                        checked = leverDef.lcc_enabled,
-                                        onCheckedChange = { checked ->
-                                            val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
-                                            val currentTabJson = newTabsJson[selectedTabIndex].copy()
-                                            val newLeversJson = currentTabJson.levers.toMutableList()
-                                            newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
-                                            val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
-                                            ConfigManager.currentConfig = newConfig
-                                            saveConfigToFile(ConfigManager.toJsonString())
-                                            tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
-                                        },
-                                        colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = PaleBlue
-                                        )
-                                    )
-                                }
-                                
-                                Text(text = "Event ID (Normal):", color = BrassColor, fontWeight = FontWeight.Bold)
-                                Text(text = if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal)
-                                
-                                Text(text = "Event ID (Reversed):", color = BrassColor, fontWeight = FontWeight.Bold)
-                                Text(text = if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed)
-                                
-                                if (leverDef.conditions.isNotEmpty()) {
-                                    Text("Interlocking Rules:", fontWeight = FontWeight.Bold, color = BrassColor)
-                                    leverDef.conditions.forEach { rule ->
-                                        val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
-                                        val altStr = if (rule.altTargetLeverIndex != -1) {
-                                            val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
-                                            " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
-                                        } else ""
-                                        Text("• Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", fontSize = 12.sp)
-                                    }
-                                } else {
-                                    Text("No interlocking rules.")
-                                }
-                            }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = { statusLeverIndex = null }) {
-                                Text("Close")
-                            }
-                        }
-                    )
                 }
             }
         }
