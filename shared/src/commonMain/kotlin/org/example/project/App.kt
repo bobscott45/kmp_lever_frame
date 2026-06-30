@@ -21,10 +21,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
+val BrassColor = Color(0xFFD4AF37)
+
 @Composable
 @Preview
 fun App() {
-    MaterialTheme(colorScheme = darkColorScheme()) {
+    val customColorScheme = darkColorScheme(
+        primary = BrassColor,
+        onPrimary = Color.Black,
+        secondary = BrassColor,
+        onSecondary = Color.Black,
+        tertiary = BrassColor,
+        onTertiary = Color.Black
+    )
+    MaterialTheme(colorScheme = customColorScheme) {
         var isConfigMode by remember { mutableStateOf(false) }
         var isStatusMode by remember { mutableStateOf(false) }
         var configVersion by remember { mutableStateOf(0) }
@@ -155,7 +165,7 @@ fun App() {
                                     selectedTabIndex = index 
                                     errorMessage = null // clear error when switching
                                 },
-                                text = { Text(pair.first, fontWeight = FontWeight.Bold) }
+                                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (selectedTabIndex == index) BrassColor else Color.White) }
                             )
                         }
                     }
@@ -252,13 +262,17 @@ fun App() {
                     val leverDef = currentTabDef.levers[index]
                     AlertDialog(
                         onDismissRequest = { statusLeverIndex = null },
-                        title = { Text("Lever ${index + 1} Status") },
+                        title = { Text("Lever ${index + 1} Status", color = BrassColor) },
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text("Label: ${leverDef.label.replace("\n", " ")}")
-                                Text("Type: ${leverDef.type.name}")
+                                Text(text = "Label: ", color = BrassColor, fontWeight = FontWeight.Bold)
+                                Text(text = leverDef.label.replace("\n", " "))
+                                
+                                Text(text = "Type: ", color = BrassColor, fontWeight = FontWeight.Bold)
+                                Text(text = leverDef.type.name)
+                                
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                    Text("LCC Enabled:")
+                                    Text("LCC Enabled:", color = BrassColor, fontWeight = FontWeight.Bold)
                                     Switch(
                                         checked = leverDef.lcc_enabled,
                                         onCheckedChange = { checked ->
@@ -273,10 +287,15 @@ fun App() {
                                         }
                                     )
                                 }
-                                Text("Event ID (Normal): ${if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal}")
-                                Text("Event ID (Reversed): ${if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed}")
+                                
+                                Text(text = "Event ID (Normal):", color = BrassColor, fontWeight = FontWeight.Bold)
+                                Text(text = if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal)
+                                
+                                Text(text = "Event ID (Reversed):", color = BrassColor, fontWeight = FontWeight.Bold)
+                                Text(text = if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed)
+                                
                                 if (leverDef.conditions.isNotEmpty()) {
-                                    Text("Interlocking Rules:", fontWeight = FontWeight.Bold)
+                                    Text("Interlocking Rules:", fontWeight = FontWeight.Bold, color = BrassColor)
                                     leverDef.conditions.forEach { rule ->
                                         val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
                                         val altStr = if (rule.altTargetLeverIndex != -1) {

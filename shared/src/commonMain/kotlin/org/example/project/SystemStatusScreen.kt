@@ -31,12 +31,12 @@ fun SystemStatusScreen(onClose: () -> Unit) {
         ) {
             Text(
                 text = "System Status",
-                color = Color.White,
+                color = BrassColor,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onClose) {
-                Text("✕", color = Color.White, fontSize = 20.sp)
+                Text("✕", color = BrassColor, fontSize = 20.sp)
             }
         }
         
@@ -60,7 +60,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("External Event Policy", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    Text("External Event Policy", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     ExposedDropdownMenuBox(
                         expanded = policyExpanded,
                         onExpandedChange = { policyExpanded = !policyExpanded }
@@ -93,7 +93,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 }
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Master Enabled", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    Text("LCC Master Enabled", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = ConfigManager.currentConfig.lcc_master,
                         onCheckedChange = { 
@@ -105,7 +105,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restore Last State on Startup", color = Color(0xFFAAAAAA), fontSize = 16.sp)
+                    Text("Restore Last State on Startup", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = ConfigManager.currentConfig.restore_last_state,
                         onCheckedChange = { 
@@ -140,8 +140,9 @@ private fun StatusItem(label: String, value: String) {
     ) {
         Text(
             text = label,
-            color = Color(0xFFAAAAAA),
-            fontSize = 16.sp
+            color = BrassColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
         )
         Text(
             text = value,

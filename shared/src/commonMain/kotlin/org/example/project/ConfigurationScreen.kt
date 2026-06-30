@@ -39,10 +39,10 @@ fun ConfigurationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Settings", color = BrassColor) },
                 navigationIcon = {
                     TextButton(onClick = onClose) {
-                        Text("✕", style = MaterialTheme.typography.titleLarge)
+                        Text("✕", style = MaterialTheme.typography.titleLarge, color = BrassColor)
                     }
                 },
                 actions = {
@@ -99,12 +99,12 @@ fun ConfigurationScreen(
                 Tab(
                     selected = selectedMainTab == 0,
                     onClick = { selectedMainTab = 0 },
-                    text = { Text("System Settings") }
+                    text = { Text("System Settings", color = if (selectedMainTab == 0) BrassColor else androidx.compose.ui.graphics.Color.White) }
                 )
                 Tab(
                     selected = selectedMainTab == 1,
                     onClick = { selectedMainTab = 1 },
-                    text = { Text("Frames & Levers") }
+                    text = { Text("Frames & Levers", color = if (selectedMainTab == 1) BrassColor else androidx.compose.ui.graphics.Color.White) }
                 )
             }
 
@@ -128,7 +128,7 @@ fun ConfigurationScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Frames", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+                        Text("Frames", style = MaterialTheme.typography.titleMedium, color = BrassColor, modifier = Modifier.padding(start = 8.dp))
                         TextButton(onClick = {
                             val newTabs = config.tabs.toMutableList()
                             newTabs.add(JsonTab(name = "New Frame"))
@@ -149,7 +149,7 @@ fun ConfigurationScreen(
                                 Tab(
                                     selected = selectedFrameIndex == index,
                                     onClick = { selectedFrameIndex = index },
-                                    text = { Text(tab.name) }
+                                    text = { Text(tab.name, color = if (selectedFrameIndex == index) BrassColor else androidx.compose.ui.graphics.Color.White) }
                                 )
                             }
                         }
