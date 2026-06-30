@@ -53,6 +53,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 StatusItem("Node ID", ConfigManager.currentConfig.node_id)
                 StatusItem("IP Address", ipAddress)
                 StatusItem("TCP Port", port.toString())
+                StatusItem("Network Status", GridConnectNetwork.connectionStatus.collectAsState().value)
                 StatusItem("Platform", getPlatform().name)
             }
         }

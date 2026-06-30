@@ -64,4 +64,31 @@ object Interlocking {
         }
         return true
     }
+
+    /**
+     * Returns a list of lever indices that are involved in an interlocking conflict.
+     */
+    fun getConflictingLevers(tab: TabDef, states: BooleanArray): List<Int> {
+        val conflicts = mutableSetOf<Int>()
+        for (i in tab.levers.indices) {
+            if (states[i]) {
+                for (condition in tab.levers[i].conditions) {
+                    if (condition.targetLeverIndex != -1) {
+                        val primaryMatch = states[condition.targetLeverIndex] == condition.requiredState
+                        val altMatch = condition.altTargetLeverIndex != -1 && 
+                                       states[condition.altTargetLeverIndex] == condition.altRequiredState
+                        
+                        if (!primaryMatch && !altMatch) {
+                            conflicts.add(i)
+                            conflicts.add(condition.targetLeverIndex)
+                            if (condition.altTargetLeverIndex != -1) {
+                                conflicts.add(condition.altTargetLeverIndex)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return conflicts.toList()
+    }
 }

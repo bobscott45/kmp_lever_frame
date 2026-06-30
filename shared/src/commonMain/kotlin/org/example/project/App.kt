@@ -78,9 +78,16 @@ fun App() {
                             if (attemptState != null) {
                                 val leverStates = allLeverStates[tabIdx]
                                 if (leverStates[leverIdx] != attemptState) {
-                                    val newStates = leverStates.clone()
-                                    newStates[leverIdx] = attemptState
-                                    allLeverStates[tabIdx] = newStates
+                                    val policy = ConfigManager.currentConfig.conflict_policy
+                                    val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
+                                    
+                                    if (policy == 1 && !isValid) {
+                                        // Ignore due to Strict Policy
+                                    } else {
+                                        val newStates = leverStates.clone()
+                                        newStates[leverIdx] = attemptState
+                                        allLeverStates[tabIdx] = newStates
+                                    }
                                 }
                             }
                         }
@@ -148,6 +155,8 @@ fun App() {
                 val currentTabDef = tabs[selectedTabIndex].second
                 val leverStates = allLeverStates[selectedTabIndex]
                 val manualLocks = allManualLocks[selectedTabIndex]
+                val policy = ConfigManager.currentConfig.conflict_policy
+                val conflictingLevers = if (policy == 3) Interlocking.getConflictingLevers(currentTabDef, leverStates) else emptyList()
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -159,6 +168,7 @@ fun App() {
                         val isReversed = leverStates[index]
                         val isManuallyLocked = manualLocks[index]
                         val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+                        val isAlarmed = index in conflictingLevers
 
                         LeverComponent(
                             leverDef = leverDef,
@@ -167,6 +177,7 @@ fun App() {
                             isReversed = isReversed,
                             isManuallyLocked = isManuallyLocked,
                             isSystemLocked = isSystemLocked,
+                            isAlarmed = isAlarmed,
                             onToggle = {
                                 if (isManuallyLocked) {
                                     errorMessage = "Lever ${index + 1} is manually locked!"
@@ -208,6 +219,7 @@ fun LeverComponent(
     isReversed: Boolean,
     isManuallyLocked: Boolean,
     isSystemLocked: Boolean,
+    isAlarmed: Boolean,
     onToggle: () -> Unit,
     onToggleLock: () -> Unit
 ) {
@@ -351,6 +363,7 @@ fun LeverComponent(
 
         // Collar Button
         val (collarText, collarBg, collarFg) = when {
+            isAlarmed -> Triple("ALARM", Color(0xFFFFA500), Color.Black)
             isManuallyLocked -> Triple("LOCKED", Color(0xFFcc3333), Color.White)
             isSystemLocked -> Triple("INTERLOCK", Color(0xFF252525), Color(0xFFaaaaaa))
             else -> Triple("UNLOCKED", Color(0xFF252525), Color.White)

@@ -40,7 +40,8 @@ object LccNode {
         
         lccJob?.cancel()
         lccJob = CoroutineScope(Dispatchers.Default).launch {
-            GridConnectNetwork.incomingMessages.collect { msg ->
+            GridConnectNetwork.incomingMessages.collect { msgRaw ->
+                val msg = msgRaw.uppercase()
                 // Handle incoming GridConnect messages here if needed
                 if (msg.contains("X18A70")) { // Verify Node ID (Global)
                     // Respond with Verified Node ID

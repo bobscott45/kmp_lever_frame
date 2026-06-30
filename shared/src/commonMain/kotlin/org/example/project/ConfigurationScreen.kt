@@ -332,17 +332,11 @@ fun ConfigurationScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
-    val connectionStatus by GridConnectNetwork.connectionStatus.collectAsState()
-
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(
-                "Network Status: $connectionStatus", 
-                fontWeight = FontWeight.Bold, 
-                color = if (connectionStatus.startsWith("Connected")) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
             OutlinedTextField(
                 value = config.node_name,
                 onValueChange = { onConfigChange(config.copy(node_name = it)) },
@@ -371,6 +365,38 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                     checked = config.restore_last_state,
                     onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) }
                 )
+            }
+            
+            var policyExpanded by remember { mutableStateOf(false) }
+            val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
+            val currentPolicyName = policies[config.conflict_policy] ?: "Override Allowed"
+            
+            ExposedDropdownMenuBox(
+                expanded = policyExpanded,
+                onExpandedChange = { policyExpanded = !policyExpanded }
+            ) {
+                OutlinedTextField(
+                    value = currentPolicyName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("External Event Policy") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = policyExpanded,
+                    onDismissRequest = { policyExpanded = false }
+                ) {
+                    policies.forEach { (key, name) ->
+                        DropdownMenuItem(
+                            text = { Text(name) },
+                            onClick = {
+                                onConfigChange(config.copy(conflict_policy = key))
+                                policyExpanded = false
+                            }
+                        )
+                    }
+                }
             }
         }
     }
