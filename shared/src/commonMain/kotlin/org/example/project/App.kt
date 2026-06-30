@@ -68,9 +68,11 @@ fun App() {
         LaunchedEffect(configVersion) {
             LccNode.externalEvents.collect { hexEventId ->
                 try {
+                    if (!ConfigManager.currentConfig.lcc_master) return@collect
                     tabs.forEachIndexed { tabIdx, tabPair ->
                         val tabDef = tabPair.second
                         tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                            if (!leverDef.lcc_enabled) return@forEachIndexed
                             var attemptState: Boolean? = null
                             if (leverDef.lcc_event_normal.isNotBlank()) {
                                 val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
@@ -220,8 +222,10 @@ fun App() {
                                     allLeverStates[selectedTabIndex] = newStates
                                     errorMessage = null
                                     
-                                    val eventStr = if (attemptingState) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
-                                    LccNode.produceEvent(eventStr)
+                                    if (ConfigManager.currentConfig.lcc_master && leverDef.lcc_enabled) {
+                                        val eventStr = if (attemptingState) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
+                                        LccNode.produceEvent(eventStr)
+                                    }
                                 } else {
                                     errorMessage = "Interlocking: Lever ${index + 1} is system locked!"
                                 }

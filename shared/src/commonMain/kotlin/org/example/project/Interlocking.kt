@@ -22,7 +22,8 @@ data class LeverDef(
     val type: LeverType = LeverType.SPARE,
     val label: String = "",
     val lcc_event_normal: String = "",
-    val lcc_event_reversed: String = ""
+    val lcc_event_reversed: String = "",
+    val lcc_enabled: Boolean = true
 )
 
 data class TabDef(

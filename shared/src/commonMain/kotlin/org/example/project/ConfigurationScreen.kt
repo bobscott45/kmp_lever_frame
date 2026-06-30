@@ -394,6 +394,17 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                     onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) }
                 )
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("LCC Master", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = config.lcc_master,
+                    onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) }
+                )
+            }
             
             var policyExpanded by remember { mutableStateOf(false) }
             val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
@@ -505,6 +516,18 @@ fun MobileLeverCard(
                                 )
                             }
                         }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge)
+                        Switch(
+                            checked = lever.lcc_enabled,
+                            onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) }
+                        )
                     }
 
                     Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
