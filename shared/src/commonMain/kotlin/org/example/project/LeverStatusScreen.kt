@@ -11,6 +11,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+
 @Composable
 fun LeverStatusScreen(
     leverIndex: Int,
@@ -18,13 +21,21 @@ fun LeverStatusScreen(
     onClose: () -> Unit,
     onLccEnabledChange: (Boolean) -> Unit
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.Black.copy(alpha = 0.6f))
+            .clickable(onClick = onClose),
+        contentAlignment = Alignment.Center
     ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .clickable { /* consume click so it doesn't close */ }
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -87,7 +98,7 @@ fun LeverStatusScreen(
             }
         }
         
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
         
         Button(
             onClick = onClose,
@@ -95,6 +106,7 @@ fun LeverStatusScreen(
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4A4A))
         ) {
             Text("Back")
+        }
         }
     }
 }

@@ -11,19 +11,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemStatusScreen(onClose: () -> Unit) {
     val ipAddress = remember { getLocalIpAddress() }
     val port = 12021 // Standard OpenLCB GridConnect Port
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.Black.copy(alpha = 0.6f))
+            .clickable(onClick = onClose),
+        contentAlignment = Alignment.Center
     ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .clickable { /* consume click so it doesn't close */ }
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,7 +139,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
             }
         }
         
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
         
         Button(
             onClick = onClose,
@@ -136,6 +147,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4A4A))
         ) {
             Text("Back")
+        }
         }
     }
 }
