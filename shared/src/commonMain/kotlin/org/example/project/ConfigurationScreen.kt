@@ -361,6 +361,15 @@ fun ConfigurationScreen(
     }
 }
 
+@Composable
+fun brassTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor = BrassColor,
+    unfocusedBorderColor = BrassColor.copy(alpha = 0.5f),
+    focusedLabelColor = BrassColor,
+    unfocusedLabelColor = BrassColor.copy(alpha = 0.8f),
+    cursorColor = BrassColor
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
@@ -370,26 +379,29 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 value = config.node_name,
                 onValueChange = { onConfigChange(config.copy(node_name = it)) },
                 label = { Text("Node Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = brassTextFieldColors()
             )
             OutlinedTextField(
                 value = config.node_id,
                 onValueChange = { onConfigChange(config.copy(node_id = it)) },
                 label = { Text("Node ID") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = brassTextFieldColors()
             )
             OutlinedTextField(
                 value = config.jmri_hub_ip,
                 onValueChange = { onConfigChange(config.copy(jmri_hub_ip = it)) },
                 label = { Text("JMRI OPENLCB/LCC HUB IP ADDRESS (optional)") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = brassTextFieldColors()
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Restore Last State", style = MaterialTheme.typography.bodyLarge)
+                Text("Restore Last State", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
                 Switch(
                     checked = config.restore_last_state,
                     onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) },
@@ -404,7 +416,7 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("LCC Master", style = MaterialTheme.typography.bodyLarge)
+                Text("LCC Master", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
                 Switch(
                     checked = config.lcc_master,
                     onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) },
@@ -429,7 +441,8 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                     readOnly = true,
                     label = { Text("External Event Policy") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    colors = brassTextFieldColors()
                 )
                 ExposedDropdownMenu(
                     expanded = policyExpanded,
@@ -484,7 +497,7 @@ fun MobileLeverCard(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = BrassColor)
                         IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                             Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                         }
@@ -494,7 +507,8 @@ fun MobileLeverCard(
                         value = lever.label,
                         onValueChange = { onLeverChange(lever.copy(label = it)) },
                         label = { Text("Label") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = brassTextFieldColors()
                     )
 
                     var typeExpanded by remember { mutableStateOf(false) }
@@ -509,7 +523,8 @@ fun MobileLeverCard(
                             readOnly = true,
                             label = { Text("Lever Type") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            colors = brassTextFieldColors()
                         )
                         ExposedDropdownMenu(
                             expanded = typeExpanded,
@@ -532,7 +547,7 @@ fun MobileLeverCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge)
+                        Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
                         Switch(
                             checked = lever.lcc_enabled,
                             onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
@@ -543,7 +558,7 @@ fun MobileLeverCard(
                         )
                     }
 
-                    Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
+                    Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = BrassColor, modifier = Modifier.padding(top = 8.dp))
                     
                     val isNormalValid = lever.lcc_event_normal.isBlank() || LccNode.parseEventId(lever.lcc_event_normal).length == 16
                     OutlinedTextField(
@@ -552,7 +567,8 @@ fun MobileLeverCard(
                         label = { Text("Event ID (Normal)") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = !isNormalValid,
-                        supportingText = if (!isNormalValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_normal)}") } }
+                        supportingText = if (!isNormalValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_normal)}") } },
+                        colors = brassTextFieldColors()
                     )
                     
                     val isReversedValid = lever.lcc_event_reversed.isBlank() || LccNode.parseEventId(lever.lcc_event_reversed).length == 16
@@ -562,7 +578,8 @@ fun MobileLeverCard(
                         label = { Text("Event ID (Reversed)") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = !isReversedValid,
-                        supportingText = if (!isReversedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_reversed)}") } }
+                        supportingText = if (!isReversedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_reversed)}") } },
+                        colors = brassTextFieldColors()
                     )
 
                     Row(
@@ -570,7 +587,7 @@ fun MobileLeverCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                        Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = BrassColor)
                         TextButton(onClick = {
                             val newRules = lever.interlocking.toMutableList()
                             newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
@@ -627,7 +644,8 @@ fun MobileRuleCard(
                     value = rule.target.toString(),
                     onValueChange = { onRuleChange(rule.copy(target = it.toIntOrNull() ?: 0)) },
                     label = { Text("Target Index") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = brassTextFieldColors()
                 )
 
                 var stateExpanded by remember { mutableStateOf(false) }
@@ -638,7 +656,8 @@ fun MobileRuleCard(
                         readOnly = true,
                         label = { Text("Required State") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
                         listOf("NORMAL", "REVERSED").forEach { s ->
@@ -653,7 +672,8 @@ fun MobileRuleCard(
                     value = rule.alt_target.toString(),
                     onValueChange = { onRuleChange(rule.copy(alt_target = it.toIntOrNull() ?: -1)) },
                     label = { Text("Alt Target") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = brassTextFieldColors()
                 )
 
                 var altStateExpanded by remember { mutableStateOf(false) }
@@ -664,7 +684,8 @@ fun MobileRuleCard(
                         readOnly = true,
                         label = { Text("Alt State") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altStateExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
                         listOf("NORMAL", "REVERSED").forEach { s ->
