@@ -27,6 +27,7 @@ fun App() {
     MaterialTheme(colorScheme = darkColorScheme()) {
         var isConfigMode by remember { mutableStateOf(false) }
         var isStatusMode by remember { mutableStateOf(false) }
+        var configVersion by remember { mutableStateOf(0) }
 
         LaunchedEffect(Unit) {
             LccNode.initialize()
@@ -35,29 +36,32 @@ fun App() {
         if (isConfigMode) {
             ConfigurationScreen(
                 onClose = { isConfigMode = false },
-                onSave = { isConfigMode = false }
+                onSave = { 
+                    configVersion++
+                    isConfigMode = false 
+                }
             )
         } else if (isStatusMode) {
             SystemStatusScreen(
                 onClose = { isStatusMode = false }
             )
         } else {
-            // Force recreation of tabs if we return from config mode
-            val tabs = remember(isConfigMode) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
+            // Force recreation of tabs if we return from config mode AND saved changes
+            val tabs = remember(configVersion) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
 
             var selectedTabIndex by remember { mutableStateOf(0) }
             
             // Hold states and locks for all tabs
-            val allLeverStates = remember(isConfigMode) {
+            val allLeverStates = remember(configVersion) {
                 mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
             }
-            val allManualLocks = remember(isConfigMode) {
+            val allManualLocks = remember(configVersion) {
                 mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
             }
             
             var errorMessage by remember { mutableStateOf<String?>(null) }
             
-            LaunchedEffect(isConfigMode) {
+            LaunchedEffect(configVersion) {
                 LccNode.externalEvents.collect { hexEventId ->
                     try {
                         tabs.forEachIndexed { tabIdx, tabPair ->

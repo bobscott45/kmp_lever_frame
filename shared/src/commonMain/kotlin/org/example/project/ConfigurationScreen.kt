@@ -33,6 +33,7 @@ fun ConfigurationScreen(
     val clipboardManager = LocalClipboardManager.current
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
+    var showSaveWarning by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
 
     Scaffold(
@@ -78,13 +79,7 @@ fun ConfigurationScreen(
                         Text("Export")
                     }
                     TextButton(onClick = {
-                        val prevIp = ConfigManager.currentConfig.jmri_hub_ip
-                        ConfigManager.currentConfig = config
-                        saveConfigToFile(ConfigManager.toJsonString())
-                        if (prevIp != config.jmri_hub_ip) {
-                            LccNode.initialize()
-                        }
-                        onSave()
+                        showSaveWarning = true
                     }) {
                         Text("Save", fontWeight = FontWeight.Bold)
                     }
@@ -270,6 +265,33 @@ fun ConfigurationScreen(
                 }
             }
         }
+    }
+
+    if (showSaveWarning) {
+        AlertDialog(
+            onDismissRequest = { showSaveWarning = false },
+            title = { Text("Save Configuration") },
+            text = { Text("Saving configuration changes will reset the lever frame state to its default. Proceed?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSaveWarning = false
+                    val prevIp = ConfigManager.currentConfig.jmri_hub_ip
+                    ConfigManager.currentConfig = config
+                    saveConfigToFile(ConfigManager.toJsonString())
+                    if (prevIp != config.jmri_hub_ip) {
+                        LccNode.initialize()
+                    }
+                    onSave()
+                }) {
+                    Text("Save & Reset")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSaveWarning = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     if (showExportDialog) {
