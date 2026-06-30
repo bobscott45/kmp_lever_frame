@@ -168,9 +168,25 @@ object LccNode {
         }
     }
 
+    fun parseEventId(eventIdStr: String): String {
+        val parts = eventIdStr.split(".")
+        if (parts.size in 2..7) {
+            val paddedParts = parts.toMutableList()
+            while (paddedParts.size < 8) {
+                if (paddedParts.size >= 6) {
+                    paddedParts.add(6, "00")
+                } else {
+                    paddedParts.add("00")
+                }
+            }
+            return paddedParts.joinToString("") { it.padStart(2, '0') }.uppercase()
+        }
+        return eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
+    }
+
     private fun sendProducerIdentified(eventIdStr: String) {
         try {
-            val cleanHex = eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
+            val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
                 // Producer Identified CAN MTI is 0x054A -> 1954A prefix
                 val msg = ":X1954A${NODE_ALIAS}N$cleanHex;"
@@ -186,8 +202,8 @@ object LccNode {
         if (eventIdStr.isBlank()) return
         
         try {
-            // Remove dots and ensure 16 hex characters
-            val cleanHex = eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
+            // Parse event ID intelligently to handle 7-byte inputs
+            val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
                 // PCER MTI is 0x05B4
                 // GridConnect header for OpenLCB PCER with priority 1 is: 195B4

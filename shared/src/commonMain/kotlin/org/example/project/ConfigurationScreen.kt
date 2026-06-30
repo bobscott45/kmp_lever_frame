@@ -334,8 +334,15 @@ fun ConfigurationScreen(
 
 @Composable
 fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
+    val connectionStatus by GridConnectNetwork.connectionStatus.collectAsState()
+
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text(
+                "Network Status: $connectionStatus", 
+                fontWeight = FontWeight.Bold, 
+                color = if (connectionStatus.startsWith("Connected")) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            )
             OutlinedTextField(
                 value = config.node_name,
                 onValueChange = { onConfigChange(config.copy(node_name = it)) },
@@ -447,17 +454,25 @@ fun MobileLeverCard(
                     }
 
                     Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 8.dp))
+                    
+                    val isNormalValid = lever.lcc_event_normal.isBlank() || LccNode.parseEventId(lever.lcc_event_normal).length == 16
                     OutlinedTextField(
                         value = lever.lcc_event_normal,
                         onValueChange = { onLeverChange(lever.copy(lcc_event_normal = it)) },
                         label = { Text("Event ID (Normal)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = !isNormalValid,
+                        supportingText = if (!isNormalValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_normal)}") } }
                     )
+                    
+                    val isReversedValid = lever.lcc_event_reversed.isBlank() || LccNode.parseEventId(lever.lcc_event_reversed).length == 16
                     OutlinedTextField(
                         value = lever.lcc_event_reversed,
                         onValueChange = { onLeverChange(lever.copy(lcc_event_reversed = it)) },
                         label = { Text("Event ID (Reversed)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = !isReversedValid,
+                        supportingText = if (!isReversedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_reversed)}") } }
                     )
 
                     Row(

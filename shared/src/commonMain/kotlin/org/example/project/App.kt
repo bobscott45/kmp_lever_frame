@@ -67,11 +67,11 @@ fun App() {
                         tabDef.levers.forEachIndexed { leverIdx, leverDef ->
                             var attemptState: Boolean? = null
                             if (leverDef.lcc_event_normal.isNotBlank()) {
-                                val normalHex = leverDef.lcc_event_normal.replace(".", "").padEnd(16, '0').uppercase()
+                                val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
                                 if (normalHex == hexEventId) attemptState = false
                             }
                             if (leverDef.lcc_event_reversed.isNotBlank()) {
-                                val reversedHex = leverDef.lcc_event_reversed.replace(".", "").padEnd(16, '0').uppercase()
+                                val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
                                 if (reversedHex == hexEventId) attemptState = true
                             }
                             

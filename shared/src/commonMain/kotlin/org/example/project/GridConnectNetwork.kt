@@ -6,13 +6,19 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 object GridConnectNetwork {
 
     private val _incomingMessages = MutableSharedFlow<String>(extraBufferCapacity = 100)
     val incomingMessages: SharedFlow<String> = _incomingMessages.asSharedFlow()
+
+    private val _connectionStatus = MutableStateFlow("Disconnected")
+    val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
 
     private var activeSocket: Socket? = null
     private var writeChannel: ByteWriteChannel? = null
@@ -36,10 +42,12 @@ object GridConnectNetwork {
         serverJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 val serverSocket = aSocket(selectorManager).tcp().bind(port = port)
+                _connectionStatus.value = "Listening on port $port"
                 println("GridConnect TCP Server listening on port ${serverSocket.localAddress}")
 
                 while (isActive) {
                     val socket = serverSocket.accept()
+                    _connectionStatus.value = "Connected (Client: ${socket.remoteAddress})"
                     println("GridConnect Client connected from: ${socket.remoteAddress}")
                     handleSocketConnection(socket)
                 }
@@ -60,12 +68,15 @@ object GridConnectNetwork {
         clientJob = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 try {
+                    _connectionStatus.value = "Connecting to $host:$port..."
                     println("GridConnect Client connecting to $host:$port...")
                     val socket = aSocket(selectorManager).tcp().connect(host, port)
+                    _connectionStatus.value = "Connected to Hub: ${socket.remoteAddress}"
                     println("GridConnect Client connected to Hub at: ${socket.remoteAddress}")
                     handleSocketConnection(socket)
                 } catch (e: Exception) {
                     if (e !is kotlinx.coroutines.CancellationException) {
+                        _connectionStatus.value = "Connection Error: ${e.message}"
                         println("GridConnect Client Connection Error: ${e.message}. Retrying in 5s...")
                     }
                     delay(5000)
@@ -119,10 +130,12 @@ object GridConnectNetwork {
                 }
             }
         } catch (e: Exception) {
+            _connectionStatus.value = "Disconnected"
             println("GridConnect Connection disconnected: ${e.message}")
         } finally {
             withContext(NonCancellable) {
                 closeConnection()
+                _connectionStatus.value = "Disconnected"
             }
         }
     }
@@ -131,7 +144,7 @@ object GridConnectNetwork {
      * Sends a GridConnect message (e.g. ":X195B4000N;") to the connected socket.
      */
     fun sendMessage(msg: String) {
-        if (activeSocket?.isActive == true) {
+        if (writeChannel != null && writeChannel?.isClosedForWrite == false) {
             sendQueue.trySend(msg)
         } else {
             println("GridConnect Not Connected. Cannot send: $msg")
@@ -156,5 +169,6 @@ object GridConnectNetwork {
         serverJob = null
         clientJob = null
         closeConnection()
+        _connectionStatus.value = "Disconnected"
     }
 }
