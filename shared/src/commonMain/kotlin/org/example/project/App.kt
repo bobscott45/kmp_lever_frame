@@ -59,6 +59,34 @@ fun App() {
             }
             
             var errorMessage by remember { mutableStateOf<String?>(null) }
+            
+            LaunchedEffect(isConfigMode) {
+                LccNode.externalEvents.collect { hexEventId ->
+                    tabs.forEachIndexed { tabIdx, tabPair ->
+                        val tabDef = tabPair.second
+                        tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                            var attemptState: Boolean? = null
+                            if (leverDef.lcc_event_normal.isNotBlank()) {
+                                val normalHex = leverDef.lcc_event_normal.replace(".", "").padEnd(16, '0').uppercase()
+                                if (normalHex == hexEventId) attemptState = false
+                            }
+                            if (leverDef.lcc_event_reversed.isNotBlank()) {
+                                val reversedHex = leverDef.lcc_event_reversed.replace(".", "").padEnd(16, '0').uppercase()
+                                if (reversedHex == hexEventId) attemptState = true
+                            }
+                            
+                            if (attemptState != null) {
+                                val leverStates = allLeverStates[tabIdx]
+                                if (leverStates[leverIdx] != attemptState) {
+                                    val newStates = leverStates.clone()
+                                    newStates[leverIdx] = attemptState
+                                    allLeverStates[tabIdx] = newStates
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             Column(
                 modifier = Modifier

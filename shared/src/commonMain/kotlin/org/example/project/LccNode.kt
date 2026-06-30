@@ -4,12 +4,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 object LccNode {
 
     private var NODE_ALIAS = "12A" // Using a fixed alias for simplicity, though real nodes allocate it dynamically
     
     private var lccJob: Job? = null
+    
+    private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
+    val externalEvents = _externalEvents.asSharedFlow()
 
     fun initialize() {
         val hubIp = ConfigManager.currentConfig.jmri_hub_ip.trim()
@@ -45,6 +50,13 @@ object LccNode {
                     if (startIdx >= 0 && msg.length >= startIdx + 8) {
                         val jmriAliasStr = msg.substring(startIdx + 5, startIdx + 8)
                         sendSimpleNodeInfoReply(jmriAliasStr)
+                    }
+                } else if (msg.contains("195B4")) { // PCER Event
+                    val startIdx = msg.indexOf("195B4")
+                    val nIdx = msg.indexOf("N", startIdx)
+                    if (nIdx != -1 && msg.length >= nIdx + 17) {
+                        val hexData = msg.substring(nIdx + 1, nIdx + 17)
+                        _externalEvents.tryEmit(hexData)
                     }
                 }
             }
