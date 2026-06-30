@@ -78,9 +78,11 @@ fun ConfigurationScreen(
                     }) {
                         Text("Export")
                     }
-                    TextButton(onClick = {
-                        showSaveWarning = true
-                    }) {
+                    val hasChanges = config != ConfigManager.currentConfig
+                    TextButton(
+                        onClick = { showSaveWarning = true },
+                        enabled = hasChanges
+                    ) {
                         Text("Save", fontWeight = FontWeight.Bold)
                     }
                 }

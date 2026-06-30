@@ -33,6 +33,66 @@ fun App() {
             LccNode.initialize()
         }
 
+        // Force recreation of tabs if we return from config mode AND saved changes
+        val tabs = remember(configVersion) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
+
+        var selectedTabIndex by remember { mutableStateOf(0) }
+        
+        // Hold states and locks for all tabs
+        val allLeverStates = remember(configVersion) {
+            mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+        }
+        val allManualLocks = remember(configVersion) {
+            mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
+        }
+        
+        var errorMessage by remember { mutableStateOf<String?>(null) }
+        
+        LaunchedEffect(configVersion) {
+            LccNode.externalEvents.collect { hexEventId ->
+                try {
+                    tabs.forEachIndexed { tabIdx, tabPair ->
+                        val tabDef = tabPair.second
+                        tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                            var attemptState: Boolean? = null
+                            if (leverDef.lcc_event_normal.isNotBlank()) {
+                                val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
+                                if (normalHex == hexEventId) attemptState = false
+                            }
+                            if (leverDef.lcc_event_reversed.isNotBlank()) {
+                                val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
+                                if (reversedHex == hexEventId) attemptState = true
+                            }
+                            
+                            if (attemptState != null) {
+                                println("Matched event $hexEventId to Lever $leverIdx (Attempt State: $attemptState)")
+                                val leverStates = allLeverStates[tabIdx]
+                                if (leverStates[leverIdx] != attemptState) {
+                                    val policy = ConfigManager.currentConfig.conflict_policy
+                                    val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
+                                    
+                                    println("Lever $leverIdx state change: policy=$policy, isValid=$isValid")
+                                    
+                                    if (policy == 1 && !isValid) {
+                                        println("External event ignored due to STRICT policy")
+                                    } else {
+                                        val newStates = leverStates.clone()
+                                        newStates[leverIdx] = attemptState
+                                        allLeverStates[tabIdx] = newStates
+                                        println("Applied external event: lever $leverIdx to $attemptState (Policy $policy)")
+                                    }
+                                } else {
+                                    println("Lever $leverIdx is already in state $attemptState")
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    println("Error processing external event: ${e.message}")
+                }
+            }
+        }
+
         if (isConfigMode) {
             ConfigurationScreen(
                 onClose = { isConfigMode = false },
@@ -46,65 +106,6 @@ fun App() {
                 onClose = { isStatusMode = false }
             )
         } else {
-            // Force recreation of tabs if we return from config mode AND saved changes
-            val tabs = remember(configVersion) { ConfigManager.parseConfig(ConfigManager.toJsonString()) }
-
-            var selectedTabIndex by remember { mutableStateOf(0) }
-            
-            // Hold states and locks for all tabs
-            val allLeverStates = remember(configVersion) {
-                mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
-            }
-            val allManualLocks = remember(configVersion) {
-                mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
-            }
-            
-            var errorMessage by remember { mutableStateOf<String?>(null) }
-            
-            LaunchedEffect(configVersion) {
-                LccNode.externalEvents.collect { hexEventId ->
-                    try {
-                        tabs.forEachIndexed { tabIdx, tabPair ->
-                            val tabDef = tabPair.second
-                            tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                                var attemptState: Boolean? = null
-                                if (leverDef.lcc_event_normal.isNotBlank()) {
-                                    val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
-                                    if (normalHex == hexEventId) attemptState = false
-                                }
-                                if (leverDef.lcc_event_reversed.isNotBlank()) {
-                                    val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
-                                    if (reversedHex == hexEventId) attemptState = true
-                                }
-                                
-                                if (attemptState != null) {
-                                    println("Matched event $hexEventId to Lever $leverIdx (Attempt State: $attemptState)")
-                                    val leverStates = allLeverStates[tabIdx]
-                                    if (leverStates[leverIdx] != attemptState) {
-                                        val policy = ConfigManager.currentConfig.conflict_policy
-                                        val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
-                                        
-                                        println("Lever $leverIdx state change: policy=$policy, isValid=$isValid")
-                                        
-                                        if (policy == 1 && !isValid) {
-                                            println("External event ignored due to STRICT policy")
-                                        } else {
-                                            val newStates = leverStates.clone()
-                                            newStates[leverIdx] = attemptState
-                                            allLeverStates[tabIdx] = newStates
-                                            println("Applied external event: lever $leverIdx to $attemptState (Policy $policy)")
-                                        }
-                                    } else {
-                                        println("Lever $leverIdx is already in state $attemptState")
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        println("Error processing external event: ${e.message}")
-                    }
-                }
-            }
 
             Column(
                 modifier = Modifier
