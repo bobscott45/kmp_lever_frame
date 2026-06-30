@@ -3,7 +3,9 @@ package org.example.project
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -323,7 +325,6 @@ fun LeverComponent(
         modifier = Modifier
             .width(96.dp)
             .fillMaxHeight()
-            .offset(x = shakeOffset.value.dp)
             .background(Color(0xFF1a1a1a))
             .border(
                 width = 2.dp,
@@ -402,18 +403,15 @@ fun LeverComponent(
                     .clickable { 
                         if (isSystemLocked || isManuallyLocked) {
                             scope.launch {
-                                shakeOffset.snapTo(-5f)
                                 shakeOffset.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = keyframes {
-                                        durationMillis = 200
-                                        -5f at 0
-                                        5f at 50
-                                        -5f at 100
-                                        5f at 150
-                                        0f at 200
-                                    }
+                                    targetValue = 8f,
+                                    animationSpec = repeatable(
+                                        iterations = 6,
+                                        animation = tween(durationMillis = 40, easing = LinearEasing),
+                                        repeatMode = RepeatMode.Reverse
+                                    )
                                 )
+                                shakeOffset.snapTo(0f)
                             }
                         }
                         onToggle() 
@@ -435,7 +433,7 @@ fun LeverComponent(
                         modifier = Modifier
                             .size(knobSize)
                             .align(Alignment.TopCenter)
-                            .offset(y = offset)
+                            .offset(y = offset, x = shakeOffset.value.dp)
                             .clip(androidx.compose.foundation.shape.CircleShape)
                             .background(typeColor)
                             .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier)
