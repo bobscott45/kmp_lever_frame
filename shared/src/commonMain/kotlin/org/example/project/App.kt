@@ -2,6 +2,8 @@ package org.example.project
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.keyframes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,12 +16,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.launch
 
 val BrassColor = Color(0xFFD4AF37)
 val PaleBlue = Color(0xFF8CA8C4)
@@ -311,11 +315,15 @@ fun LeverComponent(
         else -> "NORMAL" to "THROWN"
     }
 
+    val scope = rememberCoroutineScope()
+    val shakeOffset = remember { Animatable(0f) }
+
     // Plate Background
     Column(
         modifier = Modifier
             .width(96.dp)
             .fillMaxHeight()
+            .offset(x = shakeOffset.value.dp)
             .background(Color(0xFF1a1a1a))
             .border(
                 width = 2.dp,
@@ -332,14 +340,23 @@ fun LeverComponent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height((labelLines * labelLineHeight).dp + 12.dp)
-                    .background(Color(0xFF1a1a1a))
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFFB59410),
+                                Color(0xFFFBE473),
+                                Color(0xFFD4AF37),
+                                Color(0xFF8A6B0A)
+                            )
+                        )
+                    )
                     .border(2.dp, Color(0xFF5c421a))
                     .clickable { onLabelClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = leverDef.label,
-                    color = Color(0xFFd4af37),
+                    color = Color(0xFF1A1500),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp,
@@ -376,9 +393,30 @@ fun LeverComponent(
                     .width(60.dp)
                     .weight(1f)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0xFF050505))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color(0xFF000000), Color(0xFF1a1a1a), Color(0xFF000000))
+                        )
+                    )
                     .border(2.dp, Color(0xFF2b2b2b), RoundedCornerShape(6.dp))
-                    .clickable { onToggle() }
+                    .clickable { 
+                        if (isSystemLocked || isManuallyLocked) {
+                            scope.launch {
+                                shakeOffset.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = keyframes {
+                                        durationMillis = 200
+                                        0f at 0
+                                        -5f at 50
+                                        5f at 100
+                                        -5f at 150
+                                        0f at 200
+                                    }
+                                )
+                            }
+                        }
+                        onToggle() 
+                    }
             ) {
                 // Knob
                 val positionRatio by animateFloatAsState(
