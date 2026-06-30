@@ -142,36 +142,10 @@ fun App() {
                     isConfigMode = false 
                 }
             )
-        } else if (isStatusMode) {
-            SystemStatusScreen(
-                onClose = { isStatusMode = false }
-            )
-        } else if (statusLeverIndex != null) {
-            val index = statusLeverIndex!!
-            val currentTabDef = tabs[selectedTabIndex].second
-            val leverDef = currentTabDef.levers[index]
-            
-            LeverStatusScreen(
-                leverIndex = index,
-                leverDef = leverDef,
-                onClose = { statusLeverIndex = null },
-                onLccEnabledChange = { checked ->
-                    val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
-                    val currentTabJson = newTabsJson[selectedTabIndex].copy()
-                    val newLeversJson = currentTabJson.levers.toMutableList()
-                    newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
-                    val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
-                    ConfigManager.currentConfig = newConfig
-                    saveConfigToFile(ConfigManager.toJsonString())
-                    tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
-                }
-            )
         } else {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF1E1E1E))
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -284,6 +258,35 @@ fun App() {
                         )
                     }
                 }
+            }
+            
+            // Overlays
+            if (isStatusMode) {
+                SystemStatusScreen(
+                    onClose = { isStatusMode = false }
+                )
+            }
+            
+            if (statusLeverIndex != null) {
+                val index = statusLeverIndex!!
+                val currentTabDef = tabs[selectedTabIndex].second
+                val leverDef = currentTabDef.levers[index]
+                
+                LeverStatusScreen(
+                    leverIndex = index,
+                    leverDef = leverDef,
+                    onClose = { statusLeverIndex = null },
+                    onLccEnabledChange = { checked ->
+                        val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
+                        val currentTabJson = newTabsJson[selectedTabIndex].copy()
+                        val newLeversJson = currentTabJson.levers.toMutableList()
+                        newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
+                        val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
+                        ConfigManager.currentConfig = newConfig
+                        saveConfigToFile(ConfigManager.toJsonString())
+                        tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+                    }
+                )
             }
         }
     }
