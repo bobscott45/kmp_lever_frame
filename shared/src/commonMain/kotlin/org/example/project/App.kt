@@ -342,13 +342,8 @@ fun LeverComponent(
 
                     // Locking Pin
                     if (isSystemLocked || isManuallyLocked) {
-                        val emptySpaceCenter = if (!isReversed) {
-                            knobSize + (trackHeight - knobSize) / 2
-                        } else {
-                            (trackHeight - knobSize) / 2
-                        }
                         val pinHeight = 8.dp
-                        val pinOffsetY = emptySpaceCenter - (pinHeight / 2)
+                        val pinOffsetY = (trackHeight - pinHeight) / 2
                         
                         Box(
                             modifier = Modifier
