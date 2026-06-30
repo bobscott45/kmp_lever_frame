@@ -59,6 +59,8 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 val policyText = policies[ConfigManager.currentConfig.conflict_policy] ?: "Unknown"
                 StatusItem("External Event Policy", policyText)
                 
+                StatusItem("LCC Master Enabled", if (ConfigManager.currentConfig.lcc_master) "Yes" else "No")
+                
                 StatusItem("Platform", getPlatform().name)
             }
         }

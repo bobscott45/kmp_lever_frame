@@ -188,6 +188,7 @@ fun App() {
                 val manualLocks = allManualLocks[selectedTabIndex]
                 val policy = ConfigManager.currentConfig.conflict_policy
                 val conflictingLevers = if (policy == 3) Interlocking.getConflictingLevers(currentTabDef, leverStates) else emptyList()
+                var statusLeverIndex by remember { mutableStateOf<Int?>(null) }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -209,6 +210,9 @@ fun App() {
                             isManuallyLocked = isManuallyLocked,
                             isSystemLocked = isSystemLocked,
                             isAlarmed = isAlarmed,
+                            onLabelClick = {
+                                statusLeverIndex = index
+                            },
                             onToggle = {
                                 if (isManuallyLocked) {
                                     errorMessage = "Lever ${index + 1} is manually locked!"
@@ -239,6 +243,41 @@ fun App() {
                         )
                     }
                 }
+                
+                statusLeverIndex?.let { index ->
+                    val leverDef = currentTabDef.levers[index]
+                    AlertDialog(
+                        onDismissRequest = { statusLeverIndex = null },
+                        title = { Text("Lever ${index + 1} Status") },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("Label: ${leverDef.label.replace("\n", " ")}")
+                                Text("Type: ${leverDef.type.name}")
+                                Text("LCC Enabled: ${if (leverDef.lcc_enabled) "Yes" else "No"}")
+                                Text("Event ID (Normal): ${if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal}")
+                                Text("Event ID (Reversed): ${if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed}")
+                                if (leverDef.conditions.isNotEmpty()) {
+                                    Text("Interlocking Rules:", fontWeight = FontWeight.Bold)
+                                    leverDef.conditions.forEach { rule ->
+                                        val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
+                                        val altStr = if (rule.altTargetLeverIndex != -1) {
+                                            val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
+                                            " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
+                                        } else ""
+                                        Text("• Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", fontSize = 12.sp)
+                                    }
+                                } else {
+                                    Text("No interlocking rules.")
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { statusLeverIndex = null }) {
+                                Text("Close")
+                            }
+                        }
+                    )
+                }
             }
         }
     }
@@ -253,6 +292,7 @@ fun LeverComponent(
     isManuallyLocked: Boolean,
     isSystemLocked: Boolean,
     isAlarmed: Boolean,
+    onLabelClick: () -> Unit,
     onToggle: () -> Unit,
     onToggleLock: () -> Unit
 ) {
@@ -293,7 +333,8 @@ fun LeverComponent(
                     .fillMaxWidth()
                     .height((labelLines * labelLineHeight).dp + 12.dp)
                     .background(Color(0xFF1a1a1a))
-                    .border(2.dp, Color(0xFF5c421a)),
+                    .border(2.dp, Color(0xFF5c421a))
+                    .clickable { onLabelClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
