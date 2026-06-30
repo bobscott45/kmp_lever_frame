@@ -26,11 +26,23 @@ import androidx.compose.ui.tooling.preview.Preview
 fun App() {
     MaterialTheme(colorScheme = darkColorScheme()) {
         var isConfigMode by remember { mutableStateOf(false) }
+        var isStatusMode by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            LccNode.initialize()
+        }
 
         if (isConfigMode) {
             ConfigurationScreen(
                 onClose = { isConfigMode = false },
-                onSave = { isConfigMode = false }
+                onSave = { 
+                    isConfigMode = false 
+                    LccNode.initialize() // Restart network with new settings
+                }
+            )
+        } else if (isStatusMode) {
+            SystemStatusScreen(
+                onClose = { isStatusMode = false }
             )
         } else {
             // Force recreation of tabs if we return from config mode
@@ -88,6 +100,13 @@ fun App() {
                             onDismissRequest = { menuExpanded = false }
                         ) {
                             DropdownMenuItem(
+                                text = { Text("System Status") },
+                                onClick = {
+                                    isStatusMode = true
+                                    menuExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text("Configure") },
                                 onClick = { 
                                     isConfigMode = true
@@ -132,6 +151,9 @@ fun App() {
                                     newStates[index] = attemptingState
                                     allLeverStates[selectedTabIndex] = newStates
                                     errorMessage = null
+                                    
+                                    val eventStr = if (attemptingState) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
+                                    LccNode.produceEvent(eventStr)
                                 } else {
                                     errorMessage = "Interlocking: Lever ${index + 1} is system locked!"
                                 }

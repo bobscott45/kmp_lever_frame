@@ -1,4 +1,5 @@
 [versions]
+ktor = "2.3.11"
 agp = "9.0.1"
 android-compileSdk = "36"
 android-minSdk = "24"
@@ -17,6 +18,7 @@ kotlinx-serialization = "1.8.0"
 material3 = "1.11.0-alpha07"
 
 [libraries]
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }

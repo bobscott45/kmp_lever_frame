@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.network)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

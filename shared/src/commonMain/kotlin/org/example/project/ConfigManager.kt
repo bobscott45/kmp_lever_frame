@@ -5,6 +5,9 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class JsonConfig(
+    val node_id: String = "05.01.01.01.03.01",
+    val node_name: String = "Kotlin Lever Frame",
+    val jmri_hub_ip: String = "",
     val wifi_ssid: String = "",
     val wifi_password: String = "",
     val wifi_station_password: String = "",
@@ -44,11 +47,23 @@ object ConfigManager {
     val jsonFormat = Json { 
         ignoreUnknownKeys = true 
         isLenient = true
+        encodeDefaults = true
     }
 
     val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 0, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "interlocking": []}]}]}"""
 
-    var currentConfig: JsonConfig = jsonFormat.decodeFromString(defaultPrototypicalConfigJson)
+    var currentConfig: JsonConfig = run {
+        val loadedJson = loadConfigFromFile()
+        if (loadedJson != null) {
+            try {
+                jsonFormat.decodeFromString<JsonConfig>(loadedJson)
+            } catch (e: Exception) {
+                jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson)
+            }
+        } else {
+            jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson)
+        }
+    }
 
     fun toJsonString(): String = jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
 
@@ -75,7 +90,9 @@ object ConfigManager {
                 LeverDef(
                     conditions = conditions,
                     type = type,
-                    label = jsonLever.label
+                    label = jsonLever.label,
+                    lcc_event_normal = jsonLever.lcc_event_normal,
+                    lcc_event_reversed = jsonLever.lcc_event_reversed
                 )
             }
             jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height)

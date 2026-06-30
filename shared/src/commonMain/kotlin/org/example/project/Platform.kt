@@ -5,3 +5,9 @@ interface Platform {
 }
 
 expect fun getPlatform(): Platform
+
+expect fun getLocalIpAddress(): String
+
+expect fun saveConfigToFile(json: String)
+
+expect fun loadConfigFromFile(): String?

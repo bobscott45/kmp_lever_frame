@@ -79,6 +79,7 @@ fun ConfigurationScreen(
                     }
                     TextButton(onClick = {
                         ConfigManager.currentConfig = config
+                        saveConfigToFile(ConfigManager.toJsonString())
                         onSave()
                     }) {
                         Text("Save", fontWeight = FontWeight.Bold)
@@ -336,15 +337,21 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             OutlinedTextField(
-                value = config.wifi_ssid,
-                onValueChange = { onConfigChange(config.copy(wifi_ssid = it)) },
-                label = { Text("Wi-Fi SSID") },
+                value = config.node_name,
+                onValueChange = { onConfigChange(config.copy(node_name = it)) },
+                label = { Text("Node Name") },
                 modifier = Modifier.fillMaxWidth()
             )
             OutlinedTextField(
-                value = config.wifi_password,
-                onValueChange = { onConfigChange(config.copy(wifi_password = it)) },
-                label = { Text("Wi-Fi Password") },
+                value = config.node_id,
+                onValueChange = { onConfigChange(config.copy(node_id = it)) },
+                label = { Text("Node ID") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = config.jmri_hub_ip,
+                onValueChange = { onConfigChange(config.copy(jmri_hub_ip = it)) },
+                label = { Text("JMRI OPENLCB/LCC HUB IP ADDRESS (optional)") },
                 modifier = Modifier.fillMaxWidth()
             )
             Row(

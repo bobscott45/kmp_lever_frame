@@ -20,7 +20,9 @@ enum class LeverType {
 data class LeverDef(
     val conditions: List<InterlockingCondition> = emptyList(),
     val type: LeverType = LeverType.SPARE,
-    val label: String = ""
+    val label: String = "",
+    val lcc_event_normal: String = "",
+    val lcc_event_reversed: String = ""
 )
 
 data class TabDef(
