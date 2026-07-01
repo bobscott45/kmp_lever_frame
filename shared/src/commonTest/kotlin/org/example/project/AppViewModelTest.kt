@@ -95,12 +95,20 @@ class AppViewModelTest {
             label_line_height = 18,
             levers = listOf(
                 JsonLever(label = "Signal", type = "HOME_SIGNAL", lcc_event_normal = "11.22.33.44.00.00.00.01", lcc_event_reversed = "11.22.33.44.00.00.00.02"),
-                JsonLever(label = "Points", type = "POINTS", interlocking = listOf(
+                JsonLever(label = "Points", type = "POINTS", lcc_event_reversed = "11.22.33.44.00.00.00.04", interlocking = listOf(
                     JsonInterlocking(target = 0, state = "NORMAL", alt_target = -1, alt_state = "NORMAL")
                 ))
             )
         )
-        configRepo.currentConfig = JsonConfig(tabs = listOf(jsonTab))
+        val jsonTab2 = JsonTab(
+            name = "Test Box 2",
+            label_lines = 1,
+            label_line_height = 18,
+            levers = listOf(
+                JsonLever(label = "Signal 2", type = "HOME_SIGNAL")
+            )
+        )
+        configRepo.currentConfig = JsonConfig(tabs = listOf(jsonTab, jsonTab2))
         
         viewModel = AppViewModel(configRepo, lccClient)
     }
@@ -119,7 +127,7 @@ class AppViewModelTest {
         assertTrue(lccClient.initCalled, "LCC client should be initialized")
         
         val state = viewModel.uiState.value
-        assertEquals(1, state.tabs.size)
+        assertEquals(2, state.tabs.size)
         assertEquals("Test Box", state.tabs[0].first)
         assertEquals(2, state.tabs[0].second.levers.size)
     }
@@ -129,7 +137,7 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Toggle the first lever (Signal)
-        viewModel.dispatch(LeverFrameIntent.ToggleLever(tabIndex = 0, leverIndex = 0))
+        viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
         
         val state = viewModel.uiState.value
@@ -144,11 +152,11 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Reverse the signal lever first
-        viewModel.dispatch(LeverFrameIntent.ToggleLever(tabIndex = 0, leverIndex = 0))
+        viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Now try to reverse points, but signal is REVERSED, which violates interlocking (target = 0, state = NORMAL)
-        viewModel.dispatch(LeverFrameIntent.ToggleLever(tabIndex = 0, leverIndex = 1))
+        viewModel.toggleLever(tabIndex = 0, leverIndex = 1)
         testDispatcher.scheduler.advanceUntilIdle()
         
         val state = viewModel.uiState.value
@@ -177,7 +185,7 @@ class AppViewModelTest {
         // Reset initCalled to verify if it's called again
         lccClient.initCalled = false
         
-        viewModel.dispatch(LeverFrameIntent.UpdateSystemConfig(newConfig))
+        viewModel.updateSystemConfig(newConfig)
         testDispatcher.scheduler.advanceUntilIdle()
         
         assertTrue(configRepo.saveCalled, "Config should be saved")
@@ -200,7 +208,7 @@ class AppViewModelTest {
         assertEquals("Connection Refused", state.networkError)
         
         // Dismiss the error
-        viewModel.dispatch(LeverFrameIntent.DismissNetworkError)
+        viewModel.dismissNetworkError()
         testDispatcher.scheduler.advanceUntilIdle()
         
         state = viewModel.uiState.value
@@ -212,28 +220,28 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Config mode
-        viewModel.dispatch(LeverFrameIntent.EnterConfigMode)
+        viewModel.enterConfigMode()
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isConfigMode)
-        viewModel.dispatch(LeverFrameIntent.ExitConfigMode)
+        viewModel.exitConfigMode()
         testDispatcher.scheduler.advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isConfigMode)
 
         // Status mode
-        viewModel.dispatch(LeverFrameIntent.EnterStatusMode)
+        viewModel.enterStatusMode()
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isStatusMode)
         assertEquals(null, viewModel.uiState.value.statusLeverIndex)
-        viewModel.dispatch(LeverFrameIntent.ExitStatusMode)
+        viewModel.exitStatusMode()
         testDispatcher.scheduler.advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isStatusMode)
 
         // Lever label clicked
-        viewModel.dispatch(LeverFrameIntent.LeverLabelClicked(1))
+        viewModel.leverLabelClicked(1)
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isStatusMode)
         assertEquals(1, viewModel.uiState.value.statusLeverIndex)
-        viewModel.dispatch(LeverFrameIntent.DismissStatusLever)
+        viewModel.dismissStatusLever()
         testDispatcher.scheduler.advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isStatusMode)
         assertEquals(null, viewModel.uiState.value.statusLeverIndex)
@@ -244,7 +252,7 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         assertEquals(0, viewModel.uiState.value.selectedTabIndex)
-        viewModel.dispatch(LeverFrameIntent.TabSelected(1))
+        viewModel.tabSelected(1)
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(1, viewModel.uiState.value.selectedTabIndex)
     }
@@ -254,7 +262,7 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         assertFalse(viewModel.uiState.value.manualLocks[0][0])
-        viewModel.dispatch(LeverFrameIntent.ToggleManualLock(0, 0))
+        viewModel.toggleManualLock(0, 0)
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value.manualLocks[0][0])
     }
@@ -263,11 +271,52 @@ class AppViewModelTest {
     fun testSetLeverLccEnabled() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
-        viewModel.dispatch(LeverFrameIntent.SetLeverLccEnabled(0, 0, false))
+        viewModel.setLeverLccEnabled(0, 0, false)
         testDispatcher.scheduler.advanceUntilIdle()
         
         val newConfig = configRepo.currentConfig
         assertFalse(newConfig.tabs[0].levers[0].lcc_enabled)
         assertTrue(configRepo.saveCalled)
+    }
+
+    @Test
+    fun testConflictingLeversUpdate() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Verify initial state has no conflicts
+        var state = viewModel.uiState.value
+        assertTrue(state.conflictingLevers.isEmpty(), "Initially should have no conflicting levers")
+
+        // Toggle lever 0 to REVERSED
+        viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Since lever 0 has no conditions, no conflicts should exist
+        state = viewModel.uiState.value
+        assertTrue(state.conflictingLevers.isEmpty(), "Toggling signal should not create conflicts")
+
+        // Now, emit an external event to force lever 1 (Points) to REVERSED.
+        // The mock config uses default conflict_policy which is PERMISSIVE/ALARM (allows invalid states).
+        // Since lever 1 requires lever 0 to be NORMAL, this will create a conflict.
+        lccClient.emitEvent("1122334400000004") // Points reversed
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        state = viewModel.uiState.value
+        assertTrue(state.leverStates[0][1], "Points lever should be reversed by external event")
+        assertEquals(listOf(1, 0), state.conflictingLevers, "conflictingLevers should contain indices 1 and 0")
+
+        // Now select another tab and verify conflicts clear (since tab 1 has no conflicts)
+        viewModel.tabSelected(1)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        state = viewModel.uiState.value
+        assertTrue(state.conflictingLevers.isEmpty(), "conflictingLevers should be empty for tab 1")
+
+        // Switch back to tab 0 and verify conflicts return
+        viewModel.tabSelected(0)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        state = viewModel.uiState.value
+        assertEquals(listOf(1, 0), state.conflictingLevers, "conflictingLevers should be populated again for tab 0")
     }
 }

@@ -65,18 +65,4 @@ data class LeverFrameUiState(
     }
 }
 
-sealed interface LeverFrameIntent {
-    data class TabSelected(val index: Int) : LeverFrameIntent
-    data class ToggleLever(val tabIndex: Int, val leverIndex: Int) : LeverFrameIntent
-    data class ToggleManualLock(val tabIndex: Int, val leverIndex: Int) : LeverFrameIntent
-    data class LeverLabelClicked(val leverIndex: Int) : LeverFrameIntent
-    data object EnterConfigMode : LeverFrameIntent
-    data object ExitConfigMode : LeverFrameIntent
-    data object ConfigSaved : LeverFrameIntent
-    data object EnterStatusMode : LeverFrameIntent
-    data object ExitStatusMode : LeverFrameIntent
-    data object DismissStatusLever : LeverFrameIntent
-    data object DismissNetworkError : LeverFrameIntent
-    data class SetLeverLccEnabled(val tabIndex: Int, val leverIndex: Int, val enabled: Boolean) : LeverFrameIntent
-    data class UpdateSystemConfig(val newConfig: JsonConfig) : LeverFrameIntent
-}
+

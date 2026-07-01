@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ConfigurationScreen(
     initialConfig: JsonConfig,
-    onDispatch: (LeverFrameIntent) -> Unit,
+    onUpdateSystemConfig: (JsonConfig) -> Unit,
     onClose: () -> Unit
 ) {
     var config by remember { mutableStateOf(initialConfig) }
@@ -281,7 +281,7 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showSaveWarning = false
-                    onDispatch(LeverFrameIntent.UpdateSystemConfig(config))
+                    onUpdateSystemConfig(config)
                     onClose()
                 }) {
                     Text("Save & Reset")

@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 fun SystemStatusScreen(
     config: JsonConfig,
     networkStatus: String,
-    onDispatch: (LeverFrameIntent) -> Unit,
+    onUpdateSystemConfig: (JsonConfig) -> Unit,
     onClose: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -106,7 +106,7 @@ fun SystemStatusScreen(
                                 DropdownMenuItem(
                                     text = { Text(name) },
                                     onClick = {
-                                        onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(conflict_policy = key)))
+                                        onUpdateSystemConfig(config.copy(conflict_policy = key))
                                         policyExpanded = false
                                     }
                                 )
@@ -120,7 +120,7 @@ fun SystemStatusScreen(
                     Switch(
                         checked = config.lcc_master,
                         onCheckedChange = { 
-                            onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(lcc_master = it)))
+                            onUpdateSystemConfig(config.copy(lcc_master = it))
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
@@ -134,7 +134,7 @@ fun SystemStatusScreen(
                     Switch(
                         checked = config.restore_last_state,
                         onCheckedChange = { 
-                            onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(restore_last_state = it)))
+                            onUpdateSystemConfig(config.copy(restore_last_state = it))
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,

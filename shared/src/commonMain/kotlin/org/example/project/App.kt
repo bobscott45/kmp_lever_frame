@@ -48,8 +48,8 @@ fun App() {
         if (state.isConfigMode) {
             ConfigurationScreen(
                 initialConfig = state.config,
-                onDispatch = viewModel::dispatch,
-                onClose = { viewModel.dispatch(LeverFrameIntent.ExitConfigMode) }
+                onUpdateSystemConfig = viewModel::updateSystemConfig,
+                onClose = viewModel::exitConfigMode
             )
         } else {
             Column(
@@ -73,7 +73,7 @@ fun App() {
                         state.tabs.forEachIndexed { index, pair ->
                             Tab(
                                 selected = state.selectedTabIndex == index,
-                                onClick = { viewModel.dispatch(LeverFrameIntent.TabSelected(index)) },
+                                onClick = { viewModel.tabSelected(index) },
                                 text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) BrassColor else Color.White) }
                             )
                         }
@@ -91,14 +91,14 @@ fun App() {
                             DropdownMenuItem(
                                 text = { Text("System Status") },
                                 onClick = {
-                                    viewModel.dispatch(LeverFrameIntent.EnterStatusMode)
+                                    viewModel.enterStatusMode()
                                     menuExpanded = false
                                 }
                             )
                             DropdownMenuItem(
                                 text = { Text("Configure") },
                                 onClick = { 
-                                    viewModel.dispatch(LeverFrameIntent.EnterConfigMode)
+                                    viewModel.enterConfigMode()
                                     menuExpanded = false
                                 }
                             )
@@ -127,7 +127,7 @@ fun App() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = msg, color = Color(0xFFffb3b3), fontWeight = FontWeight.Medium)
-                            TextButton(onClick = { viewModel.dispatch(LeverFrameIntent.DismissNetworkError) }) {
+                            TextButton(onClick = viewModel::dismissNetworkError) {
                                 Text("Dismiss", color = Color.White)
                             }
                         }
@@ -161,13 +161,13 @@ fun App() {
                                     isSystemLocked = isSystemLocked,
                                     isAlarmed = isAlarmed,
                                     onLabelClick = {
-                                        viewModel.dispatch(LeverFrameIntent.LeverLabelClicked(index))
+                                        viewModel.leverLabelClicked(index)
                                     },
                                     onToggle = {
-                                        viewModel.dispatch(LeverFrameIntent.ToggleLever(state.selectedTabIndex, index))
+                                        viewModel.toggleLever(state.selectedTabIndex, index)
                                     },
                                     onToggleLock = {
-                                        viewModel.dispatch(LeverFrameIntent.ToggleManualLock(state.selectedTabIndex, index))
+                                        viewModel.toggleManualLock(state.selectedTabIndex, index)
                                     }
                                 )
                             }
@@ -181,8 +181,8 @@ fun App() {
                     SystemStatusScreen(
                         config = state.config,
                         networkStatus = state.networkStatus,
-                        onDispatch = viewModel::dispatch,
-                        onClose = { viewModel.dispatch(LeverFrameIntent.ExitStatusMode) }
+                        onUpdateSystemConfig = viewModel::updateSystemConfig,
+                        onClose = viewModel::exitStatusMode
                     )
                 } else {
                     val index = state.statusLeverIndex!!
@@ -191,9 +191,9 @@ fun App() {
                     LeverStatusScreen(
                         leverIndex = index,
                         leverDef = leverDef,
-                        onClose = { viewModel.dispatch(LeverFrameIntent.DismissStatusLever) },
+                        onClose = viewModel::dismissStatusLever,
                         onLccEnabledChange = { checked ->
-                            viewModel.dispatch(LeverFrameIntent.SetLeverLccEnabled(state.selectedTabIndex, index, checked))
+                            viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
                         }
                     )
                 }

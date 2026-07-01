@@ -88,148 +88,188 @@ class AppViewModel(
     }
 
     private fun handleExternalEvent(hexEventId: String) {
-        val state = _uiState.value
         if (!configRepo.currentConfig.lcc_master) return
         
-        var stateChanged = false
-        val newLeverStates = state.leverStates.map { it.clone() }
-        val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
+        var didChange = false
+        _uiState.update { currentState ->
+            var stateChanged = false
+            val newLeverStates = currentState.leverStates.map { it.clone() }
+            val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
 
-        state.tabs.forEachIndexed { tabIdx, tabPair ->
-            val tabDef = tabPair.second
-            tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                if (!leverDef.lcc_enabled) return@forEachIndexed
-                var attemptState: Boolean? = null
-                
-                if (leverDef.lcc_event_normal.isNotBlank()) {
-                    val normalHex = lccClient.parseEventId(leverDef.lcc_event_normal)
-                    if (normalHex == hexEventId) attemptState = false
-                }
-                if (leverDef.lcc_event_reversed.isNotBlank()) {
-                    val reversedHex = lccClient.parseEventId(leverDef.lcc_event_reversed)
-                    if (reversedHex == hexEventId) attemptState = true
-                }
-                
-                if (attemptState != null) {
-                    val currentState = newLeverStates[tabIdx][leverIdx]
-                    if (currentState != attemptState) {
-                        val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], leverIdx, attemptState)
-                        if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
-                            newLeverStates[tabIdx][leverIdx] = attemptState
-                            stateChanged = true
+            currentState.tabs.forEachIndexed { tabIdx, tabPair ->
+                val tabDef = tabPair.second
+                tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                    if (!leverDef.lcc_enabled) return@forEachIndexed
+                    var attemptState: Boolean? = null
+                    
+                    if (leverDef.lcc_event_normal.isNotBlank()) {
+                        val normalHex = lccClient.parseEventId(leverDef.lcc_event_normal)
+                        if (normalHex == hexEventId) attemptState = false
+                    }
+                    if (leverDef.lcc_event_reversed.isNotBlank()) {
+                        val reversedHex = lccClient.parseEventId(leverDef.lcc_event_reversed)
+                        if (reversedHex == hexEventId) attemptState = true
+                    }
+                    
+                    if (attemptState != null) {
+                        val currState = newLeverStates[tabIdx][leverIdx]
+                        if (currState != attemptState) {
+                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], leverIdx, attemptState)
+                            if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
+                                newLeverStates[tabIdx][leverIdx] = attemptState
+                                stateChanged = true
+                            }
                         }
                     }
                 }
             }
+            
+            if (stateChanged) {
+                didChange = true
+                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                    Interlocking.getConflictingLevers(
+                        currentState.tabs[currentState.selectedTabIndex].second,
+                        newLeverStates[currentState.selectedTabIndex]
+                    )
+                } else emptyList()
+                currentState.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
+            } else {
+                didChange = false
+                currentState
+            }
         }
         
-        if (stateChanged) {
-            _uiState.update { it.copy(leverStates = newLeverStates) }
+        if (didChange) {
             persistStatesIfEnabled()
-            updateConflictingLevers()
         }
     }
 
-    fun dispatch(intent: LeverFrameIntent) {
-        val state = _uiState.value
-        when (intent) {
-            is LeverFrameIntent.TabSelected -> {
-                _uiState.update { it.copy(selectedTabIndex = intent.index) }
-            }
-            is LeverFrameIntent.ToggleLever -> {
-                val tabDef = state.tabs[intent.tabIndex].second
-                val currentStates = state.leverStates[intent.tabIndex]
-                val currentState = currentStates[intent.leverIndex]
-                val targetState = !currentState
-                
-                val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, intent.leverIndex, targetState)
-                if (newStates != null) {
-                    val updatedAllStates = state.leverStates.toMutableList()
-                    updatedAllStates[intent.tabIndex] = newStates
-                    _uiState.update { it.copy(leverStates = updatedAllStates, errorMessage = null) }
-                    
-                    // Fire LCC event
-                    val leverDef = tabDef.levers[intent.leverIndex]
-                    if (targetState && leverDef.lcc_event_reversed.isNotBlank()) {
-                        lccClient.produceEvent(leverDef.lcc_event_reversed)
-                    } else if (!targetState && leverDef.lcc_event_normal.isNotBlank()) {
-                        lccClient.produceEvent(leverDef.lcc_event_normal)
-                    }
-                    
-                    persistStatesIfEnabled()
-                    updateConflictingLevers()
-                } else {
-                    _uiState.update { it.copy(errorMessage = "Interlocking prevents this lever from moving.") }
-                }
-            }
-            is LeverFrameIntent.ToggleManualLock -> {
-                val updatedLocks = state.manualLocks.toMutableList()
-                val tabLocks = updatedLocks[intent.tabIndex].clone()
-                tabLocks[intent.leverIndex] = !tabLocks[intent.leverIndex]
-                updatedLocks[intent.tabIndex] = tabLocks
-                _uiState.update { it.copy(manualLocks = updatedLocks) }
-                persistStatesIfEnabled()
-            }
-            is LeverFrameIntent.LeverLabelClicked -> {
-                _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = intent.leverIndex) }
-            }
-            LeverFrameIntent.EnterConfigMode -> {
-                _uiState.update { it.copy(isConfigMode = true) }
-            }
-            LeverFrameIntent.ExitConfigMode -> {
-                _uiState.update { it.copy(isConfigMode = false) }
-            }
-            LeverFrameIntent.ConfigSaved -> {
-                viewModelScope.launch {
-                    loadConfig() // Reloads tabs and triggers recomposition
-                }
-            }
-            LeverFrameIntent.EnterStatusMode -> {
-                _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = null) }
-            }
-            LeverFrameIntent.ExitStatusMode -> {
-                _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null) }
-            }
-            LeverFrameIntent.DismissStatusLever -> {
-                _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null, errorMessage = null) }
-            }
-            LeverFrameIntent.DismissNetworkError -> {
-                _uiState.update { it.copy(networkError = null) }
-            }
-            is LeverFrameIntent.SetLeverLccEnabled -> {
-                val newTabsJson = configRepo.currentConfig.tabs.toMutableList()
-                val currentTabJson = newTabsJson[intent.tabIndex].copy()
-                val newLeversJson = currentTabJson.levers.toMutableList()
-                newLeversJson[intent.leverIndex] = newLeversJson[intent.leverIndex].copy(lcc_enabled = intent.enabled)
-                val newConfig = configRepo.currentConfig.copy(
-                    tabs = newTabsJson.apply { set(intent.tabIndex, currentTabJson.copy(levers = newLeversJson)) }
+    fun tabSelected(index: Int) {
+        _uiState.update { currentState ->
+            val conflicts = if (currentState.tabs.isNotEmpty()) {
+                Interlocking.getConflictingLevers(
+                    currentState.tabs[index].second,
+                    currentState.leverStates[index]
                 )
-                viewModelScope.launch {
-                    configRepo.saveConfig(newConfig)
-                    loadConfig()
+            } else emptyList()
+            currentState.copy(selectedTabIndex = index, conflictingLevers = conflicts)
+        }
+    }
+
+    fun toggleLever(tabIndex: Int, leverIndex: Int) {
+        var lccEventStr: String? = null
+        var didChange = false
+        
+        _uiState.update { currentState ->
+            val tabDef = currentState.tabs[tabIndex].second
+            val currentStates = currentState.leverStates[tabIndex]
+            val leverState = currentStates[leverIndex]
+            val targetState = !leverState
+            
+            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, leverIndex, targetState)
+            if (newStates != null) {
+                didChange = true
+                val updatedAllStates = currentState.leverStates.toMutableList()
+                updatedAllStates[tabIndex] = newStates
+                
+                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                    Interlocking.getConflictingLevers(
+                        currentState.tabs[currentState.selectedTabIndex].second,
+                        updatedAllStates[currentState.selectedTabIndex]
+                    )
+                } else emptyList()
+
+                val leverDef = tabDef.levers[leverIndex]
+                if (targetState && leverDef.lcc_event_reversed.isNotBlank()) {
+                    lccEventStr = leverDef.lcc_event_reversed
+                } else if (!targetState && leverDef.lcc_event_normal.isNotBlank()) {
+                    lccEventStr = leverDef.lcc_event_normal
+                } else {
+                    lccEventStr = null
                 }
+
+                currentState.copy(leverStates = updatedAllStates, conflictingLevers = conflicts, errorMessage = null)
+            } else {
+                didChange = false
+                lccEventStr = null
+                currentState.copy(errorMessage = "Interlocking prevents this lever from moving.")
             }
-            is LeverFrameIntent.UpdateSystemConfig -> {
-                val prevIp = configRepo.currentConfig.jmri_hub_ip
-                viewModelScope.launch {
-                    configRepo.saveConfig(intent.newConfig)
-                    if (prevIp != intent.newConfig.jmri_hub_ip) {
-                        lccClient.initialize()
-                    }
-                    loadConfig()
-                }
+        }
+        
+        lccEventStr?.let { lccClient.produceEvent(it) }
+        if (didChange) {
+            persistStatesIfEnabled()
+        }
+    }
+
+    fun toggleManualLock(tabIndex: Int, leverIndex: Int) {
+        _uiState.update { currentState ->
+            val updatedLocks = currentState.manualLocks.toMutableList()
+            val tabLocks = updatedLocks[tabIndex].clone()
+            tabLocks[leverIndex] = !tabLocks[leverIndex]
+            updatedLocks[tabIndex] = tabLocks
+            currentState.copy(manualLocks = updatedLocks)
+        }
+        persistStatesIfEnabled()
+    }
+
+    fun leverLabelClicked(leverIndex: Int) {
+        _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = leverIndex) }
+    }
+
+    fun enterConfigMode() {
+        _uiState.update { it.copy(isConfigMode = true) }
+    }
+
+    fun exitConfigMode() {
+        _uiState.update { it.copy(isConfigMode = false) }
+    }
+
+    fun configSaved() {
+        viewModelScope.launch {
+            loadConfig() // Reloads tabs and triggers recomposition
+        }
+    }
+
+    fun enterStatusMode() {
+        _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = null) }
+    }
+
+    fun exitStatusMode() {
+        _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null) }
+    }
+
+    fun dismissStatusLever() {
+        _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null, errorMessage = null) }
+    }
+
+    fun dismissNetworkError() {
+        _uiState.update { it.copy(networkError = null) }
+    }
+
+    fun setLeverLccEnabled(tabIndex: Int, leverIndex: Int, enabled: Boolean) {
+        val newTabsJson = configRepo.currentConfig.tabs.toMutableList()
+        val currentTabJson = newTabsJson[tabIndex].copy()
+        val newLeversJson = currentTabJson.levers.toMutableList()
+        newLeversJson[leverIndex] = newLeversJson[leverIndex].copy(lcc_enabled = enabled)
+        val newConfig = configRepo.currentConfig.copy(
+            tabs = newTabsJson.apply { set(tabIndex, currentTabJson.copy(levers = newLeversJson)) }
+        )
+        viewModelScope.launch {
+            configRepo.saveConfig(newConfig)
+            loadConfig()
+        }
+    }
+
+    fun updateSystemConfig(newConfig: JsonConfig) {
+        val prevIp = configRepo.currentConfig.jmri_hub_ip
+        viewModelScope.launch {
+            configRepo.saveConfig(newConfig)
+            if (prevIp != newConfig.jmri_hub_ip) {
+                lccClient.initialize()
             }
+            loadConfig()
         }
     }
     
-    private fun updateConflictingLevers() {
-        val state = _uiState.value
-        if (state.tabs.isEmpty()) return
-        
-        val conflicts = Interlocking.getConflictingLevers(
-            state.tabs[state.selectedTabIndex].second,
-            state.leverStates[state.selectedTabIndex]
-        )
-        _uiState.update { it.copy(conflictingLevers = conflicts) }
-    }
 }
