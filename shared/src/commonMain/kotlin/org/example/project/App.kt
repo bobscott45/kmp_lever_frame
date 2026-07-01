@@ -2,6 +2,7 @@ package org.example.project
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.RepeatMode
@@ -333,7 +334,7 @@ fun LeverComponent(
                 // Knob
                 val positionRatio by animateFloatAsState(
                     targetValue = if (isReversed) 1f else 0f,
-                    animationSpec = tween(durationMillis = 250),
+                    animationSpec = spring(dampingRatio = 0.6f, stiffness = 200f),
                     label = "positionRatio"
                 )
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
