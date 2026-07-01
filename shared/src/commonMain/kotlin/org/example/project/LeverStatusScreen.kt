@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.sp
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.shadow
 
 @Composable
 fun LeverStatusScreen(
@@ -31,7 +33,9 @@ fun LeverStatusScreen(
         Column(
             modifier = Modifier
                 .widthIn(max = 500.dp)
+                .shadow(8.dp, shape = RoundedCornerShape(12.dp))
                 .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .border(1.dp, Color(0xFF444444), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally

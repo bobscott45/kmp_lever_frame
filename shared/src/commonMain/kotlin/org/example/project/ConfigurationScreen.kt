@@ -496,122 +496,134 @@ fun MobileLeverCard(
                 HorizontalDivider()
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     
-                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = BrassColor)
-                        IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
-                            Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
-                        }
-                    }
+                    // Basic Info Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                                    Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                                }
+                            }
 
-                    OutlinedTextField(
-                        value = lever.label,
-                        onValueChange = { onLeverChange(lever.copy(label = it)) },
-                        label = { Text("Label") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
+                            OutlinedTextField(
+                                value = lever.label,
+                                onValueChange = { onLeverChange(lever.copy(label = it)) },
+                                label = { Text("Label") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = brassTextFieldColors()
+                            )
 
-                    var typeExpanded by remember { mutableStateOf(false) }
-                    val types = listOf("HOME_SIGNAL", "DISTANT_SIGNAL", "POINTS", "FACING_POINTS", "BROWN", "GREEN", "SPARE")
-                    ExposedDropdownMenuBox(
-                        expanded = typeExpanded,
-                        onExpandedChange = { typeExpanded = !typeExpanded }
-                    ) {
-                        OutlinedTextField(
-                            value = lever.type,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Lever Type") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                            colors = brassTextFieldColors()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = typeExpanded,
-                            onDismissRequest = { typeExpanded = false }
-                        ) {
-                            types.forEach { t ->
-                                DropdownMenuItem(
-                                    text = { Text(t) },
-                                    onClick = {
-                                        onLeverChange(lever.copy(type = t))
-                                        typeExpanded = false
+                            var typeExpanded by remember { mutableStateOf(false) }
+                            val types = listOf("HOME_SIGNAL", "DISTANT_SIGNAL", "POINTS", "FACING_POINTS", "BROWN", "GREEN", "SPARE")
+                            ExposedDropdownMenuBox(
+                                expanded = typeExpanded,
+                                onExpandedChange = { typeExpanded = !typeExpanded }
+                            ) {
+                                OutlinedTextField(
+                                    value = lever.type,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Lever Type") },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                    colors = brassTextFieldColors()
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = typeExpanded,
+                                    onDismissRequest = { typeExpanded = false }
+                                ) {
+                                    types.forEach { t ->
+                                        DropdownMenuItem(
+                                            text = { Text(t) },
+                                            onClick = {
+                                                onLeverChange(lever.copy(type = t))
+                                                typeExpanded = false
+                                            }
+                                        )
                                     }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("LCC Enabled", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                Switch(
+                                    checked = lever.lcc_enabled,
+                                    onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = PaleBlue)
                                 )
                             }
                         }
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
-                        Switch(
-                            checked = lever.lcc_enabled,
-                            onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = PaleBlue
+                    // LCC Events Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                            
+                            val isNormalValid = lever.lcc_event_normal.isBlank() || LccNode.parseEventId(lever.lcc_event_normal).length == 16
+                            OutlinedTextField(
+                                value = lever.lcc_event_normal,
+                                onValueChange = { onLeverChange(lever.copy(lcc_event_normal = it)) },
+                                label = { Text("Event ID (Normal)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = !isNormalValid,
+                                supportingText = if (!isNormalValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_normal)}") } },
+                                colors = brassTextFieldColors()
                             )
-                        )
-                    }
-
-                    Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = BrassColor, modifier = Modifier.padding(top = 8.dp))
-                    
-                    val isNormalValid = lever.lcc_event_normal.isBlank() || LccNode.parseEventId(lever.lcc_event_normal).length == 16
-                    OutlinedTextField(
-                        value = lever.lcc_event_normal,
-                        onValueChange = { onLeverChange(lever.copy(lcc_event_normal = it)) },
-                        label = { Text("Event ID (Normal)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = !isNormalValid,
-                        supportingText = if (!isNormalValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_normal)}") } },
-                        colors = brassTextFieldColors()
-                    )
-                    
-                    val isReversedValid = lever.lcc_event_reversed.isBlank() || LccNode.parseEventId(lever.lcc_event_reversed).length == 16
-                    OutlinedTextField(
-                        value = lever.lcc_event_reversed,
-                        onValueChange = { onLeverChange(lever.copy(lcc_event_reversed = it)) },
-                        label = { Text("Event ID (Reversed)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = !isReversedValid,
-                        supportingText = if (!isReversedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_reversed)}") } },
-                        colors = brassTextFieldColors()
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = BrassColor)
-                        TextButton(onClick = {
-                            val newRules = lever.interlocking.toMutableList()
-                            newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
-                            onLeverChange(lever.copy(interlocking = newRules))
-                        }) {
-                            Text("＋ Add Rule")
+                            
+                            val isReversedValid = lever.lcc_event_reversed.isBlank() || LccNode.parseEventId(lever.lcc_event_reversed).length == 16
+                            OutlinedTextField(
+                                value = lever.lcc_event_reversed,
+                                onValueChange = { onLeverChange(lever.copy(lcc_event_reversed = it)) },
+                                label = { Text("Event ID (Reversed)") },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = !isReversedValid,
+                                supportingText = if (!isReversedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(lever.lcc_event_reversed)}") } },
+                                colors = brassTextFieldColors()
+                            )
                         }
                     }
 
-                    lever.interlocking.forEachIndexed { rIndex, rule ->
-                        MobileRuleCard(
-                            ruleIndex = rIndex,
-                            rule = rule,
-                            onRuleChange = { newRule ->
-                                val newRules = lever.interlocking.toMutableList()
-                                newRules[rIndex] = newRule
-                                onLeverChange(lever.copy(interlocking = newRules))
-                            },
-                            onDelete = {
-                                val newRules = lever.interlocking.toMutableList()
-                                newRules.removeAt(rIndex)
-                                onLeverChange(lever.copy(interlocking = newRules))
+                    // Interlocking Rules Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                                TextButton(onClick = {
+                                    val newRules = lever.interlocking.toMutableList()
+                                    newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
+                                    onLeverChange(lever.copy(interlocking = newRules))
+                                }) {
+                                    Text("＋ Add Rule")
+                                }
                             }
-                        )
+
+                            lever.interlocking.forEachIndexed { rIndex, rule ->
+                                MobileRuleCard(
+                                    ruleIndex = rIndex,
+                                    rule = rule,
+                                    onRuleChange = { newRule ->
+                                        val newRules = lever.interlocking.toMutableList()
+                                        newRules[rIndex] = newRule
+                                        onLeverChange(lever.copy(interlocking = newRules))
+                                    },
+                                    onDelete = {
+                                        val newRules = lever.interlocking.toMutableList()
+                                        newRules.removeAt(rIndex)
+                                        onLeverChange(lever.copy(interlocking = newRules))
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }

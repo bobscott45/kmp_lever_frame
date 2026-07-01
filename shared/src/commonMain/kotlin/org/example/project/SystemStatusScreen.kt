@@ -15,6 +15,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +42,9 @@ fun SystemStatusScreen(
             modifier = Modifier
                 .widthIn(max = 600.dp)
                 .padding(vertical = 16.dp)
+                .shadow(8.dp, shape = RoundedCornerShape(12.dp))
                 .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .border(1.dp, Color(0xFF444444), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
