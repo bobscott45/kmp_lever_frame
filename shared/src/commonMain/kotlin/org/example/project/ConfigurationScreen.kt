@@ -18,10 +18,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ConfigurationScreen(
-    onClose: () -> Unit,
-    onSave: () -> Unit
+    initialConfig: JsonConfig,
+    onDispatch: (LeverFrameIntent) -> Unit,
+    onClose: () -> Unit
 ) {
-    var config by remember { mutableStateOf(ConfigManager.currentConfig) }
+    var config by remember { mutableStateOf(initialConfig) }
     val coroutineScope = rememberCoroutineScope()
     
     // Main navigation tabs: 0 for System Settings, 1 for Frames
@@ -81,7 +82,7 @@ fun ConfigurationScreen(
                     }) {
                         Text("Export")
                     }
-                    val hasChanges = config != ConfigManager.currentConfig
+                    val hasChanges = config != initialConfig
                     TextButton(
                         onClick = { showSaveWarning = true },
                         enabled = hasChanges
@@ -280,15 +281,8 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showSaveWarning = false
-                    val prevIp = ConfigManager.currentConfig.jmri_hub_ip
-                    ConfigManager.currentConfig = config
-                    coroutineScope.launch {
-                        saveConfigToFile(ConfigManager.toJsonString())
-                        if (prevIp != config.jmri_hub_ip) {
-                            LccNode.initialize()
-                        }
-                        onSave()
-                    }
+                    onDispatch(LeverFrameIntent.UpdateSystemConfig(config))
+                    onClose()
                 }) {
                     Text("Save & Reset")
                 }

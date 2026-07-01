@@ -19,7 +19,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SystemStatusScreen(onClose: () -> Unit) {
+fun SystemStatusScreen(
+    config: JsonConfig,
+    networkStatus: String,
+    onDispatch: (LeverFrameIntent) -> Unit,
+    onClose: () -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
     val ipAddress = remember { getLocalIpAddress() }
     val port = 12021 // Standard OpenLCB GridConnect Port
@@ -66,11 +71,11 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                StatusItem("Node Name", ConfigManager.currentConfig.node_name)
-                StatusItem("Node ID", ConfigManager.currentConfig.node_id)
+                StatusItem("Node Name", config.node_name)
+                StatusItem("Node ID", config.node_id)
                 StatusItem("IP Address", ipAddress)
                 StatusItem("TCP Port", port.toString())
-                StatusItem("Network Status", GridConnectNetwork.connectionStatus.collectAsState().value)
+                StatusItem("Network Status", networkStatus)
                 
                 var policyExpanded by remember { mutableStateOf(false) }
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
@@ -82,7 +87,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                         onExpandedChange = { policyExpanded = !policyExpanded }
                     ) {
                         OutlinedTextField(
-                            value = policies[ConfigManager.currentConfig.conflict_policy] ?: "Unknown",
+                            value = policies[config.conflict_policy] ?: "Unknown",
                             onValueChange = {},
                             readOnly = true,
                             textStyle = androidx.compose.ui.text.TextStyle(color = Color.White),
@@ -97,11 +102,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                                 DropdownMenuItem(
                                     text = { Text(name) },
                                     onClick = {
-                                        val newConfig = ConfigManager.currentConfig.copy(conflict_policy = key)
-                                        ConfigManager.currentConfig = newConfig
-                                        coroutineScope.launch {
-                                            saveConfigToFile(ConfigManager.toJsonString())
-                                        }
+                                        onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(conflict_policy = key)))
                                         policyExpanded = false
                                     }
                                 )
@@ -113,13 +114,9 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("LCC Master Enabled", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
-                        checked = ConfigManager.currentConfig.lcc_master,
+                        checked = config.lcc_master,
                         onCheckedChange = { 
-                            val newConfig = ConfigManager.currentConfig.copy(lcc_master = it)
-                            ConfigManager.currentConfig = newConfig
-                            coroutineScope.launch {
-                                saveConfigToFile(ConfigManager.toJsonString())
-                            }
+                            onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(lcc_master = it)))
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
@@ -131,13 +128,9 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("Restore Last State on Startup", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
-                        checked = ConfigManager.currentConfig.restore_last_state,
+                        checked = config.restore_last_state,
                         onCheckedChange = { 
-                            val newConfig = ConfigManager.currentConfig.copy(restore_last_state = it)
-                            ConfigManager.currentConfig = newConfig
-                            coroutineScope.launch {
-                                saveConfigToFile(ConfigManager.toJsonString())
-                            }
+                            onDispatch(LeverFrameIntent.UpdateSystemConfig(config.copy(restore_last_state = it)))
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,

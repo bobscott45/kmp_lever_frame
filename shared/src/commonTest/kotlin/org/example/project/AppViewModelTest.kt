@@ -45,6 +45,8 @@ class FakeConfigRepository : AppConfigRepository {
 class FakeLccClient : LccNetworkClient {
     private val _events = MutableSharedFlow<String>()
     override val externalEvents: SharedFlow<String> = _events.asSharedFlow()
+    private val _connectionStatus = kotlinx.coroutines.flow.MutableStateFlow("Disconnected")
+    override val connectionStatus: kotlinx.coroutines.flow.StateFlow<String> = _connectionStatus
     
     val producedEvents = mutableListOf<String>()
     var initCalled = false
@@ -158,5 +160,25 @@ class AppViewModelTest {
         
         val state = viewModel.uiState.value
         assertTrue(state.leverStates[0][0], "Signal lever should be reversed by external event")
+    }
+
+    @Test
+    fun testUpdateSystemConfig() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        val newConfig = configRepo.currentConfig.copy(jmri_hub_ip = "192.168.1.100")
+        
+        // Reset initCalled to verify if it's called again
+        lccClient.initCalled = false
+        
+        viewModel.dispatch(LeverFrameIntent.UpdateSystemConfig(newConfig))
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertTrue(configRepo.saveCalled, "Config should be saved")
+        assertEquals("192.168.1.100", configRepo.currentConfig.jmri_hub_ip, "Config should be updated")
+        assertTrue(lccClient.initCalled, "LCC client should be re-initialized when IP changes")
+        
+        val state = viewModel.uiState.value
+        assertEquals("192.168.1.100", state.config.jmri_hub_ip)
     }
 }

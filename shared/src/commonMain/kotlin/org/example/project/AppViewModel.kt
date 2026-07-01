@@ -26,6 +26,11 @@ class AppViewModel(
             configRepo.initConfig()
             loadConfig()
             lccClient.initialize()
+            launch {
+                lccClient.connectionStatus.collect { status ->
+                    _uiState.update { it.copy(networkStatus = status) }
+                }
+            }
             lccClient.externalEvents.collect { hexEventId ->
                 handleExternalEvent(hexEventId)
             }
@@ -62,7 +67,8 @@ class AppViewModel(
                 tabs = parsedTabs,
                 leverStates = leverStates,
                 manualLocks = manualLocks,
-                configVersion = initialVersion + 1
+                configVersion = initialVersion + 1,
+                config = configRepo.currentConfig
             )
         }
     }
@@ -192,6 +198,16 @@ class AppViewModel(
                 )
                 viewModelScope.launch {
                     configRepo.saveConfig(newConfig)
+                    loadConfig()
+                }
+            }
+            is LeverFrameIntent.UpdateSystemConfig -> {
+                val prevIp = configRepo.currentConfig.jmri_hub_ip
+                viewModelScope.launch {
+                    configRepo.saveConfig(intent.newConfig)
+                    if (prevIp != intent.newConfig.jmri_hub_ip) {
+                        lccClient.initialize()
+                    }
                     loadConfig()
                 }
             }

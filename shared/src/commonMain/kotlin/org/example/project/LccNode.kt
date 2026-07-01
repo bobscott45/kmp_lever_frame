@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharedFlow
 
 interface LccNetworkClient {
     val externalEvents: SharedFlow<String>
+    val connectionStatus: kotlinx.coroutines.flow.StateFlow<String>
     fun initialize()
     fun produceEvent(eventIdStr: String)
     fun parseEventId(eventIdStr: String): String
@@ -23,6 +24,8 @@ object LccNode : LccNetworkClient {
     
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()
+
+    override val connectionStatus = GridConnectNetwork.connectionStatus
 
     override fun initialize() {
         val hubIp = ConfigManager.currentConfig.jmri_hub_ip.trim()

@@ -47,8 +47,9 @@ fun App() {
 
         if (state.isConfigMode) {
             ConfigurationScreen(
-                onClose = { viewModel.dispatch(LeverFrameIntent.ExitConfigMode) },
-                onSave = { viewModel.dispatch(LeverFrameIntent.ConfigSaved) }
+                initialConfig = state.config,
+                onDispatch = viewModel::dispatch,
+                onClose = { viewModel.dispatch(LeverFrameIntent.ExitConfigMode) }
             )
         } else {
             Column(
@@ -159,6 +160,9 @@ fun App() {
             if (state.isStatusMode) {
                 if (state.statusLeverIndex == null) {
                     SystemStatusScreen(
+                        config = state.config,
+                        networkStatus = state.networkStatus,
+                        onDispatch = viewModel::dispatch,
                         onClose = { viewModel.dispatch(LeverFrameIntent.ExitStatusMode) }
                     )
                 } else {

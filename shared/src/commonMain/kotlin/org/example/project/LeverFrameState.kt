@@ -10,7 +10,9 @@ data class LeverFrameUiState(
     val statusLeverIndex: Int? = null,
     val errorMessage: String? = null,
     val conflictingLevers: List<Int> = emptyList(),
-    val configVersion: Int = 0
+    val configVersion: Int = 0,
+    val config: JsonConfig = JsonConfig(),
+    val networkStatus: String = "Disconnected"
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -26,6 +28,8 @@ data class LeverFrameUiState(
         if (errorMessage != other.errorMessage) return false
         if (conflictingLevers != other.conflictingLevers) return false
         if (configVersion != other.configVersion) return false
+        if (config != other.config) return false
+        if (networkStatus != other.networkStatus) return false
 
         // Custom equality for List<BooleanArray>
         if (leverStates.size != other.leverStates.size) return false
@@ -52,6 +56,8 @@ data class LeverFrameUiState(
         result = 31 * result + (errorMessage?.hashCode() ?: 0)
         result = 31 * result + conflictingLevers.hashCode()
         result = 31 * result + configVersion
+        result = 31 * result + config.hashCode()
+        result = 31 * result + networkStatus.hashCode()
         return result
     }
 }
@@ -68,4 +74,5 @@ sealed interface LeverFrameIntent {
     data object ExitStatusMode : LeverFrameIntent
     data object DismissStatusLever : LeverFrameIntent
     data class SetLeverLccEnabled(val tabIndex: Int, val leverIndex: Int, val enabled: Boolean) : LeverFrameIntent
+    data class UpdateSystemConfig(val newConfig: JsonConfig) : LeverFrameIntent
 }
