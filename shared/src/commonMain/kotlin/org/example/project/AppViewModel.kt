@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.debounce
 
 class AppViewModel(
     private val configRepo: AppConfigRepository = ConfigManager,
@@ -19,6 +21,11 @@ class AppViewModel(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = LeverFrameUiState()
+    )
+
+    private val saveStateTrigger = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
     )
 
     init {
@@ -38,6 +45,16 @@ class AppViewModel(
             }
             lccClient.externalEvents.collect { hexEventId ->
                 handleExternalEvent(hexEventId)
+            }
+        }
+        
+        @OptIn(kotlinx.coroutines.FlowPreview::class)
+        viewModelScope.launch {
+            saveStateTrigger.debounce(500).collect {
+                if (configRepo.currentConfig.restore_last_state) {
+                    val statesToSave = _uiState.value.leverStates.map { it.clone() }
+                    configRepo.saveCurrentLeverStates(statesToSave)
+                }
             }
         }
     }
@@ -80,10 +97,7 @@ class AppViewModel(
 
     private fun persistStatesIfEnabled() {
         if (configRepo.currentConfig.restore_last_state) {
-            val statesToSave = _uiState.value.leverStates.map { it.clone() }
-            viewModelScope.launch {
-                configRepo.saveCurrentLeverStates(statesToSave)
-            }
+            saveStateTrigger.tryEmit(Unit)
         }
     }
 
