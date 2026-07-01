@@ -9,7 +9,7 @@ object LeverFrameTheme {
         
         // Lever Types
         val HomeSignal = Color(0xFF8f2727)
-        val DistantSignal = Color(0xFFa5a51c)
+        val DistantSignal = Color(0xFFb29c12)
         val Points = Color(0xFF000000)
         val FacingPoints = Color(0xFF2b58b5)
         val Brown = Color(0xFF5C4033)
