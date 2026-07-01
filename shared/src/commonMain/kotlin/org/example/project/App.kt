@@ -63,7 +63,7 @@ fun App() {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TabRow(
+                    PrimaryTabRow(
                         selectedTabIndex = state.selectedTabIndex,
                         containerColor = Color(0xFF1a1a1a),
                         contentColor = Color.White,

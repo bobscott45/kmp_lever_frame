@@ -6,17 +6,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
-object LccNode {
+interface LccNetworkClient {
+    val externalEvents: SharedFlow<String>
+    fun initialize()
+    fun produceEvent(eventIdStr: String)
+    fun parseEventId(eventIdStr: String): String
+}
+
+object LccNode : LccNetworkClient {
 
     private var NODE_ALIAS = "12A" // Using a fixed alias for simplicity, though real nodes allocate it dynamically
     
     private var lccJob: Job? = null
     
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
-    val externalEvents = _externalEvents.asSharedFlow()
+    override val externalEvents = _externalEvents.asSharedFlow()
 
-    fun initialize() {
+    override fun initialize() {
         val hubIp = ConfigManager.currentConfig.jmri_hub_ip.trim()
         
         // Generate pseudo-random alias to avoid JMRI collisions
@@ -169,7 +177,7 @@ object LccNode {
         }
     }
 
-    fun parseEventId(eventIdStr: String): String {
+    override fun parseEventId(eventIdStr: String): String {
         val parts = eventIdStr.split(".")
         if (parts.size in 2..7) {
             val paddedParts = parts.toMutableList()
@@ -199,7 +207,7 @@ object LccNode {
         }
     }
 
-    fun produceEvent(eventIdStr: String) {
+    override fun produceEvent(eventIdStr: String) {
         if (eventIdStr.isBlank()) return
         
         try {

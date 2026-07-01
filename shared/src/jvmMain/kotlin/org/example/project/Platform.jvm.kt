@@ -1,5 +1,8 @@
 package org.example.project
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
 }
@@ -28,7 +31,7 @@ actual fun getLocalIpAddress(): String {
     return "Unknown"
 }
 
-actual fun saveConfigToFile(json: String) {
+actual suspend fun saveConfigToFile(json: String) = withContext(Dispatchers.IO) {
     try {
         java.io.File("leverframe_config.json").writeText(json)
     } catch (e: Exception) {
@@ -36,8 +39,8 @@ actual fun saveConfigToFile(json: String) {
     }
 }
 
-actual fun loadConfigFromFile(): String? {
-    return try {
+actual suspend fun loadConfigFromFile(): String? = withContext(Dispatchers.IO) {
+    return@withContext try {
         val file = java.io.File("leverframe_config.json")
         if (file.exists()) file.readText() else null
     } catch (e: Exception) {
@@ -46,7 +49,7 @@ actual fun loadConfigFromFile(): String? {
     }
 }
 
-actual fun saveLeverStatesToFile(json: String) {
+actual suspend fun saveLeverStatesToFile(json: String) = withContext(Dispatchers.IO) {
     try {
         java.io.File("leverframe_states.json").writeText(json)
     } catch (e: Exception) {
@@ -54,8 +57,8 @@ actual fun saveLeverStatesToFile(json: String) {
     }
 }
 
-actual fun loadLeverStatesFromFile(): String? {
-    return try {
+actual suspend fun loadLeverStatesFromFile(): String? = withContext(Dispatchers.IO) {
+    return@withContext try {
         val file = java.io.File("leverframe_states.json")
         if (file.exists()) file.readText() else null
     } catch (e: Exception) {

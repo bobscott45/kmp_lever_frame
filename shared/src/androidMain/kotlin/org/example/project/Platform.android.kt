@@ -27,20 +27,20 @@ actual fun getLocalIpAddress(): String {
     return "Unknown"
 }
 
-actual fun saveConfigToFile(json: String) {
+actual suspend fun saveConfigToFile(json: String) {
     // For Android, ideally use Context to get filesDir, but context is not available here.
     // Placeholder implementation or require initialization with context.
 }
 
-actual fun loadConfigFromFile(): String? {
+actual suspend fun loadConfigFromFile(): String? {
     // Placeholder for Android
     return null
 }
 
-actual fun saveLeverStatesToFile(json: String) {
+actual suspend fun saveLeverStatesToFile(json: String) {
     // Placeholder
 }
 
-actual fun loadLeverStatesFromFile(): String? {
+actual suspend fun loadLeverStatesFromFile(): String? {
     return null
 }

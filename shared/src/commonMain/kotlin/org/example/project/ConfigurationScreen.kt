@@ -8,19 +8,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ConfigurationScreen(
     onClose: () -> Unit,
     onSave: () -> Unit
 ) {
     var config by remember { mutableStateOf(ConfigManager.currentConfig) }
+    val coroutineScope = rememberCoroutineScope()
     
     // Main navigation tabs: 0 for System Settings, 1 for Frames
     var selectedMainTab by remember { mutableStateOf(0) }
@@ -31,7 +33,7 @@ fun ConfigurationScreen(
         selectedFrameIndex = config.tabs.size - 1
     }
 
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var showSaveWarning by remember { mutableStateOf(false) }
@@ -96,7 +98,7 @@ fun ConfigurationScreen(
                 .padding(paddingValues)
         ) {
             // Main Top Navigation
-            TabRow(selectedTabIndex = selectedMainTab) {
+            PrimaryTabRow(selectedTabIndex = selectedMainTab) {
                 Tab(
                     selected = selectedMainTab == 0,
                     onClick = { selectedMainTab = 0 },
@@ -141,7 +143,7 @@ fun ConfigurationScreen(
                     }
 
                     if (config.tabs.isNotEmpty()) {
-                        ScrollableTabRow(
+                        SecondaryScrollableTabRow(
                             selectedTabIndex = selectedFrameIndex,
                             edgePadding = 8.dp,
                             modifier = Modifier.fillMaxWidth()
@@ -280,11 +282,13 @@ fun ConfigurationScreen(
                     showSaveWarning = false
                     val prevIp = ConfigManager.currentConfig.jmri_hub_ip
                     ConfigManager.currentConfig = config
-                    saveConfigToFile(ConfigManager.toJsonString())
-                    if (prevIp != config.jmri_hub_ip) {
-                        LccNode.initialize()
+                    coroutineScope.launch {
+                        saveConfigToFile(ConfigManager.toJsonString())
+                        if (prevIp != config.jmri_hub_ip) {
+                            LccNode.initialize()
+                        }
+                        onSave()
                     }
-                    onSave()
                 }) {
                     Text("Save & Reset")
                 }
@@ -313,7 +317,9 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config)
-                    clipboardManager.setText(AnnotatedString(jsonString))
+                    coroutineScope.launch {
+                        clipboard.setClipEntry(androidx.compose.ui.platform.ClipEntry(AnnotatedString(jsonString)))
+                    }
                     showExportDialog = false
                 }) {
                     Text("Copy to Clipboard")
@@ -441,7 +447,7 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                     readOnly = true,
                     label = { Text("External Event Policy") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                     colors = brassTextFieldColors()
                 )
                 ExposedDropdownMenu(
@@ -523,7 +529,7 @@ fun MobileLeverCard(
                             readOnly = true,
                             label = { Text("Lever Type") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                             colors = brassTextFieldColors()
                         )
                         ExposedDropdownMenu(
@@ -656,7 +662,7 @@ fun MobileRuleCard(
                         readOnly = true,
                         label = { Text("Required State") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                         colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
@@ -684,7 +690,7 @@ fun MobileRuleCard(
                         readOnly = true,
                         label = { Text("Alt State") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altStateExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                         colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {

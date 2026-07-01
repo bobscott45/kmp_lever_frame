@@ -8,10 +8,10 @@ expect fun getPlatform(): Platform
 
 expect fun getLocalIpAddress(): String
 
-expect fun saveConfigToFile(json: String)
+expect suspend fun saveConfigToFile(json: String)
 
-expect fun loadConfigFromFile(): String?
+expect suspend fun loadConfigFromFile(): String?
 
-expect fun saveLeverStatesToFile(json: String)
+expect suspend fun saveLeverStatesToFile(json: String)
 
-expect fun loadLeverStatesFromFile(): String?
+expect suspend fun loadLeverStatesFromFile(): String?

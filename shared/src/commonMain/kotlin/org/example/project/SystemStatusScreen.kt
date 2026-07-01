@@ -15,10 +15,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemStatusScreen(onClose: () -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
     val ipAddress = remember { getLocalIpAddress() }
     val port = 12021 // Standard OpenLCB GridConnect Port
 
@@ -85,7 +87,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                             readOnly = true,
                             textStyle = androidx.compose.ui.text.TextStyle(color = Color.White),
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                            modifier = Modifier.menuAnchor().width(200.dp)
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).width(200.dp)
                         )
                         ExposedDropdownMenu(
                             expanded = policyExpanded,
@@ -97,7 +99,9 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                                     onClick = {
                                         val newConfig = ConfigManager.currentConfig.copy(conflict_policy = key)
                                         ConfigManager.currentConfig = newConfig
-                                        saveConfigToFile(ConfigManager.toJsonString())
+                                        coroutineScope.launch {
+                                            saveConfigToFile(ConfigManager.toJsonString())
+                                        }
                                         policyExpanded = false
                                     }
                                 )
@@ -113,7 +117,9 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                         onCheckedChange = { 
                             val newConfig = ConfigManager.currentConfig.copy(lcc_master = it)
                             ConfigManager.currentConfig = newConfig
-                            saveConfigToFile(ConfigManager.toJsonString())
+                            coroutineScope.launch {
+                                saveConfigToFile(ConfigManager.toJsonString())
+                            }
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
@@ -129,7 +135,9 @@ fun SystemStatusScreen(onClose: () -> Unit) {
                         onCheckedChange = { 
                             val newConfig = ConfigManager.currentConfig.copy(restore_last_state = it)
                             ConfigManager.currentConfig = newConfig
-                            saveConfigToFile(ConfigManager.toJsonString())
+                            coroutineScope.launch {
+                                saveConfigToFile(ConfigManager.toJsonString())
+                            }
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,

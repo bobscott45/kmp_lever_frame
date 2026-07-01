@@ -6,6 +6,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+interface AppConfigRepository {
+    var currentConfig: JsonConfig
+    suspend fun initConfig()
+    fun toJsonString(): String
+    fun parseConfig(jsonString: String): List<Pair<String, TabDef>>
+    suspend fun loadSavedLeverStates(): List<BooleanArray>?
+    suspend fun saveCurrentLeverStates(states: List<BooleanArray>)
+    suspend fun saveConfig(newConfig: JsonConfig)
+}
+
 @Serializable
 data class JsonConfig(
     val node_id: String = "05.01.01.01.03.01",
@@ -52,7 +62,7 @@ data class LeverStatesData(
     val tabs: List<List<Boolean>>
 )
 
-object ConfigManager {
+object ConfigManager : AppConfigRepository {
 
     val jsonFormat = Json { 
         ignoreUnknownKeys = true 
@@ -62,22 +72,22 @@ object ConfigManager {
 
     val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 2, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "lcc_master": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}]}]}"""
 
-    var currentConfig by mutableStateOf(run {
+    override var currentConfig by mutableStateOf(jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson))
+
+    override suspend fun initConfig() {
         val loadedJson = loadConfigFromFile()
         if (loadedJson != null) {
             try {
-                jsonFormat.decodeFromString<JsonConfig>(loadedJson)
+                currentConfig = jsonFormat.decodeFromString<JsonConfig>(loadedJson)
             } catch (e: Exception) {
-                jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson)
+                // fallback to default
             }
-        } else {
-            jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson)
         }
-    })
+    }
 
-    fun toJsonString(): String = jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
+    override fun toJsonString(): String = jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
 
-    fun parseConfig(jsonString: String): List<Pair<String, TabDef>> {
+    override fun parseConfig(jsonString: String): List<Pair<String, TabDef>> {
         val config = jsonFormat.decodeFromString<JsonConfig>(jsonString)
         
         return config.tabs.map { jsonTab ->
@@ -110,7 +120,7 @@ object ConfigManager {
         }
     }
 
-    fun loadSavedLeverStates(): List<BooleanArray>? {
+    override suspend fun loadSavedLeverStates(): List<BooleanArray>? {
         val jsonString = loadLeverStatesFromFile() ?: return null
         return try {
             val data = jsonFormat.decodeFromString<LeverStatesData>(jsonString)
@@ -121,7 +131,7 @@ object ConfigManager {
         }
     }
 
-    fun saveCurrentLeverStates(states: List<BooleanArray>) {
+    override suspend fun saveCurrentLeverStates(states: List<BooleanArray>) {
         try {
             val data = LeverStatesData(states.map { it.toList() })
             val jsonString = jsonFormat.encodeToString(LeverStatesData.serializer(), data)
@@ -129,5 +139,10 @@ object ConfigManager {
         } catch (e: Exception) {
             println("Failed to save lever states: ${e.message}")
         }
+    }
+
+    override suspend fun saveConfig(newConfig: JsonConfig) {
+        currentConfig = newConfig
+        saveConfigToFile(toJsonString())
     }
 }

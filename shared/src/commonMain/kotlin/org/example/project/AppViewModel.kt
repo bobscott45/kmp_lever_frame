@@ -9,7 +9,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AppViewModel : ViewModel() {
+class AppViewModel(
+    private val configRepo: AppConfigRepository = ConfigManager,
+    private val lccClient: LccNetworkClient = LccNode
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LeverFrameUiState())
     val uiState: StateFlow<LeverFrameUiState> = _uiState.stateIn(
@@ -20,17 +23,18 @@ class AppViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            LccNode.initialize()
-            LccNode.externalEvents.collect { hexEventId ->
+            configRepo.initConfig()
+            loadConfig()
+            lccClient.initialize()
+            lccClient.externalEvents.collect { hexEventId ->
                 handleExternalEvent(hexEventId)
             }
         }
-        loadConfig()
     }
 
-    private fun loadConfig() {
-        val configStr = ConfigManager.toJsonString()
-        val parsedTabs = ConfigManager.parseConfig(configStr)
+    private suspend fun loadConfig() {
+        val configStr = configRepo.toJsonString()
+        val parsedTabs = configRepo.parseConfig(configStr)
         val initialVersion = _uiState.value.configVersion
         
         // Build initial states
@@ -42,8 +46,8 @@ class AppViewModel : ViewModel() {
         }
         
         // Restore from disk if configured
-        val storedStates = ConfigManager.loadSavedLeverStates()
-        if (ConfigManager.currentConfig.restore_last_state && storedStates != null && storedStates.isNotEmpty()) {
+        val storedStates = configRepo.loadSavedLeverStates()
+        if (configRepo.currentConfig.restore_last_state && storedStates != null && storedStates.isNotEmpty()) {
             storedStates.forEachIndexed { tabIdx, states ->
                 if (tabIdx < leverStates.size) {
                     val tabLeversCount = leverStates[tabIdx].size
@@ -64,18 +68,21 @@ class AppViewModel : ViewModel() {
     }
 
     private fun persistStatesIfEnabled() {
-        if (ConfigManager.currentConfig.restore_last_state) {
-            ConfigManager.saveCurrentLeverStates(_uiState.value.leverStates)
+        if (configRepo.currentConfig.restore_last_state) {
+            val statesToSave = _uiState.value.leverStates.map { it.clone() }
+            viewModelScope.launch {
+                configRepo.saveCurrentLeverStates(statesToSave)
+            }
         }
     }
 
     private fun handleExternalEvent(hexEventId: String) {
         val state = _uiState.value
-        if (!ConfigManager.currentConfig.lcc_master) return
+        if (!configRepo.currentConfig.lcc_master) return
         
         var stateChanged = false
         val newLeverStates = state.leverStates.map { it.clone() }
-        val policy = ConflictPolicy.of(ConfigManager.currentConfig.conflict_policy)
+        val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
 
         state.tabs.forEachIndexed { tabIdx, tabPair ->
             val tabDef = tabPair.second
@@ -84,11 +91,11 @@ class AppViewModel : ViewModel() {
                 var attemptState: Boolean? = null
                 
                 if (leverDef.lcc_event_normal.isNotBlank()) {
-                    val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
+                    val normalHex = lccClient.parseEventId(leverDef.lcc_event_normal)
                     if (normalHex == hexEventId) attemptState = false
                 }
                 if (leverDef.lcc_event_reversed.isNotBlank()) {
-                    val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
+                    val reversedHex = lccClient.parseEventId(leverDef.lcc_event_reversed)
                     if (reversedHex == hexEventId) attemptState = true
                 }
                 
@@ -133,9 +140,9 @@ class AppViewModel : ViewModel() {
                     // Fire LCC event
                     val leverDef = tabDef.levers[intent.leverIndex]
                     if (targetState && leverDef.lcc_event_reversed.isNotBlank()) {
-                        LccNode.produceEvent(leverDef.lcc_event_reversed)
+                        lccClient.produceEvent(leverDef.lcc_event_reversed)
                     } else if (!targetState && leverDef.lcc_event_normal.isNotBlank()) {
-                        LccNode.produceEvent(leverDef.lcc_event_normal)
+                        lccClient.produceEvent(leverDef.lcc_event_normal)
                     }
                     
                     persistStatesIfEnabled()
@@ -162,7 +169,9 @@ class AppViewModel : ViewModel() {
                 _uiState.update { it.copy(isConfigMode = false) }
             }
             LeverFrameIntent.ConfigSaved -> {
-                loadConfig() // Reloads tabs and triggers recomposition
+                viewModelScope.launch {
+                    loadConfig() // Reloads tabs and triggers recomposition
+                }
             }
             LeverFrameIntent.EnterStatusMode -> {
                 _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = null) }
@@ -174,16 +183,17 @@ class AppViewModel : ViewModel() {
                 _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null, errorMessage = null) }
             }
             is LeverFrameIntent.SetLeverLccEnabled -> {
-                val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
+                val newTabsJson = configRepo.currentConfig.tabs.toMutableList()
                 val currentTabJson = newTabsJson[intent.tabIndex].copy()
                 val newLeversJson = currentTabJson.levers.toMutableList()
                 newLeversJson[intent.leverIndex] = newLeversJson[intent.leverIndex].copy(lcc_enabled = intent.enabled)
-                val newConfig = ConfigManager.currentConfig.copy(
+                val newConfig = configRepo.currentConfig.copy(
                     tabs = newTabsJson.apply { set(intent.tabIndex, currentTabJson.copy(levers = newLeversJson)) }
                 )
-                ConfigManager.currentConfig = newConfig
-                saveConfigToFile(ConfigManager.toJsonString())
-                loadConfig()
+                viewModelScope.launch {
+                    configRepo.saveConfig(newConfig)
+                    loadConfig()
+                }
             }
         }
     }

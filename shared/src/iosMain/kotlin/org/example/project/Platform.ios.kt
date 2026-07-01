@@ -14,19 +14,19 @@ actual fun getLocalIpAddress(): String {
     return "Unknown (iOS)"
 }
 
-actual fun saveConfigToFile(json: String) {
+actual suspend fun saveConfigToFile(json: String) {
     // Placeholder for iOS
 }
 
-actual fun loadConfigFromFile(): String? {
+actual suspend fun loadConfigFromFile(): String? {
     // Placeholder for iOS
     return null
 }
 
-actual fun saveLeverStatesToFile(json: String) {
+actual suspend fun saveLeverStatesToFile(json: String) {
     // Placeholder
 }
 
-actual fun loadLeverStatesFromFile(): String? {
+actual suspend fun loadLeverStatesFromFile(): String? {
     return null
 }
