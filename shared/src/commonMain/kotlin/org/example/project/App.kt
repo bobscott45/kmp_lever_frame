@@ -7,6 +7,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -107,29 +110,41 @@ fun App() {
                     }
                 }
 
-                state.errorMessage?.let { msg ->
-                    Text(
-                        text = msg,
-                        color = Color.Red,
-                        modifier = Modifier.padding(bottom = 16.dp),
-                        fontWeight = FontWeight.Bold
-                    )
+                AnimatedVisibility(
+                    visible = state.errorMessage != null,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    state.errorMessage?.let { msg ->
+                        Text(
+                            text = msg,
+                            color = Color.Red,
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
-                state.networkError?.let { msg ->
-                    ElevatedCard(
-                        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF3b1a1a)),
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                AnimatedVisibility(
+                    visible = state.networkError != null,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    state.networkError?.let { msg ->
+                        ElevatedCard(
+                            colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF3b1a1a)),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text(text = msg, color = Color(0xFFffb3b3), fontWeight = FontWeight.Medium)
-                            TextButton(onClick = viewModel::dismissNetworkError) {
-                                Text("Dismiss", color = Color.White)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = msg, color = Color(0xFFffb3b3), fontWeight = FontWeight.Medium)
+                                TextButton(onClick = viewModel::dismissNetworkError) {
+                                    Text("Dismiss", color = Color.White)
+                                }
                             }
                         }
                     }
