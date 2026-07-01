@@ -20,6 +20,9 @@ object GridConnectNetwork {
     private val _connectionStatus = MutableStateFlow("Disconnected")
     val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
 
+    private val _connectionErrors = MutableSharedFlow<String>(extraBufferCapacity = 10)
+    val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
+
     private var activeSocket: Socket? = null
     private var activeServerSocket: ServerSocket? = null
     private var writeChannel: ByteWriteChannel? = null
@@ -55,7 +58,9 @@ object GridConnectNetwork {
                 }
             } catch (e: Exception) {
                 if (e !is kotlinx.coroutines.CancellationException) {
-                    println("GridConnect Server Error: ${e.message}")
+                    val msg = "Server Error: ${e.message}"
+                    println("GridConnect $msg")
+                    _connectionErrors.tryEmit(msg)
                 }
             }
         }
@@ -78,8 +83,10 @@ object GridConnectNetwork {
                     handleSocketConnection(socket)
                 } catch (e: Exception) {
                     if (e !is kotlinx.coroutines.CancellationException) {
-                        _connectionStatus.value = "Connection Error: ${e.message}"
-                        println("GridConnect Client Connection Error: ${e.message}. Retrying in 5s...")
+                        val msg = "Connection Error: ${e.message}"
+                        _connectionStatus.value = msg
+                        println("GridConnect Client $msg. Retrying in 5s...")
+                        _connectionErrors.tryEmit(msg)
                     }
                     delay(5000)
                 }
@@ -103,7 +110,9 @@ object GridConnectNetwork {
                     writeChannel?.flush()
                     println("GridConnect actually pushed ${bytes.size} bytes: $finalMsg")
                 } catch (e: Exception) {
-                    println("Failed to send queued message: ${e.message}")
+                    val msg = "Failed to send queued message: ${e.message}"
+                    println(msg)
+                    _connectionErrors.tryEmit(msg)
                     break
                 }
             }
@@ -132,8 +141,12 @@ object GridConnectNetwork {
                 }
             }
         } catch (e: Exception) {
+            val msg = "Disconnected: ${e.message}"
             _connectionStatus.value = "Disconnected"
-            println("GridConnect Connection disconnected: ${e.message}")
+            println("GridConnect Connection $msg")
+            if (e !is kotlinx.coroutines.CancellationException) {
+                _connectionErrors.tryEmit(msg)
+            }
         } finally {
             withContext(NonCancellable) {
                 closeConnection()
@@ -149,7 +162,9 @@ object GridConnectNetwork {
         if (writeChannel != null && writeChannel?.isClosedForWrite == false) {
             sendQueue.trySend(msg)
         } else {
-            println("GridConnect Not Connected. Cannot send: $msg")
+            val errMsg = "GridConnect Not Connected. Cannot send: $msg"
+            println(errMsg)
+            _connectionErrors.tryEmit("Cannot send message. Network is disconnected.")
         }
     }
 

@@ -31,6 +31,11 @@ class AppViewModel(
                     _uiState.update { it.copy(networkStatus = status) }
                 }
             }
+            launch {
+                lccClient.connectionErrors.collect { error ->
+                    _uiState.update { it.copy(networkError = error) }
+                }
+            }
             lccClient.externalEvents.collect { hexEventId ->
                 handleExternalEvent(hexEventId)
             }
@@ -187,6 +192,9 @@ class AppViewModel(
             }
             LeverFrameIntent.DismissStatusLever -> {
                 _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null, errorMessage = null) }
+            }
+            LeverFrameIntent.DismissNetworkError -> {
+                _uiState.update { it.copy(networkError = null) }
             }
             is LeverFrameIntent.SetLeverLccEnabled -> {
                 val newTabsJson = configRepo.currentConfig.tabs.toMutableList()

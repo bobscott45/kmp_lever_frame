@@ -9,6 +9,7 @@ data class LeverFrameUiState(
     val isStatusMode: Boolean = false,
     val statusLeverIndex: Int? = null,
     val errorMessage: String? = null,
+    val networkError: String? = null,
     val conflictingLevers: List<Int> = emptyList(),
     val configVersion: Int = 0,
     val config: JsonConfig = JsonConfig(),
@@ -26,6 +27,7 @@ data class LeverFrameUiState(
         if (isStatusMode != other.isStatusMode) return false
         if (statusLeverIndex != other.statusLeverIndex) return false
         if (errorMessage != other.errorMessage) return false
+        if (networkError != other.networkError) return false
         if (conflictingLevers != other.conflictingLevers) return false
         if (configVersion != other.configVersion) return false
         if (config != other.config) return false
@@ -54,6 +56,7 @@ data class LeverFrameUiState(
         result = 31 * result + isStatusMode.hashCode()
         result = 31 * result + (statusLeverIndex ?: 0)
         result = 31 * result + (errorMessage?.hashCode() ?: 0)
+        result = 31 * result + (networkError?.hashCode() ?: 0)
         result = 31 * result + conflictingLevers.hashCode()
         result = 31 * result + configVersion
         result = 31 * result + config.hashCode()
@@ -73,6 +76,7 @@ sealed interface LeverFrameIntent {
     data object EnterStatusMode : LeverFrameIntent
     data object ExitStatusMode : LeverFrameIntent
     data object DismissStatusLever : LeverFrameIntent
+    data object DismissNetworkError : LeverFrameIntent
     data class SetLeverLccEnabled(val tabIndex: Int, val leverIndex: Int, val enabled: Boolean) : LeverFrameIntent
     data class UpdateSystemConfig(val newConfig: JsonConfig) : LeverFrameIntent
 }

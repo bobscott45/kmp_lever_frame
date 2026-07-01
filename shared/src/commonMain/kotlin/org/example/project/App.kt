@@ -115,6 +115,25 @@ fun App() {
                     )
                 }
 
+                state.networkError?.let { msg ->
+                    ElevatedCard(
+                        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF3b1a1a)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = msg, color = Color(0xFFffb3b3), fontWeight = FontWeight.Medium)
+                            TextButton(onClick = { viewModel.dispatch(LeverFrameIntent.DismissNetworkError) }) {
+                                Text("Dismiss", color = Color.White)
+                            }
+                        }
+                    }
+                }
+
                 if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                     val currentTabDef = state.tabs[state.selectedTabIndex].second
                     val leverStates = state.leverStates.getOrNull(state.selectedTabIndex)

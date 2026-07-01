@@ -47,6 +47,8 @@ class FakeLccClient : LccNetworkClient {
     override val externalEvents: SharedFlow<String> = _events.asSharedFlow()
     private val _connectionStatus = kotlinx.coroutines.flow.MutableStateFlow("Disconnected")
     override val connectionStatus: kotlinx.coroutines.flow.StateFlow<String> = _connectionStatus
+    private val _connectionErrors = kotlinx.coroutines.flow.MutableSharedFlow<String>()
+    override val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
     
     val producedEvents = mutableListOf<String>()
     var initCalled = false
@@ -65,6 +67,10 @@ class FakeLccClient : LccNetworkClient {
     
     suspend fun emitEvent(event: String) {
         _events.emit(event)
+    }
+
+    suspend fun emitConnectionError(error: String) {
+        _connectionErrors.emit(error)
     }
 }
 
@@ -180,5 +186,88 @@ class AppViewModelTest {
         
         val state = viewModel.uiState.value
         assertEquals("192.168.1.100", state.config.jmri_hub_ip)
+    }
+
+    @Test
+    fun testNetworkErrorHandling() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Emit a network error
+        lccClient.emitConnectionError("Connection Refused")
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        var state = viewModel.uiState.value
+        assertEquals("Connection Refused", state.networkError)
+        
+        // Dismiss the error
+        viewModel.dispatch(LeverFrameIntent.DismissNetworkError)
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        state = viewModel.uiState.value
+        assertEquals(null, state.networkError)
+    }
+
+    @Test
+    fun testUiModeIntents() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        // Config mode
+        viewModel.dispatch(LeverFrameIntent.EnterConfigMode)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isConfigMode)
+        viewModel.dispatch(LeverFrameIntent.ExitConfigMode)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isConfigMode)
+
+        // Status mode
+        viewModel.dispatch(LeverFrameIntent.EnterStatusMode)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isStatusMode)
+        assertEquals(null, viewModel.uiState.value.statusLeverIndex)
+        viewModel.dispatch(LeverFrameIntent.ExitStatusMode)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isStatusMode)
+
+        // Lever label clicked
+        viewModel.dispatch(LeverFrameIntent.LeverLabelClicked(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isStatusMode)
+        assertEquals(1, viewModel.uiState.value.statusLeverIndex)
+        viewModel.dispatch(LeverFrameIntent.DismissStatusLever)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isStatusMode)
+        assertEquals(null, viewModel.uiState.value.statusLeverIndex)
+    }
+
+    @Test
+    fun testTabSelection() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertEquals(0, viewModel.uiState.value.selectedTabIndex)
+        viewModel.dispatch(LeverFrameIntent.TabSelected(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(1, viewModel.uiState.value.selectedTabIndex)
+    }
+
+    @Test
+    fun testToggleManualLock() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        assertFalse(viewModel.uiState.value.manualLocks[0][0])
+        viewModel.dispatch(LeverFrameIntent.ToggleManualLock(0, 0))
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.manualLocks[0][0])
+    }
+
+    @Test
+    fun testSetLeverLccEnabled() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        viewModel.dispatch(LeverFrameIntent.SetLeverLccEnabled(0, 0, false))
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        val newConfig = configRepo.currentConfig
+        assertFalse(newConfig.tabs[0].levers[0].lcc_enabled)
+        assertTrue(configRepo.saveCalled)
     }
 }
