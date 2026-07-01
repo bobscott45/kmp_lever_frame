@@ -32,7 +32,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
         Column(
             modifier = Modifier
                 .widthIn(max = 600.dp)
-                .padding(vertical = 48.dp)
+                .padding(vertical = 16.dp)
                 .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
