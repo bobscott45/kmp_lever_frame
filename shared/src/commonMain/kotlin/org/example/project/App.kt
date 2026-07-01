@@ -42,105 +42,13 @@ fun App() {
         onTertiary = Color.Black
     )
     MaterialTheme(colorScheme = customColorScheme) {
-        var isConfigMode by remember { mutableStateOf(false) }
-        var isStatusMode by remember { mutableStateOf(false) }
-        var statusLeverIndex by remember { mutableStateOf<Int?>(null) }
-        var configVersion by remember { mutableStateOf(0) }
+        val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
+        val state by viewModel.uiState.collectAsState()
 
-        LaunchedEffect(Unit) {
-            LccNode.initialize()
-        }
-
-        // Force recreation of tabs if we return from config mode AND saved changes
-        var tabs by remember { mutableStateOf(ConfigManager.parseConfig(ConfigManager.toJsonString())) }
-        
-        LaunchedEffect(configVersion) {
-            tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
-        }
-
-        var selectedTabIndex by remember { mutableStateOf(0) }
-        
-        // Hold states and locks for all tabs
-        val allLeverStates = remember(configVersion) {
-            val defaultStates = tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray()
-            
-            if (ConfigManager.currentConfig.restore_last_state && configVersion == 0) {
-                val savedStates = ConfigManager.loadSavedLeverStates()
-                if (savedStates != null && savedStates.size == tabs.size && savedStates.map { it.size } == defaultStates.map { it.size }.toList()) {
-                    mutableStateListOf(*savedStates.toTypedArray())
-                } else {
-                    mutableStateListOf(*defaultStates)
-                }
-            } else {
-                mutableStateListOf(*defaultStates)
-            }
-        }
-        val allManualLocks = remember(configVersion) {
-            mutableStateListOf(*tabs.map { BooleanArray(it.second.levers.size) { false } }.toTypedArray())
-        }
-        
-        LaunchedEffect(allLeverStates.toList()) {
-            if (ConfigManager.currentConfig.restore_last_state) {
-                ConfigManager.saveCurrentLeverStates(allLeverStates.toList())
-            }
-        }
-        
-        var errorMessage by remember { mutableStateOf<String?>(null) }
-        
-        LaunchedEffect(configVersion) {
-            LccNode.externalEvents.collect { hexEventId ->
-                try {
-                    if (!ConfigManager.currentConfig.lcc_master) return@collect
-                    tabs.forEachIndexed { tabIdx, tabPair ->
-                        val tabDef = tabPair.second
-                        tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                            if (!leverDef.lcc_enabled) return@forEachIndexed
-                            var attemptState: Boolean? = null
-                            if (leverDef.lcc_event_normal.isNotBlank()) {
-                                val normalHex = LccNode.parseEventId(leverDef.lcc_event_normal)
-                                if (normalHex == hexEventId) attemptState = false
-                            }
-                            if (leverDef.lcc_event_reversed.isNotBlank()) {
-                                val reversedHex = LccNode.parseEventId(leverDef.lcc_event_reversed)
-                                if (reversedHex == hexEventId) attemptState = true
-                            }
-                            
-                            if (attemptState != null) {
-                                println("Matched event $hexEventId to Lever $leverIdx (Attempt State: $attemptState)")
-                                val leverStates = allLeverStates[tabIdx]
-                                if (leverStates[leverIdx] != attemptState) {
-                                    val policy = ConfigManager.currentConfig.conflict_policy
-                                    val isValid = Interlocking.evaluate(tabDef, leverStates, leverIdx, attemptState)
-                                    
-                                    println("Lever $leverIdx state change: policy=$policy, isValid=$isValid")
-                                    
-                                    if (policy == 1 && !isValid) {
-                                        println("External event ignored due to STRICT policy")
-                                    } else {
-                                        val newStates = leverStates.clone()
-                                        newStates[leverIdx] = attemptState
-                                        allLeverStates[tabIdx] = newStates
-                                        println("Applied external event: lever $leverIdx to $attemptState (Policy $policy)")
-                                    }
-                                } else {
-                                    println("Lever $leverIdx is already in state $attemptState")
-                                }
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    println("Error processing external event: ${e.message}")
-                }
-            }
-        }
-
-        if (isConfigMode) {
+        if (state.isConfigMode) {
             ConfigurationScreen(
-                onClose = { isConfigMode = false },
-                onSave = { 
-                    configVersion++
-                    isConfigMode = false 
-                }
+                onClose = { viewModel.dispatch(LeverFrameIntent.ExitConfigMode) },
+                onSave = { viewModel.dispatch(LeverFrameIntent.ConfigSaved) }
             )
         } else {
             Column(
@@ -156,19 +64,16 @@ fun App() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TabRow(
-                        selectedTabIndex = selectedTabIndex,
+                        selectedTabIndex = state.selectedTabIndex,
                         containerColor = Color(0xFF1a1a1a),
                         contentColor = Color.White,
                         modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
                     ) {
-                        tabs.forEachIndexed { index, pair ->
+                        state.tabs.forEachIndexed { index, pair ->
                             Tab(
-                                selected = selectedTabIndex == index,
-                                onClick = { 
-                                    selectedTabIndex = index 
-                                    errorMessage = null // clear error when switching
-                                },
-                                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (selectedTabIndex == index) BrassColor else Color.White) }
+                                selected = state.selectedTabIndex == index,
+                                onClick = { viewModel.dispatch(LeverFrameIntent.TabSelected(index)) },
+                                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) BrassColor else Color.White) }
                             )
                         }
                     }
@@ -185,14 +90,14 @@ fun App() {
                             DropdownMenuItem(
                                 text = { Text("System Status") },
                                 onClick = {
-                                    isStatusMode = true
+                                    viewModel.dispatch(LeverFrameIntent.EnterStatusMode)
                                     menuExpanded = false
                                 }
                             )
                             DropdownMenuItem(
                                 text = { Text("Configure") },
                                 onClick = { 
-                                    isConfigMode = true
+                                    viewModel.dispatch(LeverFrameIntent.EnterConfigMode)
                                     menuExpanded = false
                                 }
                             )
@@ -200,94 +105,75 @@ fun App() {
                     }
                 }
 
-                val currentTabDef = tabs[selectedTabIndex].second
-                val leverStates = allLeverStates[selectedTabIndex]
-                val manualLocks = allManualLocks[selectedTabIndex]
-                val policy = ConfigManager.currentConfig.conflict_policy
-                val conflictingLevers = if (policy == 3) Interlocking.getConflictingLevers(currentTabDef, leverStates) else emptyList()
+                state.errorMessage?.let { msg ->
+                    Text(
+                        text = msg,
+                        color = Color.Red,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .horizontalScroll(rememberScrollState())
-                ) {
-                    currentTabDef.levers.forEachIndexed { index, leverDef ->
-                        val isReversed = leverStates[index]
-                        val isManuallyLocked = manualLocks[index]
-                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
-                        val isAlarmed = index in conflictingLevers
+                if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+                    val currentTabDef = state.tabs[state.selectedTabIndex].second
+                    val leverStates = state.leverStates.getOrNull(state.selectedTabIndex)
+                    val manualLocks = state.manualLocks.getOrNull(state.selectedTabIndex)
+                    
+                    if (leverStates != null && manualLocks != null) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .horizontalScroll(rememberScrollState())
+                        ) {
+                            currentTabDef.levers.forEachIndexed { index, leverDef ->
+                                val isReversed = leverStates[index]
+                                val isManuallyLocked = manualLocks[index]
+                                val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+                                val isAlarmed = index in state.conflictingLevers
 
-                        LeverComponent(
-                            leverDef = leverDef,
-                            labelLines = currentTabDef.labelLines,
-                            labelLineHeight = currentTabDef.labelLineHeight,
-                            isReversed = isReversed,
-                            isManuallyLocked = isManuallyLocked,
-                            isSystemLocked = isSystemLocked,
-                            isAlarmed = isAlarmed,
-                            onLabelClick = {
-                                statusLeverIndex = index
-                            },
-                            onToggle = {
-                                if (isManuallyLocked) {
-                                    errorMessage = "Lever ${index + 1} is manually locked!"
-                                    return@LeverComponent
-                                }
-                                
-                                val attemptingState = !isReversed
-                                if (Interlocking.evaluate(currentTabDef, leverStates, index, attemptingState)) {
-                                    val newStates = leverStates.clone()
-                                    newStates[index] = attemptingState
-                                    allLeverStates[selectedTabIndex] = newStates
-                                    errorMessage = null
-                                    
-                                    if (ConfigManager.currentConfig.lcc_master && leverDef.lcc_enabled) {
-                                        val eventStr = if (attemptingState) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
-                                        LccNode.produceEvent(eventStr)
+                                LeverComponent(
+                                    leverDef = leverDef,
+                                    labelLines = currentTabDef.labelLines,
+                                    labelLineHeight = currentTabDef.labelLineHeight,
+                                    isReversed = isReversed,
+                                    isManuallyLocked = isManuallyLocked,
+                                    isSystemLocked = isSystemLocked,
+                                    isAlarmed = isAlarmed,
+                                    onLabelClick = {
+                                        viewModel.dispatch(LeverFrameIntent.LeverLabelClicked(index))
+                                    },
+                                    onToggle = {
+                                        viewModel.dispatch(LeverFrameIntent.ToggleLever(state.selectedTabIndex, index))
+                                    },
+                                    onToggleLock = {
+                                        viewModel.dispatch(LeverFrameIntent.ToggleManualLock(state.selectedTabIndex, index))
                                     }
-                                } else {
-                                    errorMessage = "Interlocking: Lever ${index + 1} is system locked!"
-                                }
-                            },
-                            onToggleLock = {
-                                val newLocks = manualLocks.clone()
-                                newLocks[index] = !isManuallyLocked
-                                allManualLocks[selectedTabIndex] = newLocks
-                                errorMessage = null
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }
-            
-            // Overlays
-            if (isStatusMode) {
-                SystemStatusScreen(
-                    onClose = { isStatusMode = false }
-                )
-            }
-            
-            if (statusLeverIndex != null) {
-                val index = statusLeverIndex!!
-                val currentTabDef = tabs[selectedTabIndex].second
-                val leverDef = currentTabDef.levers[index]
-                
-                LeverStatusScreen(
-                    leverIndex = index,
-                    leverDef = leverDef,
-                    onClose = { statusLeverIndex = null },
-                    onLccEnabledChange = { checked ->
-                        val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
-                        val currentTabJson = newTabsJson[selectedTabIndex].copy()
-                        val newLeversJson = currentTabJson.levers.toMutableList()
-                        newLeversJson[index] = newLeversJson[index].copy(lcc_enabled = checked)
-                        val newConfig = ConfigManager.currentConfig.copy(tabs = newTabsJson.apply { set(selectedTabIndex, currentTabJson.copy(levers = newLeversJson)) })
-                        ConfigManager.currentConfig = newConfig
-                        saveConfigToFile(ConfigManager.toJsonString())
-                        tabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
-                    }
-                )
+
+            if (state.isStatusMode) {
+                if (state.statusLeverIndex == null) {
+                    SystemStatusScreen(
+                        onClose = { viewModel.dispatch(LeverFrameIntent.ExitStatusMode) }
+                    )
+                } else {
+                    val index = state.statusLeverIndex!!
+                    val leverDef = state.tabs[state.selectedTabIndex].second.levers[index]
+                    
+                    LeverStatusScreen(
+                        leverIndex = index,
+                        leverDef = leverDef,
+                        onClose = { viewModel.dispatch(LeverFrameIntent.DismissStatusLever) },
+                        onLccEnabledChange = { checked ->
+                            viewModel.dispatch(LeverFrameIntent.SetLeverLccEnabled(state.selectedTabIndex, index, checked))
+                        }
+                    )
+                }
             }
         }
     }
