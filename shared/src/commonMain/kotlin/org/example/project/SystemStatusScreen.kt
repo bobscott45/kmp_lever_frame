@@ -12,7 +12,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,6 +32,7 @@ fun SystemStatusScreen(onClose: () -> Unit) {
         Column(
             modifier = Modifier
                 .widthIn(max = 600.dp)
+                .padding(vertical = 48.dp)
                 .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
                 .clickable { /* consume click so it doesn't close */ }
                 .padding(24.dp),
@@ -54,11 +57,11 @@ fun SystemStatusScreen(onClose: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
         
         Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp).weight(1f, fill = false),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 StatusItem("Node Name", ConfigManager.currentConfig.node_name)

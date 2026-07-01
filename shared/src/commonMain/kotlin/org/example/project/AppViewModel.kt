@@ -171,7 +171,7 @@ class AppViewModel : ViewModel() {
                 _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null) }
             }
             LeverFrameIntent.DismissStatusLever -> {
-                _uiState.update { it.copy(errorMessage = null) }
+                _uiState.update { it.copy(isStatusMode = false, statusLeverIndex = null, errorMessage = null) }
             }
             is LeverFrameIntent.SetLeverLccEnabled -> {
                 val newTabsJson = ConfigManager.currentConfig.tabs.toMutableList()
