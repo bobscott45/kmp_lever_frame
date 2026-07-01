@@ -43,10 +43,10 @@ fun ConfigurationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", color = BrassColor) },
+                title = { Text("Settings", color = LeverFrameTheme.Colors.Brass) },
                 navigationIcon = {
                     TextButton(onClick = onClose) {
-                        Text("✕", style = MaterialTheme.typography.titleLarge, color = BrassColor)
+                        Text("✕", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
                     }
                 },
                 actions = {
@@ -103,12 +103,12 @@ fun ConfigurationScreen(
                 Tab(
                     selected = selectedMainTab == 0,
                     onClick = { selectedMainTab = 0 },
-                    text = { Text("System Settings", color = if (selectedMainTab == 0) BrassColor else androidx.compose.ui.graphics.Color.White) }
+                    text = { Text("System Settings", color = if (selectedMainTab == 0) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
                 )
                 Tab(
                     selected = selectedMainTab == 1,
                     onClick = { selectedMainTab = 1 },
-                    text = { Text("Frames & Levers", color = if (selectedMainTab == 1) BrassColor else androidx.compose.ui.graphics.Color.White) }
+                    text = { Text("Frames & Levers", color = if (selectedMainTab == 1) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
                 )
             }
 
@@ -132,7 +132,7 @@ fun ConfigurationScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Frames", style = MaterialTheme.typography.titleMedium, color = BrassColor, modifier = Modifier.padding(start = 8.dp))
+                        Text("Frames", style = MaterialTheme.typography.titleMedium, color = LeverFrameTheme.Colors.Brass, modifier = Modifier.padding(start = 8.dp))
                         TextButton(onClick = {
                             val newTabs = config.tabs.toMutableList()
                             newTabs.add(JsonTab(name = "New Frame"))
@@ -153,7 +153,7 @@ fun ConfigurationScreen(
                                 Tab(
                                     selected = selectedFrameIndex == index,
                                     onClick = { selectedFrameIndex = index },
-                                    text = { Text(tab.name, color = if (selectedFrameIndex == index) BrassColor else androidx.compose.ui.graphics.Color.White) }
+                                    text = { Text(tab.name, color = if (selectedFrameIndex == index) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
                                 )
                             }
                         }
@@ -363,11 +363,11 @@ fun ConfigurationScreen(
 
 @Composable
 fun brassTextFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = BrassColor,
-    unfocusedBorderColor = BrassColor.copy(alpha = 0.5f),
-    focusedLabelColor = BrassColor,
-    unfocusedLabelColor = BrassColor.copy(alpha = 0.8f),
-    cursorColor = BrassColor
+    focusedBorderColor = LeverFrameTheme.Colors.Brass,
+    unfocusedBorderColor = LeverFrameTheme.Colors.Brass.copy(alpha = 0.5f),
+    focusedLabelColor = LeverFrameTheme.Colors.Brass,
+    unfocusedLabelColor = LeverFrameTheme.Colors.Brass.copy(alpha = 0.8f),
+    cursorColor = LeverFrameTheme.Colors.Brass
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -401,13 +401,13 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Restore Last State", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
+                Text("Restore Last State", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
                 Switch(
                     checked = config.restore_last_state,
                     onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PaleBlue
+                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
                     )
                 )
             }
@@ -416,13 +416,13 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("LCC Master", style = MaterialTheme.typography.bodyLarge, color = BrassColor)
+                Text("LCC Master", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
                 Switch(
                     checked = config.lcc_master,
                     onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
-                        checkedTrackColor = PaleBlue
+                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
                     )
                 )
             }
@@ -500,7 +500,7 @@ fun MobileLeverCard(
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                                Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                                 IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                                     Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                                 }
@@ -554,7 +554,7 @@ fun MobileLeverCard(
                                 Switch(
                                     checked = lever.lcc_enabled,
                                     onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = PaleBlue)
+                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
                                 )
                             }
                         }
@@ -563,7 +563,7 @@ fun MobileLeverCard(
                     // LCC Events Group
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                            Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                             
                             val isNormalValid = lever.lcc_event_normal.isBlank() || LccNode.parseEventId(lever.lcc_event_normal).length == 16
                             OutlinedTextField(
@@ -597,7 +597,7 @@ fun MobileLeverCard(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = BrassColor)
+                                Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                                 TextButton(onClick = {
                                     val newRules = lever.interlocking.toMutableList()
                                     newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))

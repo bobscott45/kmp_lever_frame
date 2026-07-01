@@ -31,18 +31,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 
-val BrassColor = Color(0xFFD4AF37)
-val PaleBlue = Color(0xFF8CA8C4)
 
 @Composable
 @Preview
 fun App() {
     val customColorScheme = darkColorScheme(
-        primary = BrassColor,
+        primary = LeverFrameTheme.Colors.Brass,
         onPrimary = Color.Black,
-        secondary = BrassColor,
+        secondary = LeverFrameTheme.Colors.Brass,
         onSecondary = Color.Black,
-        tertiary = BrassColor,
+        tertiary = LeverFrameTheme.Colors.Brass,
         onTertiary = Color.Black
     )
     MaterialTheme(colorScheme = customColorScheme) {
@@ -59,137 +57,17 @@ fun App() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF1E1E1E))
+                    .background(LeverFrameTheme.Colors.DarkSurface)
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    PrimaryTabRow(
-                        selectedTabIndex = state.selectedTabIndex,
-                        containerColor = Color(0xFF1a1a1a),
-                        contentColor = Color.White,
-                        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
-                    ) {
-                        state.tabs.forEachIndexed { index, pair ->
-                            Tab(
-                                selected = state.selectedTabIndex == index,
-                                onClick = { viewModel.tabSelected(index) },
-                                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) BrassColor else Color.White) }
-                            )
-                        }
-                    }
-                    
-                    Box(modifier = Modifier.padding(start = 16.dp)) {
-                        var menuExpanded by remember { mutableStateOf(false) }
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Text("⋮", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        }
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("System Status") },
-                                onClick = {
-                                    viewModel.enterStatusMode()
-                                    menuExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Configure") },
-                                onClick = { 
-                                    viewModel.enterConfigMode()
-                                    menuExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = state.errorMessage != null,
-                    enter = expandVertically(),
-                    exit = shrinkVertically()
-                ) {
-                    state.errorMessage?.let { msg ->
-                        Text(
-                            text = msg,
-                            color = Color.Red,
-                            modifier = Modifier.padding(bottom = 16.dp),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = state.networkError != null,
-                    enter = expandVertically(),
-                    exit = shrinkVertically()
-                ) {
-                    state.networkError?.let { msg ->
-                        ElevatedCard(
-                            colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF3b1a1a)),
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text = msg, color = Color(0xFFffb3b3), fontWeight = FontWeight.Medium)
-                                TextButton(onClick = viewModel::dismissNetworkError) {
-                                    Text("Dismiss", color = Color.White)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-                    val currentTabDef = state.tabs[state.selectedTabIndex].second
-                    val leverStates = state.leverStates.getOrNull(state.selectedTabIndex)
-                    val manualLocks = state.manualLocks.getOrNull(state.selectedTabIndex)
-                    
-                    if (leverStates != null && manualLocks != null) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .horizontalScroll(rememberScrollState())
-                        ) {
-                            currentTabDef.levers.forEachIndexed { index, leverDef ->
-                                val isReversed = leverStates[index]
-                                val isManuallyLocked = manualLocks[index]
-                                val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
-                                val isAlarmed = index in state.conflictingLevers
-
-                                LeverComponent(
-                                    leverDef = leverDef,
-                                    labelLines = currentTabDef.labelLines,
-                                    labelLineHeight = currentTabDef.labelLineHeight,
-                                    isReversed = isReversed,
-                                    isManuallyLocked = isManuallyLocked,
-                                    isSystemLocked = isSystemLocked,
-                                    isAlarmed = isAlarmed,
-                                    onLabelClick = {
-                                        viewModel.leverLabelClicked(index)
-                                    },
-                                    onToggle = {
-                                        viewModel.toggleLever(state.selectedTabIndex, index)
-                                    },
-                                    onToggleLock = {
-                                        viewModel.toggleManualLock(state.selectedTabIndex, index)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                TopMenuBar(state, viewModel)
+                ErrorBanners(
+                    errorMessage = state.errorMessage,
+                    networkError = state.networkError,
+                    onDismissNetworkError = viewModel::dismissNetworkError
+                )
+                LeverTrackGroup(state, viewModel)
             }
 
             if (state.isStatusMode) {
@@ -232,13 +110,13 @@ fun LeverComponent(
     onToggleLock: () -> Unit
 ) {
     val typeColor = when (leverDef.type) {
-        LeverType.HOME_SIGNAL -> Color(0xFF8f2727)
-        LeverType.DISTANT_SIGNAL -> Color(0xFFb08817)
-        LeverType.POINTS -> Color(0xFF000000)
-        LeverType.FACING_POINTS -> Color(0xFF2b58b5)
-        LeverType.BROWN -> Color(0xFF5C4033)
-        LeverType.GREEN -> Color(0xFF228B22)
-        LeverType.SPARE -> Color(0xFFb8b8b8)
+        LeverType.HOME_SIGNAL -> LeverFrameTheme.Colors.HomeSignal
+        LeverType.DISTANT_SIGNAL -> LeverFrameTheme.Colors.DistantSignal
+        LeverType.POINTS -> LeverFrameTheme.Colors.Points
+        LeverType.FACING_POINTS -> LeverFrameTheme.Colors.FacingPoints
+        LeverType.BROWN -> LeverFrameTheme.Colors.Brown
+        LeverType.GREEN -> LeverFrameTheme.Colors.Green
+        LeverType.SPARE -> LeverFrameTheme.Colors.Spare
     }
 
     val (upText, downText) = when (leverDef.type) {
@@ -333,10 +211,10 @@ fun LeverComponent(
                         if (isSystemLocked || isManuallyLocked) {
                             scope.launch {
                                 shakeOffset.animateTo(
-                                    targetValue = 8f,
+                                    targetValue = LeverFrameTheme.Animation.ShakeOffsetTarget,
                                     animationSpec = repeatable(
                                         iterations = 6,
-                                        animation = tween(durationMillis = 40, easing = LinearEasing),
+                                        animation = tween(durationMillis = LeverFrameTheme.Animation.ShakeDurationMs, easing = LinearEasing),
                                         repeatMode = RepeatMode.Reverse
                                     )
                                 )
@@ -349,7 +227,7 @@ fun LeverComponent(
                 // Knob
                 val positionRatio by animateFloatAsState(
                     targetValue = if (isReversed) 1f else 0f,
-                    animationSpec = spring(dampingRatio = 0.6f, stiffness = 200f),
+                    animationSpec = spring(dampingRatio = LeverFrameTheme.Animation.LeverSpringDamping, stiffness = LeverFrameTheme.Animation.LeverSpringStiffness),
                     label = "positionRatio"
                 )
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -412,6 +290,161 @@ fun LeverComponent(
             contentPadding = PaddingValues(0.dp)
         ) {
             Text(collarText, color = collarFg, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+fun TopMenuBar(
+    state: LeverFrameUiState,
+    viewModel: AppViewModel
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        MainTabRow(state = state, onTabSelected = viewModel::tabSelected)
+        
+        Box(modifier = Modifier.padding(start = 16.dp)) {
+            var menuExpanded by remember { mutableStateOf(false) }
+            IconButton(onClick = { menuExpanded = true }) {
+                Text("⋮", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            }
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("System Status") },
+                    onClick = {
+                        viewModel.enterStatusMode()
+                        menuExpanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Configure") },
+                    onClick = { 
+                        viewModel.enterConfigMode()
+                        menuExpanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RowScope.MainTabRow(
+    state: LeverFrameUiState,
+    onTabSelected: (Int) -> Unit
+) {
+    PrimaryTabRow(
+        selectedTabIndex = state.selectedTabIndex,
+        containerColor = Color(0xFF1a1a1a),
+        contentColor = Color.White,
+        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
+    ) {
+        state.tabs.forEachIndexed { index, pair ->
+            Tab(
+                selected = state.selectedTabIndex == index,
+                onClick = { onTabSelected(index) },
+                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorBanners(
+    errorMessage: String?,
+    networkError: String?,
+    onDismissNetworkError: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = errorMessage != null,
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+        errorMessage?.let { msg ->
+            Text(
+                text = msg,
+                color = LeverFrameTheme.Colors.ErrorText,
+                modifier = Modifier.padding(bottom = 16.dp),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+
+    AnimatedVisibility(
+        visible = networkError != null,
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+        networkError?.let { msg ->
+            ElevatedCard(
+                colors = CardDefaults.elevatedCardColors(containerColor = LeverFrameTheme.Colors.NetworkErrorBg),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = msg, color = LeverFrameTheme.Colors.NetworkErrorText, fontWeight = FontWeight.Medium)
+                    TextButton(onClick = onDismissNetworkError) {
+                        Text("Dismiss", color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ColumnScope.LeverTrackGroup(
+    state: LeverFrameUiState,
+    viewModel: AppViewModel
+) {
+    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+        val currentTabDef = state.tabs[state.selectedTabIndex].second
+        val leverStates = state.leverStates.getOrNull(state.selectedTabIndex)
+        val manualLocks = state.manualLocks.getOrNull(state.selectedTabIndex)
+        
+        if (leverStates != null && manualLocks != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState())
+            ) {
+                currentTabDef.levers.forEachIndexed { index, leverDef ->
+                    val isReversed = leverStates[index]
+                    val isManuallyLocked = manualLocks[index]
+                    val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+                    val isAlarmed = index in state.conflictingLevers
+
+                    LeverComponent(
+                        leverDef = leverDef,
+                        labelLines = currentTabDef.labelLines,
+                        labelLineHeight = currentTabDef.labelLineHeight,
+                        isReversed = isReversed,
+                        isManuallyLocked = isManuallyLocked,
+                        isSystemLocked = isSystemLocked,
+                        isAlarmed = isAlarmed,
+                        onLabelClick = {
+                            viewModel.leverLabelClicked(index)
+                        },
+                        onToggle = {
+                            viewModel.toggleLever(state.selectedTabIndex, index)
+                        },
+                        onToggleLock = {
+                            viewModel.toggleManualLock(state.selectedTabIndex, index)
+                        }
+                    )
+                }
+            }
         }
     }
 }

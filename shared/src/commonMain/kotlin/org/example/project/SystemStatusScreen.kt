@@ -56,12 +56,12 @@ fun SystemStatusScreen(
         ) {
             Text(
                 text = "System Status",
-                color = BrassColor,
+                color = LeverFrameTheme.Colors.Brass,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onClose) {
-                Text("✕", color = BrassColor, fontSize = 20.sp)
+                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 20.sp)
             }
         }
         
@@ -85,7 +85,7 @@ fun SystemStatusScreen(
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("External Event Policy", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("External Event Policy", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     ExposedDropdownMenuBox(
                         expanded = policyExpanded,
                         onExpandedChange = { policyExpanded = !policyExpanded }
@@ -116,7 +116,7 @@ fun SystemStatusScreen(
                 }
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Master Enabled", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("LCC Master Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = config.lcc_master,
                         onCheckedChange = { 
@@ -124,13 +124,13 @@ fun SystemStatusScreen(
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = PaleBlue
+                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
                         )
                     )
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restore Last State on Startup", color = BrassColor, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Restore Last State on Startup", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = config.restore_last_state,
                         onCheckedChange = { 
@@ -138,7 +138,7 @@ fun SystemStatusScreen(
                         },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color.White,
-                            checkedTrackColor = PaleBlue
+                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
                         )
                     )
                 }
@@ -168,7 +168,7 @@ private fun StatusItem(label: String, value: String) {
     ) {
         Text(
             text = label,
-            color = BrassColor,
+            color = LeverFrameTheme.Colors.Brass,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )
