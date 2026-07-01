@@ -48,18 +48,18 @@ fun LeverStatusScreen(
             Text(
                 text = "Lever ${leverIndex + 1} Status",
                 color = LeverFrameTheme.Colors.Brass,
-                fontSize = 24.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onClose) {
-                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 20.sp)
+                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp)
             }
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
         ) {
             Column(
@@ -70,7 +70,7 @@ fun LeverStatusScreen(
                 StatusItem("Type", leverDef.type.name)
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("LCC Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = leverDef.lcc_enabled,
                         onCheckedChange = onLccEnabledChange,
@@ -87,17 +87,17 @@ fun LeverStatusScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 if (leverDef.conditions.isNotEmpty()) {
-                    Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     leverDef.conditions.forEach { rule ->
                         val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
                         val altStr = if (rule.altTargetLeverIndex != -1) {
                             val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
                             " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
                         } else ""
-                        Text("• Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 14.sp)
+                        Text("• Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
                     }
                 } else {
-                    Text("No interlocking rules.", color = Color.White, fontSize = 14.sp)
+                    Text("No interlocking rules.", color = Color.White, fontSize = 10.sp)
                 }
             }
         }
@@ -124,13 +124,13 @@ private fun StatusItem(label: String, value: String) {
         Text(
             text = label,
             color = LeverFrameTheme.Colors.Brass,
-            fontSize = 16.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = value,
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold
         )
     }

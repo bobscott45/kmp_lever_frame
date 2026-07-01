@@ -28,7 +28,7 @@ object LeverFramePolicy {
     fun attemptToggle(tabDef: TabDef, states: BooleanArray, leverIndex: Int, target: Boolean): BooleanArray? {
         val isValid = Interlocking.evaluate(tabDef, states, leverIndex, target)
         if (isValid) {
-            val newStates = states.clone()
+            val newStates = states.copyOf()
             newStates[leverIndex] = target
             return newStates
         }

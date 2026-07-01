@@ -52,7 +52,7 @@ class AppViewModel(
         viewModelScope.launch {
             saveStateTrigger.debounce(500).collect {
                 if (configRepo.currentConfig.restore_last_state) {
-                    val statesToSave = _uiState.value.leverStates.map { it.clone() }
+                    val statesToSave = _uiState.value.leverStates.map { it.copyOf() }
                     configRepo.saveCurrentLeverStates(statesToSave)
                 }
             }
@@ -107,7 +107,7 @@ class AppViewModel(
         var didChange = false
         _uiState.update { currentState ->
             var stateChanged = false
-            val newLeverStates = currentState.leverStates.map { it.clone() }
+            val newLeverStates = currentState.leverStates.map { it.copyOf() }
             val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
 
             currentState.tabs.forEachIndexed { tabIdx, tabPair ->
@@ -219,7 +219,7 @@ class AppViewModel(
     fun toggleManualLock(tabIndex: Int, leverIndex: Int) {
         _uiState.update { currentState ->
             val updatedLocks = currentState.manualLocks.toMutableList()
-            val tabLocks = updatedLocks[tabIndex].clone()
+            val tabLocks = updatedLocks[tabIndex].copyOf()
             tabLocks[leverIndex] = !tabLocks[leverIndex]
             updatedLocks[tabIndex] = tabLocks
             currentState.copy(manualLocks = updatedLocks)

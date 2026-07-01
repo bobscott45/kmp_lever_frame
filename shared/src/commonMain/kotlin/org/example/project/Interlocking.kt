@@ -43,7 +43,7 @@ object Interlocking {
         attemptingState: Boolean
     ): Boolean {
         // Create the new hypothetical state
-        val newStates = states.clone()
+        val newStates = states.copyOf()
         newStates[leverIndex] = attemptingState
 
         // Validate all rules for any lever that is (or will be) reversed

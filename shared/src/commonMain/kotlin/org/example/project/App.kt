@@ -43,7 +43,18 @@ fun App() {
         tertiary = LeverFrameTheme.Colors.Brass,
         onTertiary = Color.Black
     )
-    MaterialTheme(colorScheme = customColorScheme) {
+    
+    val defaultTypography = Typography()
+    val customTypography = Typography(
+        bodyLarge = defaultTypography.bodyLarge.copy(fontSize = 14.sp),
+        bodyMedium = defaultTypography.bodyMedium.copy(fontSize = 12.sp),
+        titleLarge = defaultTypography.titleLarge.copy(fontSize = 18.sp),
+        titleMedium = defaultTypography.titleMedium.copy(fontSize = 14.sp),
+        titleSmall = defaultTypography.titleSmall.copy(fontSize = 12.sp),
+        labelLarge = defaultTypography.labelLarge.copy(fontSize = 12.sp)
+    )
+
+    MaterialTheme(colorScheme = customColorScheme, typography = customTypography) {
         val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
         val state by viewModel.uiState.collectAsState()
 
@@ -105,6 +116,8 @@ fun LeverComponent(
     isManuallyLocked: Boolean,
     isSystemLocked: Boolean,
     isAlarmed: Boolean,
+    scale: Float = 1f,
+    widthScale: Float = scale,
     onLabelClick: () -> Unit,
     onToggle: () -> Unit,
     onToggleLock: () -> Unit
@@ -130,7 +143,7 @@ fun LeverComponent(
     // Plate Background
     Column(
         modifier = Modifier
-            .width(96.dp)
+            .width(96.dp * widthScale)
             .fillMaxHeight()
             .background(Color(0xFF1a1a1a))
             .border(
@@ -138,7 +151,7 @@ fun LeverComponent(
                 color = Color(0xFF333333),
                 shape = RoundedCornerShape(topStart = 4.dp)
             )
-            .padding(vertical = 10.dp, horizontal = 4.dp),
+            .padding(vertical = 10.dp * scale, horizontal = 4.dp * scale),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -147,7 +160,7 @@ fun LeverComponent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height((labelLines * labelLineHeight).dp + 12.dp)
+                    .height(((labelLines * labelLineHeight).dp * widthScale) + (12.dp * widthScale))
                     .background(
                         brush = Brush.linearGradient(
                             colors = listOf(
@@ -167,15 +180,15 @@ fun LeverComponent(
                     color = Color(0xFF1A1500),
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    lineHeight = labelLineHeight.sp
+                    fontSize = 9.sp,
+                    lineHeight = 10.sp
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(6.dp * scale))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(16.dp)
+                    .height(16.dp * scale)
                     .clip(RoundedCornerShape(2.dp))
                     .background(typeColor)
                     .then(if (typeColor == Color(0xFF000000)) Modifier.border(1.dp, Color(0xFFAAAAAA), RoundedCornerShape(2.dp)) else Modifier)
@@ -185,20 +198,20 @@ fun LeverComponent(
         // Switch Container
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.weight(1f).padding(vertical = 16.dp)
+            modifier = Modifier.weight(1f).padding(vertical = 16.dp * scale)
         ) {
             Text(
                 text = upText,
                 color = if (!isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
-                fontSize = 12.sp,
+                fontSize = 8.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp * scale))
             
             // Switch Track
             Box(
                 modifier = Modifier
-                    .width(60.dp)
+                    .width(60.dp * widthScale)
                     .weight(1f)
                     .clip(RoundedCornerShape(6.dp))
                     .background(
@@ -232,9 +245,16 @@ fun LeverComponent(
                 )
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                     val trackHeight = maxHeight
-                    val knobSize = 52.dp
-                    val padding = 4.dp
-                    val offset = padding + (trackHeight - knobSize - padding * 2) * positionRatio
+                    val knobSize = 52.dp * scale
+                    val padding = 4.dp * scale
+                    
+                    val physicalRatio = when {
+                        positionRatio > 1f -> 1f - (positionRatio - 1f)
+                        positionRatio < 0f -> -positionRatio
+                        else -> positionRatio
+                    }
+                    
+                    val offset = padding + (trackHeight - knobSize - padding * 2) * physicalRatio
 
                     Box(
                         modifier = Modifier
@@ -248,14 +268,14 @@ fun LeverComponent(
 
                     // Locking Pin
                     if (isSystemLocked || isManuallyLocked) {
-                        val pinHeight = 8.dp
+                        val pinHeight = 8.dp * scale
                         val pinOffsetY = (trackHeight - pinHeight) / 2
                         
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .offset(y = pinOffsetY)
-                                .width(24.dp)
+                                .width(24.dp * scale)
                                 .height(pinHeight)
                                 .clip(RoundedCornerShape(2.dp))
                                 .background(Color(0xFFcc3333))
@@ -265,11 +285,11 @@ fun LeverComponent(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp * scale))
             Text(
                 text = downText,
                 color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
-                fontSize = 12.sp,
+                fontSize = 8.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -286,10 +306,10 @@ fun LeverComponent(
             onClick = onToggleLock,
             colors = ButtonDefaults.buttonColors(containerColor = collarBg),
             shape = RoundedCornerShape(4.dp),
-            modifier = Modifier.fillMaxWidth().height(36.dp),
+            modifier = Modifier.fillMaxWidth().height(36.dp * scale),
             contentPadding = PaddingValues(0.dp)
         ) {
-            Text(collarText, color = collarFg, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(collarText, color = collarFg, fontSize = 8.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -300,7 +320,7 @@ fun TopMenuBar(
     viewModel: AppViewModel
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -309,21 +329,21 @@ fun TopMenuBar(
         Box(modifier = Modifier.padding(start = 16.dp)) {
             var menuExpanded by remember { mutableStateOf(false) }
             IconButton(onClick = { menuExpanded = true }) {
-                Text("⋮", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text("⋮", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
             DropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("System Status") },
+                    text = { Text("System Status", fontSize = 14.sp) },
                     onClick = {
                         viewModel.enterStatusMode()
                         menuExpanded = false
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Configure") },
+                    text = { Text("Configure", fontSize = 14.sp) },
                     onClick = { 
                         viewModel.enterConfigMode()
                         menuExpanded = false
@@ -349,7 +369,7 @@ fun RowScope.MainTabRow(
             Tab(
                 selected = state.selectedTabIndex == index,
                 onClick = { onTabSelected(index) },
-                text = { Text(pair.first, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
+                text = { Text(pair.first, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
             )
         }
     }
@@ -413,36 +433,45 @@ fun ColumnScope.LeverTrackGroup(
         val manualLocks = state.manualLocks.getOrNull(state.selectedTabIndex)
         
         if (leverStates != null && manualLocks != null) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .horizontalScroll(rememberScrollState())
-            ) {
-                currentTabDef.levers.forEachIndexed { index, leverDef ->
-                    val isReversed = leverStates[index]
-                    val isManuallyLocked = manualLocks[index]
-                    val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
-                    val isAlarmed = index in state.conflictingLevers
-
-                    LeverComponent(
-                        leverDef = leverDef,
-                        labelLines = currentTabDef.labelLines,
-                        labelLineHeight = currentTabDef.labelLineHeight,
-                        isReversed = isReversed,
-                        isManuallyLocked = isManuallyLocked,
-                        isSystemLocked = isSystemLocked,
-                        isAlarmed = isAlarmed,
-                        onLabelClick = {
-                            viewModel.leverLabelClicked(index)
-                        },
-                        onToggle = {
-                            viewModel.toggleLever(state.selectedTabIndex, index)
-                        },
-                        onToggleLock = {
-                            viewModel.toggleManualLock(state.selectedTabIndex, index)
-                        }
-                    )
+            BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                val heightScale = (maxHeight.value / 600f).coerceIn(0.5f, 1.2f)
+                val baseWidthScale = (maxWidth.value / 450f).coerceIn(0.6f, 1.2f)
+                val scale = minOf(heightScale, baseWidthScale)
+                val leverWidthScale = if (maxWidth > maxHeight) maxOf(scale, 0.75f) else scale
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp * leverWidthScale, Alignment.CenterHorizontally),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    currentTabDef.levers.forEachIndexed { index, leverDef ->
+                        val isReversed = leverStates[index]
+                        val isManuallyLocked = manualLocks[index]
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+                        val isAlarmed = index in state.conflictingLevers
+    
+                        LeverComponent(
+                            leverDef = leverDef,
+                            labelLines = currentTabDef.labelLines,
+                            labelLineHeight = currentTabDef.labelLineHeight,
+                            isReversed = isReversed,
+                            isManuallyLocked = isManuallyLocked,
+                            isSystemLocked = isSystemLocked,
+                            isAlarmed = isAlarmed,
+                            scale = scale,
+                            widthScale = leverWidthScale,
+                            onLabelClick = {
+                                viewModel.leverLabelClicked(index)
+                            },
+                            onToggle = {
+                                viewModel.toggleLever(state.selectedTabIndex, index)
+                            },
+                            onToggleLock = {
+                                viewModel.toggleManualLock(state.selectedTabIndex, index)
+                            }
+                        )
+                    }
                 }
             }
         }

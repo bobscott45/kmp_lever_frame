@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,7 +34,7 @@ fun ConfigurationScreen(
         selectedFrameIndex = config.tabs.size - 1
     }
 
-    val clipboard = LocalClipboard.current
+    val clipboardManager = LocalClipboardManager.current
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var showSaveWarning by remember { mutableStateOf(false) }
@@ -311,9 +311,7 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config)
-                    coroutineScope.launch {
-                        clipboard.setClipEntry(androidx.compose.ui.platform.ClipEntry(AnnotatedString(jsonString)))
-                    }
+                    clipboardManager.setText(AnnotatedString(jsonString))
                     showExportDialog = false
                 }) {
                     Text("Copy to Clipboard")

@@ -57,18 +57,18 @@ fun SystemStatusScreen(
             Text(
                 text = "System Status",
                 color = LeverFrameTheme.Colors.Brass,
-                fontSize = 24.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onClose) {
-                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 20.sp)
+                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp)
             }
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp).weight(1f, fill = false),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).weight(1f, fill = false),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
         ) {
             Column(
@@ -85,7 +85,7 @@ fun SystemStatusScreen(
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("External Event Policy", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("External Event\nPolicy", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     ExposedDropdownMenuBox(
                         expanded = policyExpanded,
                         onExpandedChange = { policyExpanded = !policyExpanded }
@@ -94,9 +94,9 @@ fun SystemStatusScreen(
                             value = policies[config.conflict_policy] ?: "Unknown",
                             onValueChange = {},
                             readOnly = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 12.sp),
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).width(200.dp)
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).width(140.dp)
                         )
                         ExposedDropdownMenu(
                             expanded = policyExpanded,
@@ -116,7 +116,7 @@ fun SystemStatusScreen(
                 }
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Master Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("LCC Master Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = config.lcc_master,
                         onCheckedChange = { 
@@ -130,7 +130,7 @@ fun SystemStatusScreen(
                 }
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restore Last State on Startup", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Restore Last State on Startup", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = config.restore_last_state,
                         onCheckedChange = { 
@@ -169,13 +169,13 @@ private fun StatusItem(label: String, value: String) {
         Text(
             text = label,
             color = LeverFrameTheme.Colors.Brass,
-            fontSize = 16.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = value,
             color = Color.White,
-            fontSize = 16.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
     }
