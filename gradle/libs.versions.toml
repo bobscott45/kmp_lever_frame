@@ -1,6 +1,6 @@
 [versions]
 ktor = "2.3.11"
-agp = "9.0.1"
+agp = "9.2.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"

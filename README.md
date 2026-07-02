@@ -1,35 +1,93 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
+# Lever Frame (Multiplatform)
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+A Kotlin Multiplatform application targeting **Android, Desktop (JVM), and iOS** to control and manage a wireless virtual railway lever frame. This project features full OpenLCB / LCC (Layout Command Control) integration via Wi-Fi and a deeply prototypical mechanical interlocking engine, making it ideal for model railway control systems on modern touch devices.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+This project is the spiritual successor to the [ESP32 Lever Frame](https://github.com/bobscott45/esp32_lever_frame), rebuilt from the ground up using **Compose Multiplatform** for a fluid, high-performance user interface with a vintage brass and steel aesthetic.
 
-### Running the apps
+> **Project Status:** Fully functional and tested with physical LCC hardware via a JMRI hub. Currently built and tested extensively on **Android and Desktop (JVM)**. While the architecture supports iOS out of the box, it has not yet been compiled or physically tested on Apple devices.
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+## Key Features
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+* **Cross-Platform**: Run the exact same lever frame logic and UI on an Android tablet, an iPad, or a Desktop PC.
+* **Native Kotlin OpenLCB / LCC Integration**: Comprehensive, 100% native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
+* **In-App Configuration**: No web server needed! Configure LCC events, network settings, and conflict policies natively within the app.
+* **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
+* **High-Performance Touch UI**: Built with Compose Multiplatform, featuring deep dark modes, vintage brass accents, and smooth gesture-based lever pulling.
+* **State Persistence**: Saves and restores lever states and configurations across reboots automatically.
 
-### Running tests
+## Prerequisites
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+To bridge the wireless Wi-Fi LCC events from this app to a physical CAN-based layout, a **Wi-Fi to CAN LCC bridge** is required. The most common and recommended approach is to use JMRI.
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+### Bridging with JMRI (LCC Hub)
+To seamlessly pass events between this app and your physical CAN-based LCC network, you can use JMRI's built-in "Hub" feature.
 
----
+1. **Hardware Setup:** Ensure your physical CAN network is connected to your computer (e.g., via a USB-to-CAN adapter like a GridConnect CAN-USB or LCC Buffer) and that it is configured and working within JMRI Preferences.
+2. **Start the Hub:** In the main JMRI window, click the **LCC** menu (or **OpenLCB**) and select **Start Hub**. This starts a GridConnect TCP server that listens on port `12021`.
+3. **Configure Firewall:** You must allow incoming TCP traffic on port `12021` on the computer running JMRI.
+4. **Configure App:** Open the Lever Frame app, tap the Settings gear icon, and enter the IP address of the computer running JMRI into the **JMRI Hub IP** field. The app will automatically connect and bridge traffic.
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Building and Running
+
+This project uses Gradle and JetBrains Compose Multiplatform. 
+
+### Android
+To install the debug build directly to a connected Android device or emulator:
+```bash
+./gradlew :androidApp:installDebug
+```
+To generate an APK for manual installation:
+```bash
+./gradlew :androidApp:assembleDebug
+```
+
+### Desktop (JVM)
+To run the standalone desktop application:
+```bash
+./gradlew :desktopApp:run
+```
+To package the app for your current operating system (creates `.deb`, `.dmg`, or `.msi` depending on your host OS):
+```bash
+./gradlew :desktopApp:packageDistributionForCurrentOS
+```
+
+### iOS (Experimental)
+Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select your target device or simulator, and run the project. *(Note: This project's KMP architecture supports iOS, but it has not yet been physically built or tested on Apple devices. Contributions and testing are welcome!)*
+
+## Example Interlocking Configuration
+
+The app includes a prototypical demonstration configuration by default, showcasing sequential signaling, mutually locking facing points, and conditional 'OR' route locking.
+
+### North Junction (Main Frame)
+This frame protects a junction where a branch line diverges from a main line.
+- **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 5 REVERSED*. This demonstrates conditional 'OR' logic: the distant signal can be cleared if either the Main or Branch home signals are clear.
+- **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 4 NORMAL and Lever 3 REVERSED*.
+- **Lever 3 (FPL FOR POINTS 4)**: The Facing Point Lock.
+- **Lever 4 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 3 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
+- **Lever 5 (UP BRANCH HOME)**: Clears the train to turn off onto the branch line. *Locks Lever 4 REVERSED and Lever 3 REVERSED*.
+
+### South Box (Yard Frame)
+This frame controls a small yard crossover.
+- **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 REVERSED*.
+- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover. *Locks Lever 3 REVERSED*.
+- **Lever 3 (FRAME RELEASE)**: A ground frame release mechanism.
+
+### Demonstrating the Interlocking
+Try the following sequences in the app:
+1. Try to pull **Lever 2 (UP MAIN HOME)**. It will be locked because the Facing Point Lock (Lever 3) is not engaged.
+2. Try to pull **Lever 4 (JUNCTION POINTS)**. It is free to move because the FPL (Lever 3) is withdrawn.
+3. Pull **Lever 3 (FPL)** to lock the points.
+4. Try to pull **Lever 4** again. It is now locked by Lever 3.
+5. Pull **Lever 2** again. It now clears because Lever 4 is Normal and Lever 3 is Reversed.
+6. Pull **Lever 1 (UP DISTANT)**. It clears because Lever 2 satisfies the 'OR' condition.
+
+## Project Structure
+
+* `shared/` - Core Kotlin Multiplatform logic. Contains the interlocking engine, OpenLCB networking, Compose UI, and configuration managers.
+* `androidApp/` - Android application entry point.
+* `desktopApp/` - JVM standalone application entry point.
+* `iosApp/` - iOS application entry point.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 (GPLv3).

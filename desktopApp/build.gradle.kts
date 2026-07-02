@@ -17,12 +17,22 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "org.example.project.MainKt"
+        mainClass = "org.edranor.leverframe.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.example.project"
+            packageName = "LeverFrame"
             packageVersion = "1.0.0"
+            
+            macOS {
+                iconFile.set(project.file("src/main/resources/icon.png"))
+            }
+            windows {
+                // Windows packager requires .ico, but typically compose handles basic .png to .ico conversion or we can leave it default
+            }
+            linux {
+                iconFile.set(project.file("src/main/resources/icon.png"))
+            }
         }
     }
 }

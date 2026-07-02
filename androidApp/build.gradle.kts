@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "org.example.project"
+    namespace = "org.edranor.leverframe"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.example.project"
+        applicationId = "org.edranor.leverframe"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
