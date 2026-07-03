@@ -22,7 +22,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "LeverFrame"
-            packageVersion = "1.0.0"
+            packageVersion = libs.versions.app.version.get()
             
             macOS {
                 iconFile.set(project.file("src/main/resources/icon.png"))

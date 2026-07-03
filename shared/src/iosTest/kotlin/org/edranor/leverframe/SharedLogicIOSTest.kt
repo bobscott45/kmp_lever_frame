@@ -3,18 +3,21 @@
  *
  * This file is part of LeverFrame.
  *
- * LeverFrame is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This project is dual-licensed to balance open-source collaboration with 
+ * ecosystem compatibility:
  *
- * LeverFrame is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * * Source Code: The source code in this repository is licensed under the 
+ *   GNU General Public License v3 (GPLv3). You are free to copy, modify, 
+ *   and self-compile the code, provided any distributions remain open-source 
+ *   under the same terms.
+ * * Compiled Binaries & Storefronts: As the sole copyright owner of this 
+ *   codebase, the author reserves the right to distribute compiled binaries 
+ *   (such as on the Apple App Store, Google Play, or other platforms) under 
+ *   separate, proprietary, or storefront-specific licenses.
  *
- * You should have received a copy of the GNU General Public License
- * along with LeverFrame.  If not, see <https://www.gnu.org/licenses/>.
+ * Note: If you wish to contribute code to this project via a Pull Request, you 
+ * agree to grant the author a non-exclusive, perpetual license to distribute 
+ * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
 package org.edranor.leverframe
 

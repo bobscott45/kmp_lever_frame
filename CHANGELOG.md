@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Initial Public Release Candidates
+## [1.0.1] - 2026-07-03
+
+### Changed
+- **Licensing**: Updated source file headers to reflect dual-licensing, maintaining GPLv3 for source code while simplifying proprietary app store publishing.
+
+## [1.0.0] - Initial Public Release Candidates
 
 ### Added
 - **Native Android & Desktop Apps**: Completely rebuilt the ESP32 Lever Frame concept as a native Kotlin Multiplatform app.

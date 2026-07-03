@@ -1,4 +1,6 @@
 [versions]
+app-version = "1.0.1"
+app-versionCode = "2"
 ktor = "2.3.11"
 agp = "9.2.1"
 android-compileSdk = "36"
