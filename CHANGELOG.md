@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **UI Spacing**: Grouped Event IDs and Interlocking Rules in the Lever Status popup with smaller vertical spacing to conserve screen real estate.
 - **Scroll Indication**: Added native-style fading edge overlays to the Lever Status popup to clearly indicate scrollable content boundaries.
+- **Interlock Feedback**: Removed the popup error message when attempting to throw a locked lever, replaced by a flashing white locking pin animation. The Lever Status dropdown also now displays dynamic '✅' and '❌' status indicators next to interlocking rules.
 
 ### Fixed
 - **AGP Compatibility**: Fixed a build incompatibility issue by downgrading the Android Gradle Plugin (AGP) version from 9.2.1 to 9.0.0.
