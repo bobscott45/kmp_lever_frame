@@ -145,6 +145,7 @@ fun App() {
                         LeverStatusScreen(
                             leverIndex = index,
                             leverDef = leverDef,
+                            leverStates = state.leverStates[state.selectedTabIndex],
                             onClose = viewModel::dismissStatusLever,
                             onLccEnabledChange = { checked ->
                                 viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
@@ -205,6 +206,12 @@ fun LeverComponent(
 
     val scope = rememberCoroutineScope()
     val shakeOffset = remember { Animatable(0f) }
+    var pinFlash by remember { mutableStateOf(false) }
+    val pinColor by androidx.compose.animation.animateColorAsState(
+        targetValue = if (pinFlash) Color(0xFFFFFFFF) else Color(0xFFcc3333),
+        animationSpec = tween(durationMillis = 150),
+        label = "pinColor"
+    )
 
     // Plate Background
     Column(
@@ -289,18 +296,30 @@ fun LeverComponent(
                     .clickable { 
                         if (isSystemLocked || isManuallyLocked) {
                             scope.launch {
-                                shakeOffset.animateTo(
-                                    targetValue = LeverFrameTheme.Animation.ShakeOffsetTarget,
-                                    animationSpec = repeatable(
-                                        iterations = 6,
-                                        animation = tween(durationMillis = LeverFrameTheme.Animation.ShakeDurationMs, easing = LinearEasing),
-                                        repeatMode = RepeatMode.Reverse
+                                launch {
+                                    shakeOffset.animateTo(
+                                        targetValue = LeverFrameTheme.Animation.ShakeOffsetTarget,
+                                        animationSpec = repeatable(
+                                            iterations = 6,
+                                            animation = tween(durationMillis = LeverFrameTheme.Animation.ShakeDurationMs, easing = LinearEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                        )
                                     )
-                                )
-                                shakeOffset.snapTo(0f)
+                                    shakeOffset.snapTo(0f)
+                                }
+                                launch {
+                                    repeat(3) {
+                                        pinFlash = true
+                                        delay(150)
+                                        pinFlash = false
+                                        delay(150)
+                                    }
+                                }
                             }
                         }
-                        onToggle() 
+                        if (!isSystemLocked && !isManuallyLocked) {
+                            onToggle() 
+                        } 
                     }
             ) {
                 // Knob
@@ -344,7 +363,7 @@ fun LeverComponent(
                                 .width(24.dp * scale)
                                 .height(pinHeight)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(Color(0xFFcc3333))
+                                .background(pinColor)
                                 .border(1.dp, Color(0xFFdddddd), RoundedCornerShape(2.dp))
                         )
                     }

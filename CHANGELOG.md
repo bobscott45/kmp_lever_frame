@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-07-16
+
+### Changed
+- **UI Spacing**: Grouped Event IDs and Interlocking Rules in the Lever Status popup with smaller vertical spacing to conserve screen real estate.
+- **Scroll Indication**: Added native-style fading edge overlays to the Lever Status popup to clearly indicate scrollable content boundaries.
+
+### Fixed
+- **AGP Compatibility**: Fixed a build incompatibility issue by downgrading the Android Gradle Plugin (AGP) version from 9.2.1 to 9.0.0.
+- **Landscape UI**: Fixed the Lever Status popup cutting off the bottom of the content in landscape mode by making it scrollable.
+
 ## [1.0.1] - 2026-07-03
 
 ### Changed

@@ -191,7 +191,7 @@ class AppViewModel(
         }
     }
 
-    fun toggleLever(tabIndex: Int, leverIndex: Int) {
+    fun toggleLever(tabIndex: Int, leverIndex: Int): Boolean {
         var lccEventStr: String? = null
         var didChange = false
         
@@ -227,7 +227,7 @@ class AppViewModel(
             } else {
                 didChange = false
                 lccEventStr = null
-                currentState.copy(errorMessage = "Interlocking prevents this lever from moving.")
+                currentState
             }
         }
         
@@ -235,6 +235,7 @@ class AppViewModel(
         if (didChange) {
             persistStatesIfEnabled()
         }
+        return didChange
     }
 
     fun toggleManualLock(tabIndex: Int, leverIndex: Int) {

@@ -36,11 +36,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun LeverStatusScreen(
     leverIndex: Int,
     leverDef: LeverDef,
+    leverStates: BooleanArray,
     onClose: () -> Unit,
     onLccEnabledChange: (Boolean) -> Unit
 ) {
@@ -80,11 +84,13 @@ fun LeverStatusScreen(
         Spacer(modifier = Modifier.height(12.dp))
         
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).weight(1f, fill = false),
             colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
         ) {
+            val scrollState = rememberScrollState()
+            Box(modifier = Modifier.fillMaxWidth()) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().verticalScroll(scrollState).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 StatusItem("Label", leverDef.label.replace("\n", " "))
@@ -102,24 +108,61 @@ fun LeverStatusScreen(
                     )
                 }
                 
-                StatusItem("Event ID (Normal)", if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal)
-                StatusItem("Event ID (Reversed)", if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed)
-                
-                Spacer(modifier = Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    StatusItem("Event ID (Normal)", if (leverDef.lcc_event_normal.isBlank()) "None" else leverDef.lcc_event_normal)
+                    StatusItem("Event ID (Reversed)", if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed)
+                }
                 
                 if (leverDef.conditions.isNotEmpty()) {
-                    Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    leverDef.conditions.forEach { rule ->
-                        val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
-                        val altStr = if (rule.altTargetLeverIndex != -1) {
-                            val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
-                            " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
-                        } else ""
-                        Text("• Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        leverDef.conditions.forEach { rule ->
+                            val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
+                            val altStr = if (rule.altTargetLeverIndex != -1) {
+                                val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
+                                " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
+                            } else ""
+                            
+                            val mainSatisfied = leverStates.getOrNull(rule.targetLeverIndex) == rule.requiredState
+                            val altSatisfied = rule.altTargetLeverIndex != -1 && leverStates.getOrNull(rule.altTargetLeverIndex) == rule.altRequiredState
+                            val isSatisfied = mainSatisfied || altSatisfied
+                            
+                            val statusIcon = if (isSatisfied) "✅" else "❌"
+                            Text("$statusIcon Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
+                        }
                     }
                 } else {
                     Text("No interlocking rules.", color = Color.White, fontSize = 10.sp)
                 }
+            }
+            
+            if (scrollState.canScrollBackward) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(24.dp)
+                        .align(Alignment.TopCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0xFF2A2A2A), Color.Transparent)
+                            )
+                        )
+                )
+            }
+            
+            if (scrollState.canScrollForward) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(24.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color(0xFF2A2A2A))
+                            )
+                        )
+                )
+            }
             }
         }
         
