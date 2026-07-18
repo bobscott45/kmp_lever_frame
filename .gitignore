@@ -19,3 +19,5 @@ captures
 node_modules/
 AGENTS.md
 .agents/
+leverframe_states.json
+leverframe_config.json
