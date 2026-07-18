@@ -22,7 +22,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "LeverFrame"
-            packageVersion = libs.versions.app.version.get()
+            packageVersion = libs.versions.app.version.get().substringBefore("-")
             
             buildTypes.release.proguard {
                 isEnabled.set(false)
