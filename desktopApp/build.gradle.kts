@@ -24,6 +24,10 @@ compose.desktop {
             packageName = "LeverFrame"
             packageVersion = libs.versions.app.version.get()
             
+            buildTypes.release.proguard {
+                isEnabled.set(false)
+            }
+            
             macOS {
                 iconFile.set(project.file("src/main/resources/icon.png"))
             }
