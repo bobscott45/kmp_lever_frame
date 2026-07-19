@@ -250,7 +250,7 @@ fun ConfigurationScreen(
                                                 newTabs[selectedFrameIndex] = tab.copy(label_lines = it.toIntOrNull() ?: 2)
                                                 config = config.copy(tabs = newTabs)
                                             },
-                                            label = { Text("Label Lines") },
+                                            label = { Text("Lever Label Lines") },
                                             modifier = Modifier.weight(1f)
                                         )
                                         OutlinedTextField(
@@ -260,9 +260,52 @@ fun ConfigurationScreen(
                                                 newTabs[selectedFrameIndex] = tab.copy(label_line_height = it.toIntOrNull() ?: 18)
                                                 config = config.copy(tabs = newTabs)
                                             },
-                                            label = { Text("Line Height") },
+                                            label = { Text("Lever Line Height") },
                                             modifier = Modifier.weight(1f)
                                         )
+                                    }
+                                }
+
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        OutlinedTextField(
+                                            value = tab.block_label_size.toString(),
+                                            onValueChange = { 
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(block_label_size = it.toIntOrNull() ?: 10)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            label = { Text("Block Font Size") },
+                                            modifier = Modifier.weight(1f)
+                                        )
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text("Block Layout", style = MaterialTheme.typography.bodySmall, color = LeverFrameTheme.Colors.Brass)
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                RadioButton(
+                                                    selected = tab.block_layout == "HORIZONTAL",
+                                                    onClick = {
+                                                        val newTabs = config.tabs.toMutableList()
+                                                        newTabs[selectedFrameIndex] = tab.copy(block_layout = "HORIZONTAL")
+                                                        config = config.copy(tabs = newTabs)
+                                                    }
+                                                )
+                                                Text("Horizontal")
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                RadioButton(
+                                                    selected = tab.block_layout == "VERTICAL",
+                                                    onClick = {
+                                                        val newTabs = config.tabs.toMutableList()
+                                                        newTabs[selectedFrameIndex] = tab.copy(block_layout = "VERTICAL")
+                                                        config = config.copy(tabs = newTabs)
+                                                    }
+                                                )
+                                                Text("Vertical")
+                                            }
+                                        }
                                     }
                                 }
                             }

@@ -57,6 +57,8 @@ data class JsonTab(
     val name: String,
     val label_lines: Int = 2,
     val label_line_height: Int = 18,
+    val block_layout: String = "HORIZONTAL",
+    val block_label_size: Int = 10,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList()
 )
@@ -159,7 +161,14 @@ object ConfigManager : AppConfigRepository {
                     lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else ""
                 )
             }
-            jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height, blocks)
+            jsonTab.name to TabDef(
+                levers = levers,
+                labelLines = jsonTab.label_lines,
+                labelLineHeight = jsonTab.label_line_height,
+                blockLayout = jsonTab.block_layout,
+                blockLabelSize = jsonTab.block_label_size,
+                blocks = blocks
+            )
         }
     }
 

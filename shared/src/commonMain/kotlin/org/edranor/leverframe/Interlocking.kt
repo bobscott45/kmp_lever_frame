@@ -57,6 +57,8 @@ data class TabDef(
     val levers: List<LeverDef>,
     val labelLines: Int = 2,
     val labelLineHeight: Int = 18,
+    val blockLayout: String = "HORIZONTAL",
+    val blockLabelSize: Int = 10,
     val blocks: List<BlockDef> = emptyList()
 )
 

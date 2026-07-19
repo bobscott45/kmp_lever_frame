@@ -127,7 +127,7 @@ fun App() {
                         networkError = state.networkError,
                         onDismissNetworkError = viewModel::dismissNetworkError
                     )
-                    BlockShelfGroup(state)
+                    BlockShelfGroup(state, viewModel)
                     LeverTrackGroup(state, viewModel)
                 }
 
@@ -565,7 +565,8 @@ fun ColumnScope.LeverTrackGroup(
 }
 @Composable
 fun BlockShelfGroup(
-    state: LeverFrameUiState
+    state: LeverFrameUiState,
+    viewModel: AppViewModel
 ) {
     if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
         val currentTabDef = state.tabs[state.selectedTabIndex].second
@@ -581,7 +582,13 @@ fun BlockShelfGroup(
             ) {
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
                     val isOccupied = blockStates[index]
-                    BlockIndicator(label = blockDef.label, isOccupied = isOccupied)
+                    BlockIndicator(
+                        label = blockDef.label, 
+                        isOccupied = isOccupied,
+                        layout = currentTabDef.blockLayout,
+                        fontSize = currentTabDef.blockLabelSize,
+                        onToggle = { viewModel.toggleBlockState(state.selectedTabIndex, index) }
+                    )
                 }
             }
         }
@@ -589,27 +596,51 @@ fun BlockShelfGroup(
 }
 
 @Composable
-fun BlockIndicator(label: String, isOccupied: Boolean) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .background(Color(0xFF222222), RoundedCornerShape(4.dp))
-            .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
+fun BlockIndicator(
+    label: String, 
+    isOccupied: Boolean,
+    layout: String,
+    fontSize: Int,
+    onToggle: () -> Unit
+) {
+    val content = @Composable {
         Text(
             text = label.replace("\n", " "),
             color = Color.White,
-            fontSize = 10.sp,
+            fontSize = fontSize.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(end = 6.dp)
+            modifier = if (layout == "HORIZONTAL") Modifier.padding(end = 6.dp) else Modifier.padding(bottom = 6.dp)
         )
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(if (layout == "HORIZONTAL") 12.dp else 16.dp)
                 .clip(androidx.compose.foundation.shape.CircleShape)
-                .background(if (isOccupied) Color(0xFFcc3333) else Color(0xFF333333))
+                .background(if (isOccupied) Color(0xFFcc3333) else Color(0xFF33cc33))
                 .border(1.dp, Color.Black, androidx.compose.foundation.shape.CircleShape)
         )
+    }
+
+    if (layout == "HORIZONTAL") {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .background(Color(0xFF222222), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
+                .clickable { onToggle() }
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            content()
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .background(Color(0xFF222222), RoundedCornerShape(4.dp))
+                .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
+                .clickable { onToggle() }
+                .padding(8.dp)
+        ) {
+            content()
+        }
     }
 }

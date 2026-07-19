@@ -324,6 +324,18 @@ class AppViewModel(
         }
     }
 
+    fun toggleBlockState(tabIndex: Int, blockIndex: Int) {
+        _uiState.update { currentState ->
+            if (tabIndex in currentState.blockStates.indices && blockIndex in currentState.blockStates[tabIndex].indices) {
+                val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
+                newBlockStates[tabIndex][blockIndex] = !newBlockStates[tabIndex][blockIndex]
+                currentState.copy(blockStates = newBlockStates)
+            } else {
+                currentState
+            }
+        }
+    }
+
     fun updateSystemConfig(newConfig: JsonConfig) {
         val prevIp = configRepo.currentConfig.jmri_hub_ip
         viewModelScope.launch {
