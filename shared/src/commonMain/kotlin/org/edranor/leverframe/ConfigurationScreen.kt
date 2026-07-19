@@ -127,12 +127,12 @@ fun ConfigurationScreen(
                 Tab(
                     selected = selectedMainTab == 0,
                     onClick = { selectedMainTab = 0 },
-                    text = { Text("System Settings", color = if (selectedMainTab == 0) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
+                    text = { Text("System", color = if (selectedMainTab == 0) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
                 )
                 Tab(
                     selected = selectedMainTab == 1,
                     onClick = { selectedMainTab = 1 },
-                    text = { Text("Frames & Levers", color = if (selectedMainTab == 1) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
+                    text = { Text("Frames", color = if (selectedMainTab == 1) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
                 )
             }
 
@@ -159,38 +159,54 @@ fun ConfigurationScreen(
             } else {
                 // FRAMES & LEVERS VIEW
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Frame Selection Tabs (Secondary navigation)
+                    // Frame Selection Dropdown
+                    var frameSelectorExpanded by remember { mutableStateOf(false) }
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Frames", style = MaterialTheme.typography.titleMedium, color = LeverFrameTheme.Colors.Brass, modifier = Modifier.padding(start = 8.dp))
+                        ExposedDropdownMenuBox(
+                            expanded = frameSelectorExpanded,
+                            onExpandedChange = { frameSelectorExpanded = !frameSelectorExpanded },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            OutlinedTextField(
+                                value = config.tabs.getOrNull(selectedFrameIndex)?.name ?: "No Frames",
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Selected Frame") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = frameSelectorExpanded) },
+                                modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                colors = brassTextFieldColors()
+                            )
+                            ExposedDropdownMenu(
+                                expanded = frameSelectorExpanded,
+                                onDismissRequest = { frameSelectorExpanded = false }
+                            ) {
+                                config.tabs.forEachIndexed { index, tab ->
+                                    DropdownMenuItem(
+                                        text = { Text(tab.name) },
+                                        onClick = {
+                                            selectedFrameIndex = index
+                                            frameSelectorExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
                         TextButton(onClick = {
                             val newTabs = config.tabs.toMutableList()
                             newTabs.add(JsonTab(name = "New Frame"))
                             config = config.copy(tabs = newTabs)
                             selectedFrameIndex = newTabs.size - 1
                         }) {
-                            Text("＋ Add Frame")
+                            Text("＋ Add")
                         }
                     }
 
                     if (config.tabs.isNotEmpty()) {
-                        SecondaryScrollableTabRow(
-                            selectedTabIndex = selectedFrameIndex,
-                            edgePadding = 8.dp,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            config.tabs.forEachIndexed { index, tab ->
-                                Tab(
-                                    selected = selectedFrameIndex == index,
-                                    onClick = { selectedFrameIndex = index },
-                                    text = { Text(tab.name, color = if (selectedFrameIndex == index) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
-                                )
-                            }
-                        }
-
                         TabRow(
                             selectedTabIndex = selectedFrameConfigTab,
                             containerColor = Color.Transparent,
@@ -286,7 +302,7 @@ fun ConfigurationScreen(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text("Block Layout", style = MaterialTheme.typography.bodySmall, color = LeverFrameTheme.Colors.Brass)
                                             Column {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(32.dp)) {
                                                     RadioButton(
                                                         selected = tab.block_layout == "HORIZONTAL",
                                                         onClick = {
@@ -295,9 +311,9 @@ fun ConfigurationScreen(
                                                             config = config.copy(tabs = newTabs)
                                                         }
                                                     )
-                                                    Text("Horizontal")
+                                                    Text("Horizontal", style = MaterialTheme.typography.bodyMedium)
                                                 }
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(32.dp)) {
                                                     RadioButton(
                                                         selected = tab.block_layout == "VERTICAL",
                                                         onClick = {
@@ -306,7 +322,7 @@ fun ConfigurationScreen(
                                                             config = config.copy(tabs = newTabs)
                                                         }
                                                     )
-                                                    Text("Vertical")
+                                                    Text("Vertical", style = MaterialTheme.typography.bodyMedium)
                                                 }
                                             }
                                         }
