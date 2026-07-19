@@ -14,6 +14,7 @@ class IosSoundPlayer : SoundPlayer {
     private var thudPlayer: AVAudioPlayer? = null
     private var alarmPlayer: AVAudioPlayer? = null
     private var dingPlayer: AVAudioPlayer? = null
+    private var dingDoublePlayer: AVAudioPlayer? = null
     
     init {
         clankPlayer = loadPlayer("clank")
@@ -21,6 +22,7 @@ class IosSoundPlayer : SoundPlayer {
         thudPlayer = loadPlayer("thud")
         alarmPlayer = loadPlayer("alarm")
         dingPlayer = loadPlayer("ding")
+        dingDoublePlayer = loadPlayer("ding_double")
     }
 
     private fun loadPlayer(name: String): AVAudioPlayer? {
@@ -34,6 +36,7 @@ class IosSoundPlayer : SoundPlayer {
     override fun playThud() { thudPlayer?.apply { currentTime = 0.0; play() } }
     override fun playAlarm() { alarmPlayer?.apply { currentTime = 0.0; play() } }
     override fun playDing() { dingPlayer?.apply { currentTime = 0.0; play() } }
+    override fun playDoubleDing() { dingDoublePlayer?.apply { currentTime = 0.0; play() } }
 }
 
 @Composable

@@ -121,13 +121,30 @@ fun App() {
                     }
                 }
 
-                var initialBlocks by remember { mutableStateOf(true) }
+                var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
                 LaunchedEffect(state.blockStates) {
-                    if (initialBlocks) {
-                        initialBlocks = false
-                    } else {
-                        soundPlayer.playDing()
+                    val currentBlocks = state.blockStates
+                    val prevBlocks = previousBlocks
+                    if (prevBlocks != null && prevBlocks.size == currentBlocks.size) {
+                        var becameOccupied = false
+                        var becameFree = false
+                        for (i in currentBlocks.indices) {
+                            val currArr = currentBlocks[i]
+                            val prevArr = prevBlocks[i]
+                            if (currArr.size == prevArr.size) {
+                                for (j in currArr.indices) {
+                                    if (currArr[j] && !prevArr[j]) becameOccupied = true
+                                    if (!currArr[j] && prevArr[j]) becameFree = true
+                                }
+                            }
+                        }
+                        if (becameOccupied) {
+                            soundPlayer.playDoubleDing()
+                        } else if (becameFree) {
+                            soundPlayer.playDing()
+                        }
                     }
+                    previousBlocks = currentBlocks.map { it.copyOf() }
                 }
 
                 Column(
