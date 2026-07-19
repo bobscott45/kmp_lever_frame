@@ -106,6 +106,7 @@ fun App() {
         Box(modifier = Modifier.fillMaxSize()) {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
             val state by viewModel.uiState.collectAsState()
+            val soundPlayer = rememberSoundPlayer()
 
             if (state.isConfigMode) {
                 ConfigurationScreen(
@@ -128,7 +129,7 @@ fun App() {
                         onDismissNetworkError = viewModel::dismissNetworkError
                     )
                     BlockShelfGroup(state, viewModel)
-                    LeverTrackGroup(state, viewModel)
+                    LeverTrackGroup(state, viewModel, soundPlayer)
                 }
 
                 if (state.isStatusMode) {
@@ -187,6 +188,7 @@ fun LeverComponent(
     isAlarmed: Boolean,
     scale: Float = 1f,
     widthScale: Float = scale,
+    soundPlayer: SoundPlayer,
     onLabelClick: () -> Unit,
     onToggle: () -> Unit,
     onToggleLock: () -> Unit
@@ -306,6 +308,7 @@ fun LeverComponent(
                     .border(2.dp, Color(0xFF2b2b2b), RoundedCornerShape(6.dp))
                     .clickable { 
                         if (isSystemLocked || isManuallyLocked) {
+                            soundPlayer.playThud()
                             scope.launch {
                                 launch {
                                     shakeOffset.animateTo(
@@ -329,6 +332,7 @@ fun LeverComponent(
                             }
                         }
                         if (!isSystemLocked && !isManuallyLocked) {
+                            soundPlayer.playClank()
                             onToggle() 
                         } 
                     }
@@ -417,7 +421,10 @@ fun LeverComponent(
         }
 
         Button(
-            onClick = onToggleLock,
+            onClick = {
+                soundPlayer.playClick()
+                onToggleLock()
+            },
             colors = ButtonDefaults.buttonColors(containerColor = collarBg),
             shape = RoundedCornerShape(4.dp),
             modifier = Modifier.fillMaxWidth().height(36.dp * scale),
@@ -539,7 +546,8 @@ fun ErrorBanners(
 @Composable
 fun ColumnScope.LeverTrackGroup(
     state: LeverFrameUiState,
-    viewModel: AppViewModel
+    viewModel: AppViewModel,
+    soundPlayer: SoundPlayer
 ) {
     if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
         val currentTabDef = state.tabs[state.selectedTabIndex].second
@@ -575,6 +583,7 @@ fun ColumnScope.LeverTrackGroup(
                             isAlarmed = isAlarmed,
                             scale = scale,
                             widthScale = leverWidthScale,
+                            soundPlayer = soundPlayer,
                             onLabelClick = {
                                 viewModel.leverLabelClicked(index)
                             },
