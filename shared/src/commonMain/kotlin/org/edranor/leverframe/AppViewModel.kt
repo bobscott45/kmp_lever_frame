@@ -185,20 +185,25 @@ class AppViewModel(
                     }
                 }
                 
-                // Evaluate auto-reversers
-                tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                    if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
-                        // Lever is REVERSED, check if it's still valid under new block/lever states
-                        val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx], leverIdx, true)
-                        if (!isValid) {
-                            newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
-                            stateChanged = true
-                            if (leverDef.lcc_event_normal.isNotBlank()) {
-                                outgoingEvents.add(leverDef.lcc_event_normal)
+                // Evaluate auto-reversers (cascade until steady state)
+                var reverserChanged: Boolean
+                do {
+                    reverserChanged = false
+                    tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                        if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
+                            // Lever is REVERSED, check if it's still valid under new block/lever states
+                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx], leverIdx, true)
+                            if (!isValid) {
+                                newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
+                                stateChanged = true
+                                reverserChanged = true
+                                if (leverDef.lcc_event_normal.isNotBlank()) {
+                                    outgoingEvents.add(leverDef.lcc_event_normal)
+                                }
                             }
                         }
                     }
-                }
+                } while(reverserChanged)
                 
                 if (stateChanged && newBlockStates !== currentState.blockStates) {
                     stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
