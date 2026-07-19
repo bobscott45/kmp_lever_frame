@@ -245,6 +245,47 @@ fun ConfigurationScreen(
                             }
 
                             item {
+                                Text("Blocks", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                            }
+
+                            itemsIndexed(tab.blocks) { blockIndex, block ->
+                                MobileBlockCard(
+                                    nodeId = config.node_id,
+                                    blockIndex = blockIndex,
+                                    block = block,
+                                    onBlockChange = { newBlock ->
+                                        val newTabs = config.tabs.toMutableList()
+                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
+                                        newBlocks[blockIndex] = newBlock
+                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                                        config = config.copy(tabs = newTabs)
+                                    },
+                                    onDelete = {
+                                        val newTabs = config.tabs.toMutableList()
+                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
+                                        newBlocks.removeAt(blockIndex)
+                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                                        config = config.copy(tabs = newTabs)
+                                    }
+                                )
+                            }
+
+                            item {
+                                Button(
+                                    onClick = {
+                                        val newTabs = config.tabs.toMutableList()
+                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
+                                        newBlocks.add(JsonBlock(label = "New Block"))
+                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                                        config = config.copy(tabs = newTabs)
+                                    },
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                                ) {
+                                    Text("＋ Add Block")
+                                }
+                            }
+
+                            item {
                                 Text("Levers", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                             }
 
@@ -731,6 +772,101 @@ fun MobileRuleCard(
                     ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
                         listOf("NORMAL", "REVERSED").forEach { s ->
                             DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(alt_state = s)); altStateExpanded = false })
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MobileBlockCard(
+    nodeId: String,
+    blockIndex: Int,
+    block: JsonBlock,
+    onBlockChange: (JsonBlock) -> Unit,
+    onDelete: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column {
+            ListItem(
+                headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block") },
+                leadingContent = {
+                    Box(
+                        modifier = Modifier.size(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("${blockIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                trailingContent = {
+                    Text(if (expanded) "▲" else "▼", style = MaterialTheme.typography.titleMedium)
+                },
+                modifier = Modifier.clickable { expanded = !expanded }
+            )
+
+            if (expanded) {
+                HorizontalDivider()
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    
+                    // Basic Info Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+                                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                                    Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                                }
+                            }
+
+                            OutlinedTextField(
+                                value = block.label,
+                                onValueChange = { onBlockChange(block.copy(label = it)) },
+                                label = { Text("Label") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = brassTextFieldColors()
+                            )
+                        }
+                    }
+
+                    // LCC Events Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+                            
+                            val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
+                            
+                            val occupiedSuffix = block.lcc_event_occupied
+                            val occupiedFull = if (occupiedSuffix.isBlank()) "" else prefix + occupiedSuffix
+                            val isOccupiedValid = occupiedFull.isBlank() || LccNode.parseEventId(occupiedFull).length == 16
+                            OutlinedTextField(
+                                value = occupiedSuffix,
+                                onValueChange = { onBlockChange(block.copy(lcc_event_occupied = it)) },
+                                label = { Text("Event ID (Occupied)") },
+                                prefix = { Text(prefix, color = Color.Gray) },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = !isOccupiedValid,
+                                supportingText = if (!isOccupiedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(occupiedFull)}") } },
+                                colors = brassTextFieldColors()
+                            )
+                            
+                            val emptySuffix = block.lcc_event_empty
+                            val emptyFull = if (emptySuffix.isBlank()) "" else prefix + emptySuffix
+                            val isEmptyValid = emptyFull.isBlank() || LccNode.parseEventId(emptyFull).length == 16
+                            OutlinedTextField(
+                                value = emptySuffix,
+                                onValueChange = { onBlockChange(block.copy(lcc_event_empty = it)) },
+                                label = { Text("Event ID (Empty)") },
+                                prefix = { Text(prefix, color = Color.Gray) },
+                                modifier = Modifier.fillMaxWidth(),
+                                isError = !isEmptyValid,
+                                supportingText = if (!isEmptyValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(emptyFull)}") } },
+                                colors = brassTextFieldColors()
+                            )
                         }
                     }
                 }
