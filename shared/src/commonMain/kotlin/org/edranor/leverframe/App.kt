@@ -363,7 +363,7 @@ fun LeverComponent(
                         contentAlignment = Alignment.Center
                     ) {
                         if (leverDef.autoReverser) {
-                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White
+                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.8f)
                             Text(
                                 text = "A",
                                 color = textColor,
