@@ -54,6 +54,7 @@ fun ConfigurationScreen(
     if (selectedFrameIndex >= config.tabs.size && config.tabs.isNotEmpty()) {
         selectedFrameIndex = config.tabs.size - 1
     }
+    var selectedFrameConfigTab by remember { mutableStateOf(0) }
 
     val clipboardManager = LocalClipboardManager.current
     var showExportDialog by remember { mutableStateOf(false) }
@@ -179,6 +180,16 @@ fun ConfigurationScreen(
                             }
                         }
 
+                        TabRow(
+                            selectedTabIndex = selectedFrameConfigTab,
+                            containerColor = Color.Transparent,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            Tab(selected = selectedFrameConfigTab == 0, onClick = { selectedFrameConfigTab = 0 }, text = { Text("Settings") })
+                            Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Blocks") })
+                            Tab(selected = selectedFrameConfigTab == 2, onClick = { selectedFrameConfigTab = 2 }, text = { Text("Levers") })
+                        }
+
                         // Content for the selected frame
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().weight(1f),
@@ -187,66 +198,69 @@ fun ConfigurationScreen(
                         ) {
                             val tab = config.tabs[selectedFrameIndex]
 
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    OutlinedTextField(
-                                        value = tab.name,
-                                        onValueChange = { newName ->
+                            if (selectedFrameConfigTab == 0) {
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        OutlinedTextField(
+                                            value = tab.name,
+                                            onValueChange = { newName ->
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(name = newName)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            label = { Text("Frame Title") },
+                                            modifier = Modifier.weight(1f).padding(end = 16.dp)
+                                        )
+                                        IconButton(onClick = {
                                             val newTabs = config.tabs.toMutableList()
-                                            newTabs[selectedFrameIndex] = tab.copy(name = newName)
+                                            newTabs.removeAt(selectedFrameIndex)
                                             config = config.copy(tabs = newTabs)
-                                        },
-                                        label = { Text("Frame Title") },
-                                        modifier = Modifier.weight(1f).padding(end = 16.dp)
-                                    )
-                                    IconButton(onClick = {
-                                        val newTabs = config.tabs.toMutableList()
-                                        newTabs.removeAt(selectedFrameIndex)
-                                        config = config.copy(tabs = newTabs)
-                                        if (selectedFrameIndex >= newTabs.size && newTabs.isNotEmpty()) {
-                                            selectedFrameIndex = newTabs.size - 1
+                                            if (selectedFrameIndex >= newTabs.size && newTabs.isNotEmpty()) {
+                                                selectedFrameIndex = newTabs.size - 1
+                                            }
+                                        }) {
+                                            Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                                         }
-                                    }) {
-                                        Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                                    }
+                                }
+
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        OutlinedTextField(
+                                            value = tab.label_lines.toString(),
+                                            onValueChange = { 
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(label_lines = it.toIntOrNull() ?: 2)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            label = { Text("Label Lines") },
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        OutlinedTextField(
+                                            value = tab.label_line_height.toString(),
+                                            onValueChange = { 
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(label_line_height = it.toIntOrNull() ?: 18)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            label = { Text("Line Height") },
+                                            modifier = Modifier.weight(1f)
+                                        )
                                     }
                                 }
                             }
 
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    OutlinedTextField(
-                                        value = tab.label_lines.toString(),
-                                        onValueChange = { 
-                                            val newTabs = config.tabs.toMutableList()
-                                            newTabs[selectedFrameIndex] = tab.copy(label_lines = it.toIntOrNull() ?: 2)
-                                            config = config.copy(tabs = newTabs)
-                                        },
-                                        label = { Text("Label Lines") },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    OutlinedTextField(
-                                        value = tab.label_line_height.toString(),
-                                        onValueChange = { 
-                                            val newTabs = config.tabs.toMutableList()
-                                            newTabs[selectedFrameIndex] = tab.copy(label_line_height = it.toIntOrNull() ?: 18)
-                                            config = config.copy(tabs = newTabs)
-                                        },
-                                        label = { Text("Line Height") },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                            }
+                            if (selectedFrameConfigTab == 1) {
 
-                            item {
-                                Text("Blocks", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                            }
+                            // Blocks and Levers item headers are no longer needed
+                            // as they are split into sub-tabs
 
                             itemsIndexed(tab.blocks) { blockIndex, block ->
                                 MobileBlockCard(
@@ -285,44 +299,44 @@ fun ConfigurationScreen(
                                 }
                             }
 
-                            item {
-                                Text("Levers", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
                             }
 
-                            itemsIndexed(tab.levers) { leverIndex, lever ->
-                                MobileLeverCard(
-                                    nodeId = config.node_id,
-                                    leverIndex = leverIndex,
-                                    lever = lever,
-                                    onLeverChange = { newLever ->
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                        newLevers[leverIndex] = newLever
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                        config = config.copy(tabs = newTabs)
-                                    },
-                                    onDelete = {
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                        newLevers.removeAt(leverIndex)
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                        config = config.copy(tabs = newTabs)
+                            if (selectedFrameConfigTab == 2) {
+                                itemsIndexed(tab.levers) { leverIndex, lever ->
+                                    MobileLeverCard(
+                                        nodeId = config.node_id,
+                                        leverIndex = leverIndex,
+                                        lever = lever,
+                                        onLeverChange = { newLever ->
+                                            val newTabs = config.tabs.toMutableList()
+                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
+                                            newLevers[leverIndex] = newLever
+                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                                            config = config.copy(tabs = newTabs)
+                                        },
+                                        onDelete = {
+                                            val newTabs = config.tabs.toMutableList()
+                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
+                                            newLevers.removeAt(leverIndex)
+                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                                            config = config.copy(tabs = newTabs)
+                                        }
+                                    )
+                                }
+
+                                item {
+                                    Button(
+                                        onClick = {
+                                            val newTabs = config.tabs.toMutableList()
+                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
+                                            newLevers.add(JsonLever(label = "SPARE", type = "SPARE"))
+                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                                            config = config.copy(tabs = newTabs)
+                                        },
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                                    ) {
+                                        Text("＋ Add Lever")
                                     }
-                                )
-                            }
-
-                            item {
-                                Button(
-                                    onClick = {
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                        newLevers.add(JsonLever(label = "SPARE", type = "SPARE"))
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                        config = config.copy(tabs = newTabs)
-                                    },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
-                                ) {
-                                    Text("＋ Add Lever")
                                 }
                             }
                         }
