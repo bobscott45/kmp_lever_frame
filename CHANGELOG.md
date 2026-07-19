@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changlog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 1.0.3-dev
+## [Unreleased] - 1.1.3-dev
+
+### Added
+- **Digital Block Shelf**: A new visual shelf above the levers to track and toggle digital block occupancies.
+- **Cross-Interlocking**: Levers can now interlock against digital block states (occupied/empty) in addition to other levers.
+- **Auto-Reversers**: Signals can be configured to automatically snap back to Danger when an interlocked block becomes occupied, with full cascading locking logic for distant signals.
+- **Visual Status Indicators**: Levers now display LED status indicators (red/yellow for ON, green for OFF) and a subtle "A" on the knob when auto-reverse is enabled.
+
+### Changed
+- **UI Enhancements**: Block occupancy boxes dynamically scale with font size to conserve screen space. Default block label font size reduced to 8.
+- **Configuration UI**: Added confirmation popups when deleting levers or blocks to prevent accidental data loss.
+
+## [1.0.3] - 2026-07-19
 
 ### Added
 - **Documentation**: Added day-to-day Tag and Bump versioning workflow guidelines and Xcode configuration steps (`04a7df3`).
