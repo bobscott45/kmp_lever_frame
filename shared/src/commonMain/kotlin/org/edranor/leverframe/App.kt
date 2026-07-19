@@ -117,7 +117,7 @@ fun App() {
             } else {
                 LaunchedEffect(state.conflictingLevers) {
                     if (state.conflictingLevers.isNotEmpty()) {
-                        delay(1500)
+                        delay(700)
                         soundPlayer.playAlarm()
                     }
                 }
