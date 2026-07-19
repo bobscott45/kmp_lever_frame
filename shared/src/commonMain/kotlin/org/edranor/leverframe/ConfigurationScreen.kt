@@ -152,7 +152,7 @@ fun ConfigurationScreen(
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Reset to Factory Defaults")
+                            Text("Reset ALL Settings & Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 }
@@ -449,7 +449,7 @@ fun ConfigurationScreen(
         AlertDialog(
             onDismissRequest = { showResetWarning = false },
             title = { Text("Reset to Defaults", color = MaterialTheme.colorScheme.error) },
-            text = { Text("This will overwrite all current settings, frames, and levers with the factory default configuration. Are you sure?") },
+            text = { Text("WARNING: This will completely erase ALL System Settings and ALL Frame configurations (including levers and blocks) and replace them with the factory default configuration.\n\nThis cannot be undone. Are you sure?") },
             confirmButton = {
                 TextButton(onClick = {
                     showResetWarning = false
