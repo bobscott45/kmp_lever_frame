@@ -45,7 +45,7 @@ class ConfigManagerTest {
         val upDistant = northJunction.second.levers[0]
         assertEquals(LeverType.DISTANT_SIGNAL, upDistant.type)
         assertEquals(1, upDistant.conditions.size)
-        assertEquals(1, upDistant.conditions[0].targetLeverIndex)
+        assertEquals(1, upDistant.conditions[0].targetIndex)
         assertTrue(upDistant.conditions[0].requiredState) // "REVERSED" translates to true
         
         val southBox = parsedTabs[1]
