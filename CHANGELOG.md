@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changlog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 1.1.3-dev
+## [Unreleased] - 1.1.0-dev
 
 ### Added
 - **Digital Block Shelf**: A new visual shelf above the levers to track and toggle digital block occupancies.
