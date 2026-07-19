@@ -130,11 +130,15 @@ class AppViewModel(
         if (!configRepo.currentConfig.lcc_master) return
         
         var didChange = false
+        val outgoingEvents = mutableListOf<String>()
+        
         _uiState.update { currentState ->
             var stateChanged = false
             var stateToReturn = currentState
             val newLeverStates = currentState.leverStates.map { it.copyOf() }
             val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
+
+            val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
 
             currentState.tabs.forEachIndexed { tabIdx, tabPair ->
                 val tabDef = tabPair.second
@@ -163,7 +167,6 @@ class AppViewModel(
                     }
                 }
                 // Handle Block states
-                val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
                 tabDef.blocks.forEachIndexed { blockIdx, blockDef ->
                     var attemptBlockState: Boolean? = null
                     if (blockDef.lcc_event_occupied.isNotBlank()) {
@@ -181,6 +184,22 @@ class AppViewModel(
                         }
                     }
                 }
+                
+                // Evaluate auto-reversers
+                tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                    if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
+                        // Lever is REVERSED, check if it's still valid under new block/lever states
+                        val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx], leverIdx, true)
+                        if (!isValid) {
+                            newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
+                            stateChanged = true
+                            if (leverDef.lcc_event_normal.isNotBlank()) {
+                                outgoingEvents.add(leverDef.lcc_event_normal)
+                            }
+                        }
+                    }
+                }
+                
                 if (stateChanged && newBlockStates !== currentState.blockStates) {
                     stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
                 }
@@ -204,6 +223,10 @@ class AppViewModel(
         
         if (didChange) {
             persistStatesIfEnabled()
+        }
+        
+        outgoingEvents.forEach { eventStr ->
+            lccClient.produceEvent(eventStr)
         }
     }
 

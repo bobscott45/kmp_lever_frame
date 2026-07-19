@@ -77,6 +77,7 @@ data class JsonLever(
     val lcc_event_normal: String = "",
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
+    val auto_reverser: Boolean = false,
     val interlocking: List<JsonInterlocking> = emptyList()
 )
 
@@ -154,7 +155,8 @@ object ConfigManager : AppConfigRepository {
                     label = jsonLever.label,
                     lcc_event_normal = if (normalSuffix.isNotBlank()) "${config.node_id}.$normalSuffix" else "",
                     lcc_event_reversed = if (reversedSuffix.isNotBlank()) "${config.node_id}.$reversedSuffix" else "",
-                    lcc_enabled = jsonLever.lcc_enabled
+                    lcc_enabled = jsonLever.lcc_enabled,
+                    autoReverser = jsonLever.auto_reverser
                 )
             }
 

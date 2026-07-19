@@ -729,6 +729,18 @@ fun MobileLeverCard(
                                     colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
                                 )
                             }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Auto-Reverser (Return to Normal if rules fail)", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                Switch(
+                                    checked = lever.auto_reverser,
+                                    onCheckedChange = { onLeverChange(lever.copy(auto_reverser = it)) },
+                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
+                                )
+                            }
                         }
                     }
 

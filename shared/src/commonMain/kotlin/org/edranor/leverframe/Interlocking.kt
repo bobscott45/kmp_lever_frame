@@ -48,7 +48,8 @@ data class LeverDef(
     val label: String = "",
     val lcc_event_normal: String = "",
     val lcc_event_reversed: String = "",
-    val lcc_enabled: Boolean = true
+    val lcc_enabled: Boolean = true,
+    val autoReverser: Boolean = false
 )
 
 data class BlockDef(
