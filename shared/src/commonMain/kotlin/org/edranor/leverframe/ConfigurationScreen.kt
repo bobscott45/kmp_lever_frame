@@ -613,9 +613,6 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 )
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Version: 1.1.0-dev", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
-            
             var policyExpanded by remember { mutableStateOf(false) }
             val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
             val currentPolicyName = policies[config.conflict_policy] ?: "Override Allowed"
