@@ -244,24 +244,24 @@ fun ConfigurationScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
-                                        OutlinedTextField(
-                                            value = tab.label_lines.toString(),
+                                        IntTextField(
+                                            value = tab.label_lines,
                                             onValueChange = { 
                                                 val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(label_lines = it.toIntOrNull() ?: 2)
+                                                newTabs[selectedFrameIndex] = tab.copy(label_lines = it)
                                                 config = config.copy(tabs = newTabs)
                                             },
-                                            label = { Text("Lever Label Lines") },
+                                            label = "Lever Label Lines",
                                             modifier = Modifier.weight(1f)
                                         )
-                                        OutlinedTextField(
-                                            value = tab.label_line_height.toString(),
+                                        IntTextField(
+                                            value = tab.label_line_height,
                                             onValueChange = { 
                                                 val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(label_line_height = it.toIntOrNull() ?: 18)
+                                                newTabs[selectedFrameIndex] = tab.copy(label_line_height = it)
                                                 config = config.copy(tabs = newTabs)
                                             },
-                                            label = { Text("Lever Line Height") },
+                                            label = "Lever Line Height",
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -272,14 +272,14 @@ fun ConfigurationScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                                     ) {
-                                        OutlinedTextField(
-                                            value = tab.block_label_size.toString(),
+                                        IntTextField(
+                                            value = tab.block_label_size,
                                             onValueChange = { 
                                                 val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(block_label_size = it.toIntOrNull() ?: 10)
+                                                newTabs[selectedFrameIndex] = tab.copy(block_label_size = it)
                                                 config = config.copy(tabs = newTabs)
                                             },
-                                            label = { Text("Block Font Size") },
+                                            label = "Block Font Size",
                                             modifier = Modifier.weight(1f)
                                         )
 
@@ -967,4 +967,23 @@ fun MobileBlockCard(
             }
         }
     }
+}
+
+@Composable
+fun IntTextField(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    var text by remember(value) { mutableStateOf(value.toString()) }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { newText ->
+            text = newText
+            newText.toIntOrNull()?.let { onValueChange(it) }
+        },
+        label = { Text(label) },
+        modifier = modifier
+    )
 }
