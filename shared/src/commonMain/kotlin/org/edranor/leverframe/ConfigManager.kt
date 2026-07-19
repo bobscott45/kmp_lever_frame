@@ -58,7 +58,7 @@ data class JsonTab(
     val label_lines: Int = 2,
     val label_line_height: Int = 18,
     val block_layout: String = "HORIZONTAL",
-    val block_label_size: Int = 10,
+    val block_label_size: Int = 8,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList()
 )
