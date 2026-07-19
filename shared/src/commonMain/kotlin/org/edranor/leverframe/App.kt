@@ -624,8 +624,8 @@ fun BlockIndicator(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .background(Color(0xFF2E1A0F), RoundedCornerShape(4.dp)) // Dark Mahogany
-                .border(1.dp, Color(0xFF4A2E1B), RoundedCornerShape(4.dp))
+                .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
+                .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
                 .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
@@ -635,8 +635,8 @@ fun BlockIndicator(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(Color(0xFF2E1A0F), RoundedCornerShape(4.dp)) // Dark Mahogany
-                .border(1.dp, Color(0xFF4A2E1B), RoundedCornerShape(4.dp))
+                .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
+                .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
                 .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
