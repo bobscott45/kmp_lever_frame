@@ -93,7 +93,7 @@ class AppViewModel(
             BooleanArray(tabDef.levers.size) { false }
         }
         val blockStates = parsedTabs.map { (tabName, tabDef) ->
-            BooleanArray(tabDef.blocks.size) { false }
+            BooleanArray(tabDef.blocks.size) { true }
         }
         
         // Restore from disk if configured
