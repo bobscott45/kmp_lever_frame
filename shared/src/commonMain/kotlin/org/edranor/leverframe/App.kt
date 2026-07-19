@@ -455,7 +455,7 @@ fun LeverComponent(
 
         Button(
             onClick = {
-                soundPlayer.playClick()
+                soundPlayer.playLock()
                 onToggleLock()
             },
             colors = ButtonDefaults.buttonColors(containerColor = collarBg),

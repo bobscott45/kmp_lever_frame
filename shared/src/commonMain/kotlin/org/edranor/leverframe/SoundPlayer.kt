@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 
 interface SoundPlayer {
     fun playClank()
-    fun playClick()
+    fun playLock()
     fun playThud()
     fun playAlarm()
     fun playDing()

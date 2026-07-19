@@ -20,7 +20,7 @@ class JvmSoundPlayer : SoundPlayer {
     }
 
     override fun playClank() { playWav("/clank.wav") }
-    override fun playClick() { playWav("/click.wav") }
+    override fun playLock() { playWav("/lock.wav") }
     override fun playThud() { playWav("/thud.wav") }
     override fun playAlarm() { playWav("/alarm.wav") }
     override fun playDing() { playWav("/ding.wav") }
