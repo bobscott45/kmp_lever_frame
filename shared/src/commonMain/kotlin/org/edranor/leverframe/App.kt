@@ -574,7 +574,7 @@ fun BlockShelfGroup(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 8.dp)
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
@@ -590,23 +590,23 @@ fun BlockShelfGroup(
 
 @Composable
 fun BlockIndicator(label: String, isOccupied: Boolean) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .background(Color(0xFF222222), RoundedCornerShape(4.dp))
             .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
-            .padding(8.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = label,
+            text = label.replace("\n", " "),
             color = Color.White,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 6.dp)
+            modifier = Modifier.padding(end = 6.dp)
         )
         Box(
             modifier = Modifier
-                .size(16.dp)
+                .size(12.dp)
                 .clip(androidx.compose.foundation.shape.CircleShape)
                 .background(if (isOccupied) Color(0xFFcc3333) else Color(0xFF333333))
                 .border(1.dp, Color.Black, androidx.compose.foundation.shape.CircleShape)
