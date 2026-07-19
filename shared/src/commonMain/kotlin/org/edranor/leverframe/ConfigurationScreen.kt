@@ -60,6 +60,7 @@ fun ConfigurationScreen(
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var showSaveWarning by remember { mutableStateOf(false) }
+    var showResetWarning by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
 
     Scaffold(
@@ -143,6 +144,15 @@ fun ConfigurationScreen(
                 ) {
                     item {
                         SystemSettingsSection(config) { config = it }
+                    }
+                    item {
+                        OutlinedButton(
+                            onClick = { showResetWarning = true },
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Reset to Factory Defaults")
+                        }
                     }
                 }
             } else {
@@ -368,6 +378,29 @@ fun ConfigurationScreen(
                 TextButton(onClick = { showSaveWarning = false }) {
                     Text("Cancel")
                 }
+            }
+        )
+    }
+
+    if (showResetWarning) {
+        AlertDialog(
+            onDismissRequest = { showResetWarning = false },
+            title = { Text("Reset to Defaults", color = MaterialTheme.colorScheme.error) },
+            text = { Text("This will overwrite all current settings, frames, and levers with the factory default configuration. Are you sure?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showResetWarning = false
+                    try {
+                        config = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
+                    } catch (e: Exception) {
+                        println("Failed to reset: ${e.message}")
+                    }
+                }) {
+                    Text("Reset", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetWarning = false }) { Text("Cancel") }
             }
         )
     }
