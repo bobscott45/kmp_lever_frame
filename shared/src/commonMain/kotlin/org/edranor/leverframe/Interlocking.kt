@@ -47,10 +47,17 @@ data class LeverDef(
     val lcc_enabled: Boolean = true
 )
 
+data class BlockDef(
+    val label: String = "",
+    val lcc_event_occupied: String = "",
+    val lcc_event_empty: String = ""
+)
+
 data class TabDef(
     val levers: List<LeverDef>,
     val labelLines: Int = 2,
-    val labelLineHeight: Int = 18
+    val labelLineHeight: Int = 18,
+    val blocks: List<BlockDef> = emptyList()
 )
 
 object Interlocking {

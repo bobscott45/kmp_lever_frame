@@ -127,6 +127,7 @@ fun App() {
                         networkError = state.networkError,
                         onDismissNetworkError = viewModel::dismissNetworkError
                     )
+                    BlockShelfGroup(state)
                     LeverTrackGroup(state, viewModel)
                 }
 
@@ -560,5 +561,55 @@ fun ColumnScope.LeverTrackGroup(
                 }
             }
         }
+    }
+}
+@Composable
+fun BlockShelfGroup(
+    state: LeverFrameUiState
+) {
+    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+        val currentTabDef = state.tabs[state.selectedTabIndex].second
+        val blockStates = state.blockStates.getOrNull(state.selectedTabIndex)
+        if (blockStates != null && currentTabDef.blocks.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                currentTabDef.blocks.forEachIndexed { index, blockDef ->
+                    val isOccupied = blockStates[index]
+                    BlockIndicator(label = blockDef.label, isOccupied = isOccupied)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BlockIndicator(label: String, isOccupied: Boolean) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(Color(0xFF222222), RoundedCornerShape(4.dp))
+            .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
+            .padding(8.dp)
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(if (isOccupied) Color(0xFFcc3333) else Color(0xFF333333))
+                .border(1.dp, Color.Black, androidx.compose.foundation.shape.CircleShape)
+        )
     }
 }

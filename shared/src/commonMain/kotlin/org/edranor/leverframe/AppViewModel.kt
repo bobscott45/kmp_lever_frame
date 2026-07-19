@@ -92,6 +92,9 @@ class AppViewModel(
         val manualLocks = parsedTabs.map { (tabName, tabDef) ->
             BooleanArray(tabDef.levers.size) { false }
         }
+        val blockStates = parsedTabs.map { (tabName, tabDef) ->
+            BooleanArray(tabDef.blocks.size) { false }
+        }
         
         // Restore from disk if configured
         val storedStates = configRepo.loadSavedLeverStates()
@@ -105,11 +108,12 @@ class AppViewModel(
             }
         }
 
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 tabs = parsedTabs,
                 leverStates = leverStates,
                 manualLocks = manualLocks,
+                blockStates = blockStates,
                 configVersion = initialVersion + 1,
                 config = configRepo.currentConfig
             )
@@ -128,6 +132,7 @@ class AppViewModel(
         var didChange = false
         _uiState.update { currentState ->
             var stateChanged = false
+            var stateToReturn = currentState
             val newLeverStates = currentState.leverStates.map { it.copyOf() }
             val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
 
@@ -157,20 +162,42 @@ class AppViewModel(
                         }
                     }
                 }
+                // Handle Block states
+                val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
+                tabDef.blocks.forEachIndexed { blockIdx, blockDef ->
+                    var attemptBlockState: Boolean? = null
+                    if (blockDef.lcc_event_occupied.isNotBlank()) {
+                        val occupiedHex = lccClient.parseEventId(blockDef.lcc_event_occupied)
+                        if (occupiedHex == hexEventId) attemptBlockState = true
+                    }
+                    if (blockDef.lcc_event_empty.isNotBlank()) {
+                        val emptyHex = lccClient.parseEventId(blockDef.lcc_event_empty)
+                        if (emptyHex == hexEventId) attemptBlockState = false
+                    }
+                    if (attemptBlockState != null) {
+                        if (newBlockStates[tabIdx][blockIdx] != attemptBlockState) {
+                            newBlockStates[tabIdx][blockIdx] = attemptBlockState
+                            stateChanged = true
+                        }
+                    }
+                }
+                if (stateChanged && newBlockStates !== currentState.blockStates) {
+                    stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
+                }
             }
             
             if (stateChanged) {
                 didChange = true
-                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                val conflicts = if (stateToReturn.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
-                        currentState.tabs[currentState.selectedTabIndex].second,
-                        newLeverStates[currentState.selectedTabIndex]
+                        stateToReturn.tabs[stateToReturn.selectedTabIndex].second,
+                        newLeverStates[stateToReturn.selectedTabIndex]
                     )
                 } else emptyList()
-                currentState.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
+                stateToReturn.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
             } else {
                 didChange = false
-                currentState
+                stateToReturn
             }
         }
         
@@ -227,7 +254,7 @@ class AppViewModel(
             } else {
                 didChange = false
                 lccEventStr = null
-                currentState
+                currentState.copy(errorMessage = "Interlocking conflict: Cannot move lever")
             }
         }
         

@@ -26,6 +26,7 @@ data class LeverFrameUiState(
     val selectedTabIndex: Int = 0,
     val leverStates: List<BooleanArray> = emptyList(),
     val manualLocks: List<BooleanArray> = emptyList(),
+    val blockStates: List<BooleanArray> = emptyList(),
     val isConfigMode: Boolean = false,
     val isStatusMode: Boolean = false,
     val statusLeverIndex: Int? = null,
@@ -65,6 +66,11 @@ data class LeverFrameUiState(
             if (!manualLocks[i].contentEquals(other.manualLocks[i])) return false
         }
 
+        if (blockStates.size != other.blockStates.size) return false
+        for (i in blockStates.indices) {
+            if (!blockStates[i].contentEquals(other.blockStates[i])) return false
+        }
+
         return true
     }
 
@@ -73,6 +79,7 @@ data class LeverFrameUiState(
         result = 31 * result + selectedTabIndex
         result = 31 * result + leverStates.sumOf { it.contentHashCode() }
         result = 31 * result + manualLocks.sumOf { it.contentHashCode() }
+        result = 31 * result + blockStates.sumOf { it.contentHashCode() }
         result = 31 * result + isConfigMode.hashCode()
         result = 31 * result + isStatusMode.hashCode()
         result = 31 * result + (statusLeverIndex ?: 0)

@@ -57,7 +57,15 @@ data class JsonTab(
     val name: String,
     val label_lines: Int = 2,
     val label_line_height: Int = 18,
-    val levers: List<JsonLever> = emptyList()
+    val levers: List<JsonLever> = emptyList(),
+    val blocks: List<JsonBlock> = emptyList()
+)
+
+@Serializable
+data class JsonBlock(
+    val label: String = "",
+    val lcc_event_occupied: String = "",
+    val lcc_event_empty: String = ""
 )
 
 @Serializable
@@ -140,7 +148,18 @@ object ConfigManager : AppConfigRepository {
                     lcc_enabled = jsonLever.lcc_enabled
                 )
             }
-            jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height)
+
+            val blocks = jsonTab.blocks.map { jsonBlock ->
+                val occupiedSuffix = extractSuffix(jsonBlock.lcc_event_occupied, config.node_id)
+                val emptySuffix = extractSuffix(jsonBlock.lcc_event_empty, config.node_id)
+                
+                BlockDef(
+                    label = jsonBlock.label,
+                    lcc_event_occupied = if (occupiedSuffix.isNotBlank()) "${config.node_id}.$occupiedSuffix" else "",
+                    lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else ""
+                )
+            }
+            jsonTab.name to TabDef(levers, jsonTab.label_lines, jsonTab.label_line_height, blocks)
         }
     }
 
