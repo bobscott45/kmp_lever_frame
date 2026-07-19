@@ -855,8 +855,8 @@ fun MobileRuleCard(
                 }
                 
                 IntTextField(
-                    value = rule.target,
-                    onValueChange = { onRuleChange(rule.copy(target = it)) },
+                    value = rule.target + 1,
+                    onValueChange = { onRuleChange(rule.copy(target = it - 1)) },
                     label = "Index",
                     modifier = Modifier.weight(1f),
                     colors = brassTextFieldColors()
@@ -908,8 +908,8 @@ fun MobileRuleCard(
                 }
 
                 IntTextField(
-                    value = rule.alt_target,
-                    onValueChange = { onRuleChange(rule.copy(alt_target = it)) },
+                    value = if (rule.alt_target == -1) -1 else rule.alt_target + 1,
+                    onValueChange = { onRuleChange(rule.copy(alt_target = if (it == -1) -1 else it - 1)) },
                     label = "Alt Idx",
                     modifier = Modifier.weight(1f),
                     colors = brassTextFieldColors()

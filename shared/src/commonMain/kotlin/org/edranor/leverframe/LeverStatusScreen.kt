@@ -132,7 +132,7 @@ fun LeverStatusScreen(
                                     if (rule.altRequiredState) "REVERSED" else "NORMAL"
                                 }
                                 val altTargetLabel = if (rule.altTargetType == TargetType.BLOCK) "Block" else "Lever"
-                                " OR $altTargetLabel ${rule.altTargetIndex} is $altStateStr"
+                                " OR $altTargetLabel ${rule.altTargetIndex + 1} is $altStateStr"
                             } else ""
                             
                             val mainState = if (rule.targetType == TargetType.BLOCK) blockStates.getOrNull(rule.targetIndex) ?: false else leverStates.getOrNull(rule.targetIndex) ?: false
@@ -144,7 +144,7 @@ fun LeverStatusScreen(
                             val isSatisfied = mainSatisfied || altSatisfied
                             
                             val statusIcon = if (isSatisfied) "✅" else "❌"
-                            Text("$statusIcon $targetLabel ${rule.targetIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
+                            Text("$statusIcon $targetLabel ${rule.targetIndex + 1} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
                         }
                     }
                 } else {
