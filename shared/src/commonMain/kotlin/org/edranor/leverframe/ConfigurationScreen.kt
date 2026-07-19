@@ -832,12 +832,32 @@ fun MobileRuleCard(
             }
             
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = rule.target.toString(),
-                    onValueChange = { onRuleChange(rule.copy(target = it.toIntOrNull() ?: 0)) },
-                    label = { Text("Target Index") },
-                    modifier = Modifier.weight(1f),
-                    colors = brassTextFieldColors()
+                var typeExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }, modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = rule.target_type,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                        colors = brassTextFieldColors()
+                    )
+                    ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
+                        listOf("LEVER", "BLOCK").forEach { s ->
+                            DropdownMenuItem(text = { Text(s) }, onClick = { 
+                                val newState = if (s == "BLOCK") "OCCUPIED" else "NORMAL"
+                                onRuleChange(rule.copy(target_type = s, state = newState)); typeExpanded = false 
+                            })
+                        }
+                    }
+                }
+                
+                IntTextField(
+                    value = rule.target,
+                    onValueChange = { onRuleChange(rule.copy(target = it)) },
+                    label = "Index",
+                    modifier = Modifier.weight(1f)
                 )
 
                 var stateExpanded by remember { mutableStateOf(false) }
@@ -846,13 +866,14 @@ fun MobileRuleCard(
                         value = rule.state,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Required State") },
+                        label = { Text("State") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
                         modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
                         colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
-                        listOf("NORMAL", "REVERSED").forEach { s ->
+                        val options = if (rule.target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+                        options.forEach { s ->
                             DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(state = s)); stateExpanded = false })
                         }
                     }
@@ -860,12 +881,32 @@ fun MobileRuleCard(
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = rule.alt_target.toString(),
-                    onValueChange = { onRuleChange(rule.copy(alt_target = it.toIntOrNull() ?: -1)) },
-                    label = { Text("Alt Target") },
-                    modifier = Modifier.weight(1f),
-                    colors = brassTextFieldColors()
+                var altTypeExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = altTypeExpanded, onExpandedChange = { altTypeExpanded = !altTypeExpanded }, modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = rule.alt_target_type,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Alt Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altTypeExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                        colors = brassTextFieldColors()
+                    )
+                    ExposedDropdownMenu(expanded = altTypeExpanded, onDismissRequest = { altTypeExpanded = false }) {
+                        listOf("LEVER", "BLOCK").forEach { s ->
+                            DropdownMenuItem(text = { Text(s) }, onClick = { 
+                                val newState = if (s == "BLOCK") "OCCUPIED" else "NORMAL"
+                                onRuleChange(rule.copy(alt_target_type = s, alt_state = newState)); altTypeExpanded = false 
+                            })
+                        }
+                    }
+                }
+
+                IntTextField(
+                    value = rule.alt_target,
+                    onValueChange = { onRuleChange(rule.copy(alt_target = it)) },
+                    label = "Alt Idx",
+                    modifier = Modifier.weight(1f)
                 )
 
                 var altStateExpanded by remember { mutableStateOf(false) }
@@ -880,7 +921,8 @@ fun MobileRuleCard(
                         colors = brassTextFieldColors()
                     )
                     ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
-                        listOf("NORMAL", "REVERSED").forEach { s ->
+                        val options = if (rule.alt_target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+                        options.forEach { s ->
                             DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(alt_state = s)); altStateExpanded = false })
                         }
                     }

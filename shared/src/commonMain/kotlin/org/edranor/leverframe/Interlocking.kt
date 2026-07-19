@@ -21,10 +21,14 @@
  */
 package org.edranor.leverframe
 
+enum class TargetType { LEVER, BLOCK }
+
 data class InterlockingCondition(
-    val targetLeverIndex: Int = -1,
+    val targetType: TargetType = TargetType.LEVER,
+    val targetIndex: Int = -1,
     val requiredState: Boolean = false,
-    val altTargetLeverIndex: Int = -1,
+    val altTargetType: TargetType = TargetType.LEVER,
+    val altTargetIndex: Int = -1,
     val altRequiredState: Boolean = false
 )
 
@@ -69,6 +73,7 @@ object Interlocking {
     fun evaluate(
         tab: TabDef,
         states: BooleanArray,
+        blockStates: BooleanArray,
         leverIndex: Int,
         attemptingState: Boolean
     ): Boolean {
@@ -81,10 +86,22 @@ object Interlocking {
             // Rules only apply when the lever is in the Reversed (true) state
             if (newStates[i]) {
                 for (condition in tab.levers[i].conditions) {
-                    if (condition.targetLeverIndex != -1) {
-                        val primaryMatch = newStates[condition.targetLeverIndex] == condition.requiredState
-                        val altMatch = condition.altTargetLeverIndex != -1 && 
-                                       newStates[condition.altTargetLeverIndex] == condition.altRequiredState
+                    if (condition.targetIndex != -1) {
+                        val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
+                            blockStates.getOrNull(condition.targetIndex) ?: false
+                        } else {
+                            newStates.getOrNull(condition.targetIndex) ?: false
+                        }
+                        val primaryMatch = primaryTargetState == condition.requiredState
+                        
+                        val altMatch = if (condition.altTargetIndex != -1) {
+                            val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
+                                blockStates.getOrNull(condition.altTargetIndex) ?: false
+                            } else {
+                                newStates.getOrNull(condition.altTargetIndex) ?: false
+                            }
+                            altTargetState == condition.altRequiredState
+                        } else false
                         
                         if (!primaryMatch && !altMatch) {
                             return false
@@ -99,21 +116,33 @@ object Interlocking {
     /**
      * Returns a list of lever indices that are involved in an interlocking conflict.
      */
-    fun getConflictingLevers(tab: TabDef, states: BooleanArray): List<Int> {
+    fun getConflictingLevers(tab: TabDef, states: BooleanArray, blockStates: BooleanArray): List<Int> {
         val conflicts = mutableSetOf<Int>()
         for (i in tab.levers.indices) {
             if (states[i]) {
                 for (condition in tab.levers[i].conditions) {
-                    if (condition.targetLeverIndex != -1) {
-                        val primaryMatch = states[condition.targetLeverIndex] == condition.requiredState
-                        val altMatch = condition.altTargetLeverIndex != -1 && 
-                                       states[condition.altTargetLeverIndex] == condition.altRequiredState
+                    if (condition.targetIndex != -1) {
+                        val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
+                            blockStates.getOrNull(condition.targetIndex) ?: false
+                        } else {
+                            states.getOrNull(condition.targetIndex) ?: false
+                        }
+                        val primaryMatch = primaryTargetState == condition.requiredState
+                        
+                        val altMatch = if (condition.altTargetIndex != -1) {
+                            val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
+                                blockStates.getOrNull(condition.altTargetIndex) ?: false
+                            } else {
+                                states.getOrNull(condition.altTargetIndex) ?: false
+                            }
+                            altTargetState == condition.altRequiredState
+                        } else false
                         
                         if (!primaryMatch && !altMatch) {
                             conflicts.add(i)
-                            conflicts.add(condition.targetLeverIndex)
-                            if (condition.altTargetLeverIndex != -1) {
-                                conflicts.add(condition.altTargetLeverIndex)
+                            if (condition.targetType == TargetType.LEVER) conflicts.add(condition.targetIndex)
+                            if (condition.altTargetIndex != -1 && condition.altTargetType == TargetType.LEVER) {
+                                conflicts.add(condition.altTargetIndex)
                             }
                         }
                     }

@@ -154,7 +154,7 @@ class AppViewModel(
                     if (attemptState != null) {
                         val currState = newLeverStates[tabIdx][leverIdx]
                         if (currState != attemptState) {
-                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], leverIdx, attemptState)
+                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], currentState.blockStates[tabIdx], leverIdx, attemptState)
                             if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
                                 newLeverStates[tabIdx][leverIdx] = attemptState
                                 stateChanged = true
@@ -191,7 +191,8 @@ class AppViewModel(
                 val conflicts = if (stateToReturn.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
                         stateToReturn.tabs[stateToReturn.selectedTabIndex].second,
-                        newLeverStates[stateToReturn.selectedTabIndex]
+                        newLeverStates[stateToReturn.selectedTabIndex],
+                        stateToReturn.blockStates[stateToReturn.selectedTabIndex]
                     )
                 } else emptyList()
                 stateToReturn.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
@@ -211,7 +212,8 @@ class AppViewModel(
             val conflicts = if (currentState.tabs.isNotEmpty()) {
                 Interlocking.getConflictingLevers(
                     currentState.tabs[index].second,
-                    currentState.leverStates[index]
+                    currentState.leverStates[index],
+                    currentState.blockStates[index]
                 )
             } else emptyList()
             currentState.copy(selectedTabIndex = index, conflictingLevers = conflicts)
@@ -228,7 +230,7 @@ class AppViewModel(
             val leverState = currentStates[leverIndex]
             val targetState = !leverState
             
-            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, leverIndex, targetState)
+            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, currentState.blockStates[tabIndex], leverIndex, targetState)
             if (newStates != null) {
                 didChange = true
                 val updatedAllStates = currentState.leverStates.toMutableList()
@@ -237,7 +239,8 @@ class AppViewModel(
                 val conflicts = if (currentState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
                         currentState.tabs[currentState.selectedTabIndex].second,
-                        updatedAllStates[currentState.selectedTabIndex]
+                        updatedAllStates[currentState.selectedTabIndex],
+                        currentState.blockStates[currentState.selectedTabIndex]
                     )
                 } else emptyList()
 

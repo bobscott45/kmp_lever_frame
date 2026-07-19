@@ -84,8 +84,10 @@ data class JsonLever(
 data class JsonInterlocking(
     val target: Int,
     val state: String,
+    val target_type: String = "LEVER",
     val alt_target: Int = -1,
-    val alt_state: String = "NORMAL"
+    val alt_state: String = "NORMAL",
+    val alt_target_type: String = "LEVER"
 )
 
 @Serializable
@@ -130,11 +132,16 @@ object ConfigManager : AppConfigRepository {
                 }
                 
                 val conditions = jsonLever.interlocking.map { condition ->
+                    val tType = try { TargetType.valueOf(condition.target_type) } catch (e: Exception) { TargetType.LEVER }
+                    val altTType = try { TargetType.valueOf(condition.alt_target_type) } catch (e: Exception) { TargetType.LEVER }
+                    
                     InterlockingCondition(
-                        targetLeverIndex = condition.target,
-                        requiredState = condition.state == "REVERSED",
-                        altTargetLeverIndex = condition.alt_target,
-                        altRequiredState = condition.alt_state == "REVERSED"
+                        targetType = tType,
+                        targetIndex = condition.target,
+                        requiredState = if (tType == TargetType.BLOCK) condition.state == "OCCUPIED" else condition.state == "REVERSED",
+                        altTargetType = altTType,
+                        altTargetIndex = condition.alt_target,
+                        altRequiredState = if (altTType == TargetType.BLOCK) condition.alt_state == "OCCUPIED" else condition.alt_state == "REVERSED"
                     )
                 }
                 

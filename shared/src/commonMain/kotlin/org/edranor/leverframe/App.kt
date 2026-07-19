@@ -147,6 +147,7 @@ fun App() {
                             leverIndex = index,
                             leverDef = leverDef,
                             leverStates = state.leverStates[state.selectedTabIndex],
+                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
                             onClose = viewModel::dismissStatusLever,
                             onLccEnabledChange = { checked ->
                                 viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
@@ -534,7 +535,7 @@ fun ColumnScope.LeverTrackGroup(
                     currentTabDef.levers.forEachIndexed { index, leverDef ->
                         val isReversed = leverStates[index]
                         val isManuallyLocked = manualLocks[index]
-                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, index, !isReversed)
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0), index, !isReversed)
                         val isAlarmed = index in state.conflictingLevers
     
                         LeverComponent(

@@ -45,6 +45,7 @@ fun LeverStatusScreen(
     leverIndex: Int,
     leverDef: LeverDef,
     leverStates: BooleanArray,
+    blockStates: BooleanArray,
     onClose: () -> Unit,
     onLccEnabledChange: (Boolean) -> Unit
 ) {
@@ -117,18 +118,33 @@ fun LeverStatusScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         leverDef.conditions.forEach { rule ->
-                            val reqStateStr = if (rule.requiredState) "REVERSED" else "NORMAL"
-                            val altStr = if (rule.altTargetLeverIndex != -1) {
-                                val altStateStr = if (rule.altRequiredState) "REVERSED" else "NORMAL"
-                                " OR Lever ${rule.altTargetLeverIndex} is $altStateStr"
+                            val reqStateStr = if (rule.targetType == TargetType.BLOCK) {
+                                if (rule.requiredState) "OCCUPIED" else "EMPTY"
+                            } else {
+                                if (rule.requiredState) "REVERSED" else "NORMAL"
+                            }
+                            val targetLabel = if (rule.targetType == TargetType.BLOCK) "Block" else "Lever"
+                            
+                            val altStr = if (rule.altTargetIndex != -1) {
+                                val altStateStr = if (rule.altTargetType == TargetType.BLOCK) {
+                                    if (rule.altRequiredState) "OCCUPIED" else "EMPTY"
+                                } else {
+                                    if (rule.altRequiredState) "REVERSED" else "NORMAL"
+                                }
+                                val altTargetLabel = if (rule.altTargetType == TargetType.BLOCK) "Block" else "Lever"
+                                " OR $altTargetLabel ${rule.altTargetIndex} is $altStateStr"
                             } else ""
                             
-                            val mainSatisfied = leverStates.getOrNull(rule.targetLeverIndex) == rule.requiredState
-                            val altSatisfied = rule.altTargetLeverIndex != -1 && leverStates.getOrNull(rule.altTargetLeverIndex) == rule.altRequiredState
+                            val mainState = if (rule.targetType == TargetType.BLOCK) blockStates.getOrNull(rule.targetIndex) ?: false else leverStates.getOrNull(rule.targetIndex) ?: false
+                            val mainSatisfied = mainState == rule.requiredState
+                            
+                            val altState = if (rule.altTargetType == TargetType.BLOCK) blockStates.getOrNull(rule.altTargetIndex) ?: false else leverStates.getOrNull(rule.altTargetIndex) ?: false
+                            val altSatisfied = rule.altTargetIndex != -1 && altState == rule.altRequiredState
+                            
                             val isSatisfied = mainSatisfied || altSatisfied
                             
                             val statusIcon = if (isSatisfied) "✅" else "❌"
-                            Text("$statusIcon Lever ${rule.targetLeverIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
+                            Text("$statusIcon $targetLabel ${rule.targetIndex} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
                         }
                     }
                 } else {
