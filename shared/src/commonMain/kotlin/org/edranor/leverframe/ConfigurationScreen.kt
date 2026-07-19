@@ -857,7 +857,8 @@ fun MobileRuleCard(
                     value = rule.target,
                     onValueChange = { onRuleChange(rule.copy(target = it)) },
                     label = "Index",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = brassTextFieldColors()
                 )
 
                 var stateExpanded by remember { mutableStateOf(false) }
@@ -906,7 +907,8 @@ fun MobileRuleCard(
                     value = rule.alt_target,
                     onValueChange = { onRuleChange(rule.copy(alt_target = it)) },
                     label = "Alt Idx",
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = brassTextFieldColors()
                 )
 
                 var altStateExpanded by remember { mutableStateOf(false) }
@@ -1032,16 +1034,33 @@ fun IntTextField(
     value: Int,
     onValueChange: (Int) -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
-    var text by remember(value) { mutableStateOf(value.toString()) }
+    var text by remember { mutableStateOf(if (value == -1) "" else value.toString()) }
+    
+    LaunchedEffect(value) {
+        val parsed = text.toIntOrNull() ?: if (text.isBlank() || text == "-") -1 else null
+        if (parsed != value && text.isNotBlank() && text != "-") {
+            text = value.toString()
+        }
+    }
+
     OutlinedTextField(
         value = text,
         onValueChange = { newText ->
-            text = newText
-            newText.toIntOrNull()?.let { onValueChange(it) }
+            if (newText.isEmpty() || newText == "-" || newText.toIntOrNull() != null) {
+                text = newText
+                val parsed = newText.toIntOrNull()
+                if (parsed != null) {
+                    onValueChange(parsed)
+                } else if (newText.isEmpty() || newText == "-") {
+                    onValueChange(-1) // Default to -1 (none) when empty
+                }
+            }
         },
         label = { Text(label) },
-        modifier = modifier
+        modifier = modifier,
+        colors = colors
     )
 }
