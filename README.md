@@ -12,6 +12,8 @@ This project is the spiritual successor to the [ESP32 Lever Frame](https://githu
 * **Native Kotlin OpenLCB / LCC Integration**: Comprehensive, 100% native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
 * **In-App Configuration**: No web server needed! Configure LCC events, network settings, and conflict policies natively within the app.
 * **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
+* **Digital Block Shelf**: Define and monitor track occupancy blocks directly above the lever frame. 
+* **Cross-Interlocking & Auto-Reversers**: Interlock your mechanical levers directly to digital block occupancies. Signals can be configured as "Auto-Reversers", automatically snapping back to Danger when a train enters a block, completely mimicking prototypical track-circuit interlocking.
 * **High-Performance Touch UI**: Built with Compose Multiplatform, featuring deep dark modes, vintage brass accents, and smooth gesture-based lever pulling.
 * **State Persistence**: Saves and restores lever states and configurations across reboots automatically.
 
@@ -59,12 +61,12 @@ Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select your target device 
 The app includes a prototypical demonstration configuration by default, showcasing sequential signaling, mutually locking facing points, and conditional 'OR' route locking.
 
 ### North Junction (Main Frame)
-This frame protects a junction where a branch line diverges from a main line.
-- **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 5 REVERSED*. This demonstrates conditional 'OR' logic: the distant signal can be cleared if either the Main or Branch home signals are clear.
-- **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 4 NORMAL and Lever 3 REVERSED*.
+This frame protects a junction where a branch line diverges from a main line. It includes a Digital Block Shelf monitoring "UP MAIN", "UP BRANCH", and "DOWN MAIN".
+- **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 5 REVERSED*. This demonstrates conditional 'OR' logic.
+- **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 4 NORMAL and Lever 3 REVERSED*. Also *locks to UP MAIN BLOCK EMPTY* (Cross-Interlocking) and can be configured to Auto-Reverse.
 - **Lever 3 (FPL FOR POINTS 4)**: The Facing Point Lock.
 - **Lever 4 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 3 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
-- **Lever 5 (UP BRANCH HOME)**: Clears the train to turn off onto the branch line. *Locks Lever 4 REVERSED and Lever 3 REVERSED*.
+- **Lever 5 (UP BRANCH HOME)**: Clears the train to turn off onto the branch line. *Locks Lever 4 REVERSED and Lever 3 REVERSED*. Also *locks to UP BRANCH BLOCK EMPTY*.
 
 ### South Box (Yard Frame)
 This frame controls a small yard crossover.

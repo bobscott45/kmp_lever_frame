@@ -19,8 +19,10 @@ The application is built around an Unidirectional Data Flow (UDF) pattern, prima
 ### 2.1 State Management (`AppViewModel.kt`)
 The `AppViewModel` acts as the single source of truth for the application's state (`AppUiState`). 
 *   It exposes a `StateFlow` to the Compose UI, ensuring that UI updates are reactive and smooth.
-*   It handles all user intents (e.g., pulling a lever, changing a setting) and dispatches them to the appropriate subsystem (Network, Interlocking, or Config).
-*   It uses Coroutines to handle asynchronous operations like debounced saving of lever states to disk.
+*   It tracks the state of both Levers (`leverStates`) and Digital Blocks (`blockStates`).
+*   It handles all user intents (e.g., pulling a lever, toggling a block occupancy) and dispatches them to the appropriate subsystem (Network, Interlocking, or Config).
+*   It manages **Auto-Reverser Cascading**: When a block occupancy changes, it checks if any interlocked home signals need to snap back to NORMAL (Danger), and cascades that lock to any dependent distant signals.
+*   It uses Coroutines to handle asynchronous operations like debounced saving of lever/block states to disk.
 
 ### 2.2 Configuration & Persistence (`ConfigManager.kt`)
 *   **`AppConfigRepository`**: An interface abstracting the persistence layer.
@@ -28,11 +30,12 @@ The `AppViewModel` acts as the single source of truth for the application's stat
 *   It dynamically converts the user's `JsonConfig` definitions into parsed `LeverDef` structures used by the interlocking engine. 
 *   **Platform Specifics**: It relies on `expect/actual` functions (e.g., `saveConfigToFile`) to handle file I/O safely on Android, iOS, and JVM.
 
-### 2.3 Interlocking Engine (`InterlockingEngine.kt`)
+### 2.3 Interlocking Engine (`Interlocking.kt` & `AppViewModel.kt`)
 The brain of the lever frame.
-*   It evaluates the `LeverDef` rules (locks, conditional "OR" logic, Facing Point Locks) against the current state of all levers in real-time.
-*   When a user attempts to move a lever, the `AppViewModel` queries this engine to determine if the move is legal.
-*   The logic aims to exactly replicate physical mechanical tappet locking mechanisms found in prototypical signal boxes.
+*   It evaluates the `LeverDef` rules (locks, conditional "OR" logic, Facing Point Locks) against the current state of all levers AND blocks in real-time.
+*   **Cross-Interlocking**: Levers can interlock not only against other levers but also against digital block states (e.g., TargetType.BLOCK), allowing for prototypical track-circuit locking.
+*   When a user attempts to move a lever, the `AppViewModel` queries this engine to determine if the move is legal based on both lever and block occupancies.
+*   The logic aims to exactly replicate physical mechanical tappet locking mechanisms found in prototypical signal boxes, enhanced with electro-mechanical track circuit interactions.
 
 ### 2.4 Networking (`GridConnectNetwork.kt` & `LccNode.kt`)
 *   **`GridConnectNetwork`**: A robust, Coroutine-based TCP engine utilizing `io.ktor.network`. It manages the raw socket connections (acting as either a TCP Server listening on port 12021, or a TCP Client bridging to a JMRI Hub). It exposes incoming messages and connection statuses via `SharedFlow` and `StateFlow`.
