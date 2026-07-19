@@ -21,6 +21,7 @@ class AndroidSoundPlayer(context: Context) : SoundPlayer {
     private val clankId: Int
     private val clickId: Int
     private val thudId: Int
+    private val alarmId: Int
 
     init {
         val packageName = context.packageName
@@ -31,11 +32,13 @@ class AndroidSoundPlayer(context: Context) : SoundPlayer {
         clankId = loadSound("clank")
         clickId = loadSound("click")
         thudId = loadSound("thud")
+        alarmId = loadSound("alarm")
     }
 
     override fun playClank() { if (clankId != 0) soundPool.play(clankId, 1f, 1f, 1, 0, 1f) }
     override fun playClick() { if (clickId != 0) soundPool.play(clickId, 1f, 1f, 1, 0, 1f) }
     override fun playThud() { if (thudId != 0) soundPool.play(thudId, 1f, 1f, 1, 0, 1f) }
+    override fun playAlarm() { if (alarmId != 0) soundPool.play(alarmId, 1f, 1f, 1, 0, 1f) }
 }
 
 @Composable

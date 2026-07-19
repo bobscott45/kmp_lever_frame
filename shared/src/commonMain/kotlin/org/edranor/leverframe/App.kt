@@ -115,6 +115,12 @@ fun App() {
                     onClose = viewModel::exitConfigMode
                 )
             } else {
+                LaunchedEffect(state.conflictingLevers) {
+                    if (state.conflictingLevers.isNotEmpty()) {
+                        soundPlayer.playAlarm()
+                    }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
