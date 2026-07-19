@@ -644,6 +644,7 @@ fun MobileLeverCard(
     onDelete: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column {
@@ -673,9 +674,26 @@ fun MobileLeverCard(
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                                IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
                                     Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                                 }
+                            }
+                            if (showDeleteDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showDeleteDialog = false },
+                                    title = { Text("Delete Lever") },
+                                    text = { Text("Are you sure you want to delete this lever?") },
+                                    confirmButton = {
+                                        TextButton(onClick = { showDeleteDialog = false; onDelete() }) {
+                                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showDeleteDialog = false }) {
+                                            Text("Cancel")
+                                        }
+                                    }
+                                )
                             }
 
                             OutlinedTextField(
@@ -963,6 +981,7 @@ fun MobileBlockCard(
     onDelete: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column {
@@ -991,9 +1010,26 @@ fun MobileBlockCard(
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                                IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
                                     Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                                 }
+                            }
+                            if (showDeleteDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showDeleteDialog = false },
+                                    title = { Text("Delete Block") },
+                                    text = { Text("Are you sure you want to delete this block?") },
+                                    confirmButton = {
+                                        TextButton(onClick = { showDeleteDialog = false; onDelete() }) {
+                                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showDeleteDialog = false }) {
+                                            Text("Cancel")
+                                        }
+                                    }
+                                )
                             }
 
                             OutlinedTextField(

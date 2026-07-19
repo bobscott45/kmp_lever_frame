@@ -620,17 +620,23 @@ fun BlockIndicator(
     fontSize: Int,
     onToggle: () -> Unit
 ) {
+    val ledSize = (fontSize * 1.2f).dp
+    val ledSizeVert = (fontSize * 1.6f).dp
+    val spacing = (fontSize * 0.6f).dp
+    val hPad = (fontSize * 0.6f).dp
+    val vPad = (fontSize * 0.2f).dp
+
     val content = @Composable {
         Text(
             text = label.replace("\n", " "),
             color = Color.White,
             fontSize = fontSize.sp,
             fontWeight = FontWeight.Bold,
-            modifier = if (layout == "HORIZONTAL") Modifier.padding(end = 6.dp) else Modifier.padding(bottom = 6.dp)
+            modifier = if (layout == "HORIZONTAL") Modifier.padding(end = spacing) else Modifier.padding(bottom = spacing)
         )
         Box(
             modifier = Modifier
-                .size(if (layout == "HORIZONTAL") 12.dp else 16.dp)
+                .size(if (layout == "HORIZONTAL") ledSize else ledSizeVert)
                 .clip(androidx.compose.foundation.shape.CircleShape)
                 .background(if (isOccupied) Color(0xFFcc3333) else Color(0xFF33cc33))
                 .border(1.dp, Color.Black, androidx.compose.foundation.shape.CircleShape)
@@ -644,7 +650,7 @@ fun BlockIndicator(
                 .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
                 .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
-                .padding(horizontal = 6.dp, vertical = 2.dp)
+                .padding(horizontal = hPad, vertical = vPad)
         ) {
             content()
         }
@@ -655,7 +661,7 @@ fun BlockIndicator(
                 .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
                 .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
-                .padding(horizontal = 6.dp, vertical = 2.dp)
+                .padding(horizontal = hPad, vertical = vPad)
         ) {
             content()
         }
