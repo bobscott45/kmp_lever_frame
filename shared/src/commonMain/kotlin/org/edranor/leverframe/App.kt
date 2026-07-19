@@ -277,7 +277,13 @@ fun LeverComponent(
         ) {
             Text(
                 text = upText,
-                color = if (!isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                color = if (!isReversed) {
+                    when (leverDef.type) {
+                        LeverType.HOME_SIGNAL -> Color(0xFFFF4444)
+                        LeverType.DISTANT_SIGNAL -> Color(0xFFFFDD44)
+                        else -> Color(0xFFFFFFFF)
+                    }
+                } else Color(0xFF888888),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -375,7 +381,12 @@ fun LeverComponent(
             Spacer(modifier = Modifier.height(2.dp * scale))
             Text(
                 text = downText,
-                color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                color = if (isReversed) {
+                    when (leverDef.type) {
+                        LeverType.HOME_SIGNAL, LeverType.DISTANT_SIGNAL -> Color(0xFF44FF44)
+                        else -> Color(0xFFFFFFFF)
+                    }
+                } else Color(0xFF888888),
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold
             )

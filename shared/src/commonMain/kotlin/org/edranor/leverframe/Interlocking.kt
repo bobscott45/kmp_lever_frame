@@ -82,36 +82,12 @@ object Interlocking {
         val newStates = states.copyOf()
         newStates[leverIndex] = attemptingState
 
-        // Validate all rules for any lever that is (or will be) reversed
-        for (i in tab.levers.indices) {
-            // Rules only apply when the lever is in the Reversed (true) state
-            if (newStates[i]) {
-                for (condition in tab.levers[i].conditions) {
-                    if (condition.targetIndex != -1) {
-                        val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
-                            blockStates.getOrNull(condition.targetIndex) ?: false
-                        } else {
-                            newStates.getOrNull(condition.targetIndex) ?: false
-                        }
-                        val primaryMatch = primaryTargetState == condition.requiredState
-                        
-                        val altMatch = if (condition.altTargetIndex != -1) {
-                            val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
-                                blockStates.getOrNull(condition.altTargetIndex) ?: false
-                            } else {
-                                newStates.getOrNull(condition.altTargetIndex) ?: false
-                            }
-                            altTargetState == condition.altRequiredState
-                        } else false
-                        
-                        if (!primaryMatch && !altMatch) {
-                            return false
-                        }
-                    }
-                }
-            }
-        }
-        return true
+        val currentConflicts = getConflictingLevers(tab, states, blockStates).toSet()
+        val newConflicts = getConflictingLevers(tab, newStates, blockStates).toSet()
+
+        // The move is valid if it doesn't introduce any new conflicts.
+        // i.e., newConflicts must be a subset of currentConflicts.
+        return currentConflicts.containsAll(newConflicts)
     }
 
     /**
