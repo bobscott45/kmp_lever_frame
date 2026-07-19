@@ -597,6 +597,24 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                     )
                 )
             }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Enable Sound", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
+                Switch(
+                    checked = config.enable_sound,
+                    onCheckedChange = { onConfigChange(config.copy(enable_sound = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
+                    )
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Version: 1.1.0-dev", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
             
             var policyExpanded by remember { mutableStateOf(false) }
             val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")

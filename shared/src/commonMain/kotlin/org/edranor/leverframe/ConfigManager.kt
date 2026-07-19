@@ -49,6 +49,7 @@ data class JsonConfig(
     val display_sleep_timeout_ms: Int = 60000,
     val restore_last_state: Boolean = true,
     val lcc_master: Boolean = true,
+    val enable_sound: Boolean = true,
     val tabs: List<JsonTab> = emptyList()
 )
 

@@ -106,7 +106,17 @@ fun App() {
         Box(modifier = Modifier.fillMaxSize()) {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
             val state by viewModel.uiState.collectAsState()
-            val soundPlayer = rememberSoundPlayer()
+            val actualSoundPlayer = rememberSoundPlayer()
+            val soundPlayer = remember(actualSoundPlayer, state.config.enable_sound) {
+                object : SoundPlayer {
+                    override fun playClank() { if (state.config.enable_sound) actualSoundPlayer.playClank() }
+                    override fun playLock() { if (state.config.enable_sound) actualSoundPlayer.playLock() }
+                    override fun playThud() { if (state.config.enable_sound) actualSoundPlayer.playThud() }
+                    override fun playAlarm() { if (state.config.enable_sound) actualSoundPlayer.playAlarm() }
+                    override fun playDing() { if (state.config.enable_sound) actualSoundPlayer.playDing() }
+                    override fun playDoubleDing() { if (state.config.enable_sound) actualSoundPlayer.playDoubleDing() }
+                }
+            }
 
             if (state.isConfigMode) {
                 ConfigurationScreen(
