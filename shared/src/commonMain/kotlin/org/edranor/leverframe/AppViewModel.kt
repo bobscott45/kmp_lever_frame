@@ -189,11 +189,11 @@ class AppViewModel(
                 var reverserChanged: Boolean
                 do {
                     reverserChanged = false
+                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx])
+                    
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
                         if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
-                            // Lever is REVERSED, check if it's still valid under new block/lever states
-                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx], leverIdx, true)
-                            if (!isValid) {
+                            if (leverIdx in currentConflicts) {
                                 newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
                                 stateChanged = true
                                 reverserChanged = true
@@ -371,10 +371,11 @@ class AppViewModel(
                 var reverserChanged: Boolean
                 do {
                     reverserChanged = false
+                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLeverStates[tabIndex], newBlockStates[tabIndex])
+                    
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
                         if (leverDef.autoReverser && newLeverStates[tabIndex][leverIdx]) {
-                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIndex], newBlockStates[tabIndex], leverIdx, true)
-                            if (!isValid) {
+                            if (leverIdx in currentConflicts) {
                                 newLeverStates[tabIndex][leverIdx] = false // Force to NORMAL
                                 reverserChanged = true
                                 if (leverDef.lcc_event_normal.isNotBlank()) {
