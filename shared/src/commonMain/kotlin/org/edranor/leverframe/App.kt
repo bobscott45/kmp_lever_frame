@@ -121,6 +121,15 @@ fun App() {
                     }
                 }
 
+                var initialBlocks by remember { mutableStateOf(true) }
+                LaunchedEffect(state.blockStates) {
+                    if (initialBlocks) {
+                        initialBlocks = false
+                    } else {
+                        soundPlayer.playDing()
+                    }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

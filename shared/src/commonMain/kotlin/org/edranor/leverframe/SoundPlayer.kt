@@ -7,6 +7,7 @@ interface SoundPlayer {
     fun playClick()
     fun playThud()
     fun playAlarm()
+    fun playDing()
 }
 
 @Composable
