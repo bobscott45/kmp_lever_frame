@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cross-Interlocking**: Levers can now interlock against digital block states (occupied/empty) in addition to other levers.
 - **Auto-Reversers**: Signals can be configured to automatically snap back to Danger when an interlocked block becomes occupied, with full cascading locking logic for distant signals.
 - **Visual Status Indicators**: Levers now display LED status indicators (red/yellow for ON, green for OFF) and a subtle "A" on the knob when auto-reverse is enabled.
-- **Audio Overhaul**: Complete replacement of all mechanical sounds. Added a heavy throw sound, a distinct snap for manual locks, a heavy sustained pin strike when pulling a locked lever, and block occupancy conflict warnings (single ding, double ding, and delayed alarm rings).
+- **Audio System**: Implemented all mechanical sound effects. Added a heavy throw sound, a distinct snap for manual locks, a heavy sustained pin strike when pulling a locked lever, and block occupancy conflict warnings (single ding, double ding, and delayed alarm rings).
 - **System Settings Updates**: Added a master 'Enable Sound' switch in the System Settings and moved the app version number to the System Status screen.
 
 ### Changed
