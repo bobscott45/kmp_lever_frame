@@ -275,18 +275,21 @@ fun LeverComponent(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.weight(1f).padding(vertical = 4.dp * scale)
         ) {
-            Text(
-                text = upText,
-                color = if (!isReversed) {
-                    when (leverDef.type) {
-                        LeverType.HOME_SIGNAL -> Color(0xFFFF4444)
-                        LeverType.DISTANT_SIGNAL -> Color(0xFFFFDD44)
-                        else -> Color(0xFFFFFFFF)
-                    }
-                } else Color(0xFF888888),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                if (leverDef.type == LeverType.HOME_SIGNAL || leverDef.type == LeverType.DISTANT_SIGNAL) {
+                    val color = if (!isReversed) {
+                        if (leverDef.type == LeverType.HOME_SIGNAL) Color(0xFFFF4444) else Color(0xFFFFCC00)
+                    } else Color(0xFF333333)
+                    Box(modifier = Modifier.size(6.dp * scale).clip(androidx.compose.foundation.shape.CircleShape).background(color).border(0.5.dp, Color.Black, androidx.compose.foundation.shape.CircleShape))
+                    Spacer(modifier = Modifier.width(4.dp * scale))
+                }
+                Text(
+                    text = upText,
+                    color = if (!isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Spacer(modifier = Modifier.height(2.dp * scale))
             
             // Switch Track
@@ -379,17 +382,19 @@ fun LeverComponent(
             }
             
             Spacer(modifier = Modifier.height(2.dp * scale))
-            Text(
-                text = downText,
-                color = if (isReversed) {
-                    when (leverDef.type) {
-                        LeverType.HOME_SIGNAL, LeverType.DISTANT_SIGNAL -> Color(0xFF44FF44)
-                        else -> Color(0xFFFFFFFF)
-                    }
-                } else Color(0xFF888888),
-                fontSize = 8.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                if (leverDef.type == LeverType.HOME_SIGNAL || leverDef.type == LeverType.DISTANT_SIGNAL) {
+                    val color = if (isReversed) Color(0xFF44FF44) else Color(0xFF333333)
+                    Box(modifier = Modifier.size(6.dp * scale).clip(androidx.compose.foundation.shape.CircleShape).background(color).border(0.5.dp, Color.Black, androidx.compose.foundation.shape.CircleShape))
+                    Spacer(modifier = Modifier.width(4.dp * scale))
+                }
+                Text(
+                    text = downText,
+                    color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         // Collar Button
