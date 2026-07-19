@@ -359,8 +359,19 @@ fun LeverComponent(
                             .offset(y = offset, x = shakeOffset.value.dp)
                             .clip(androidx.compose.foundation.shape.CircleShape)
                             .background(typeColor)
-                            .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier)
-                    )
+                            .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (leverDef.autoReverser) {
+                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White
+                            Text(
+                                text = "A",
+                                color = textColor,
+                                fontSize = (16 * scale).sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
 
                     // Locking Pin
                     if (isSystemLocked || isManuallyLocked) {
