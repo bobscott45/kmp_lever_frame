@@ -575,7 +575,7 @@ fun BlockShelfGroup(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = 4.dp)
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
@@ -624,10 +624,10 @@ fun BlockIndicator(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .background(Color(0xFF222222), RoundedCornerShape(4.dp))
-                .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
+                .background(Color(0xFF2E1A0F), RoundedCornerShape(4.dp)) // Dark Mahogany
+                .border(1.dp, Color(0xFF4A2E1B), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
-                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
             content()
         }
@@ -635,10 +635,10 @@ fun BlockIndicator(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(Color(0xFF222222), RoundedCornerShape(4.dp))
-                .border(1.dp, Color(0xFF444444), RoundedCornerShape(4.dp))
+                .background(Color(0xFF2E1A0F), RoundedCornerShape(4.dp)) // Dark Mahogany
+                .border(1.dp, Color(0xFF4A2E1B), RoundedCornerShape(4.dp))
                 .clickable { onToggle() }
-                .padding(8.dp)
+                .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
             content()
         }
