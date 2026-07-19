@@ -272,7 +272,7 @@ fun LeverComponent(
         // Switch Container
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.weight(1f).padding(vertical = 16.dp * scale)
+            modifier = Modifier.weight(1f).padding(vertical = 4.dp * scale)
         ) {
             Text(
                 text = upText,
@@ -280,7 +280,7 @@ fun LeverComponent(
                 fontSize = 8.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(8.dp * scale))
+            Spacer(modifier = Modifier.height(2.dp * scale))
             
             // Switch Track
             Box(
@@ -371,7 +371,7 @@ fun LeverComponent(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp * scale))
+            Spacer(modifier = Modifier.height(2.dp * scale))
             Text(
                 text = downText,
                 color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
