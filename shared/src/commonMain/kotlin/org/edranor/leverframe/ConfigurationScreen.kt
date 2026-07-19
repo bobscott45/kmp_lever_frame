@@ -213,15 +213,15 @@ fun ConfigurationScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         ) {
                             Tab(selected = selectedFrameConfigTab == 0, onClick = { selectedFrameConfigTab = 0 }, text = { Text("Settings") })
-                            Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Blocks") })
-                            Tab(selected = selectedFrameConfigTab == 2, onClick = { selectedFrameConfigTab = 2 }, text = { Text("Levers") })
+                            Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Levers") })
+                            Tab(selected = selectedFrameConfigTab == 2, onClick = { selectedFrameConfigTab = 2 }, text = { Text("Blocks") })
                         }
 
                         // Content for the selected frame
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().weight(1f),
                             contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             val tab = config.tabs[selectedFrameIndex]
 
@@ -330,7 +330,7 @@ fun ConfigurationScreen(
                                 }
                             }
 
-                            if (selectedFrameConfigTab == 1) {
+                            if (selectedFrameConfigTab == 2) {
 
                             // Blocks and Levers item headers are no longer needed
                             // as they are split into sub-tabs
@@ -374,7 +374,7 @@ fun ConfigurationScreen(
 
                             }
 
-                            if (selectedFrameConfigTab == 2) {
+                            if (selectedFrameConfigTab == 1) {
                                 itemsIndexed(tab.levers) { leverIndex, lever ->
                                     MobileLeverCard(
                                         nodeId = config.node_id,
@@ -648,7 +648,7 @@ fun MobileLeverCard(
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             ListItem(
-                headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever") },
+                headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever", style = MaterialTheme.typography.bodyMedium) },
                 supportingContent = { Text(lever.type) },
                 leadingContent = {
                     Box(
@@ -904,7 +904,7 @@ fun MobileBlockCard(
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column {
             ListItem(
-                headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block") },
+                headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block", style = MaterialTheme.typography.bodyMedium) },
                 leadingContent = {
                     Box(
                         modifier = Modifier.size(32.dp),
