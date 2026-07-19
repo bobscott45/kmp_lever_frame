@@ -356,14 +356,60 @@ class AppViewModel(
     }
 
     fun toggleBlockState(tabIndex: Int, blockIndex: Int) {
+        val outgoingEvents = mutableListOf<String>()
+        var didChange = false
+        
         _uiState.update { currentState ->
             if (tabIndex in currentState.blockStates.indices && blockIndex in currentState.blockStates[tabIndex].indices) {
                 val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
                 newBlockStates[tabIndex][blockIndex] = !newBlockStates[tabIndex][blockIndex]
-                currentState.copy(blockStates = newBlockStates)
+                
+                val newLeverStates = currentState.leverStates.map { it.copyOf() }.toMutableList()
+                val tabDef = currentState.tabs[tabIndex].second
+                
+                // Evaluate auto-reversers (cascade until steady state)
+                var reverserChanged: Boolean
+                do {
+                    reverserChanged = false
+                    tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                        if (leverDef.autoReverser && newLeverStates[tabIndex][leverIdx]) {
+                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIndex], newBlockStates[tabIndex], leverIdx, true)
+                            if (!isValid) {
+                                newLeverStates[tabIndex][leverIdx] = false // Force to NORMAL
+                                reverserChanged = true
+                                if (leverDef.lcc_event_normal.isNotBlank()) {
+                                    outgoingEvents.add(leverDef.lcc_event_normal)
+                                }
+                            }
+                        }
+                    }
+                } while(reverserChanged)
+                
+                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                    Interlocking.getConflictingLevers(
+                        currentState.tabs[currentState.selectedTabIndex].second,
+                        newLeverStates[currentState.selectedTabIndex],
+                        newBlockStates[currentState.selectedTabIndex]
+                    )
+                } else emptyList()
+                
+                didChange = true
+                currentState.copy(
+                    blockStates = newBlockStates,
+                    leverStates = newLeverStates,
+                    conflictingLevers = conflicts
+                )
             } else {
                 currentState
             }
+        }
+        
+        if (didChange) {
+            persistStatesIfEnabled()
+        }
+        
+        outgoingEvents.forEach { eventStr ->
+            lccClient.produceEvent(eventStr)
         }
     }
 
