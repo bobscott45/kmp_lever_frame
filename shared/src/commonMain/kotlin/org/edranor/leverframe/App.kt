@@ -600,7 +600,7 @@ fun BlockIndicator(label: String, isOccupied: Boolean) {
         Text(
             text = label.replace("\n", " "),
             color = Color.White,
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(end = 6.dp)
         )
