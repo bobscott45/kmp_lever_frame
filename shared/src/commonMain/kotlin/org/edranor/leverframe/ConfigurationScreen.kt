@@ -734,7 +734,10 @@ fun MobileLeverCard(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Auto-Reverser (Return to Normal if rules fail)", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Auto-Reverser", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                    Text("(Return to Normal if rules fail)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                }
                                 Switch(
                                     checked = lever.auto_reverser,
                                     onCheckedChange = { onLeverChange(lever.copy(auto_reverser = it)) },
