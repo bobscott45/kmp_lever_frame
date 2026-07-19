@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -47,14 +48,14 @@ fun ConfigurationScreen(
     val coroutineScope = rememberCoroutineScope()
     
     // Main navigation tabs: 0 for System Settings, 1 for Frames
-    var selectedMainTab by remember { mutableStateOf(0) }
+    var selectedMainTab by rememberSaveable { mutableStateOf(0) }
     
     // Sub-navigation for the selected Frame
-    var selectedFrameIndex by remember { mutableStateOf(0) }
+    var selectedFrameIndex by rememberSaveable { mutableStateOf(0) }
     if (selectedFrameIndex >= config.tabs.size && config.tabs.isNotEmpty()) {
         selectedFrameIndex = config.tabs.size - 1
     }
-    var selectedFrameConfigTab by remember { mutableStateOf(0) }
+    var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
 
     val clipboardManager = LocalClipboardManager.current
     var showExportDialog by remember { mutableStateOf(false) }
@@ -284,26 +285,29 @@ fun ConfigurationScreen(
 
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text("Block Layout", style = MaterialTheme.typography.bodySmall, color = LeverFrameTheme.Colors.Brass)
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                RadioButton(
-                                                    selected = tab.block_layout == "HORIZONTAL",
-                                                    onClick = {
-                                                        val newTabs = config.tabs.toMutableList()
-                                                        newTabs[selectedFrameIndex] = tab.copy(block_layout = "HORIZONTAL")
-                                                        config = config.copy(tabs = newTabs)
-                                                    }
-                                                )
-                                                Text("Horizontal")
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                RadioButton(
-                                                    selected = tab.block_layout == "VERTICAL",
-                                                    onClick = {
-                                                        val newTabs = config.tabs.toMutableList()
-                                                        newTabs[selectedFrameIndex] = tab.copy(block_layout = "VERTICAL")
-                                                        config = config.copy(tabs = newTabs)
-                                                    }
-                                                )
-                                                Text("Vertical")
+                                            Column {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    RadioButton(
+                                                        selected = tab.block_layout == "HORIZONTAL",
+                                                        onClick = {
+                                                            val newTabs = config.tabs.toMutableList()
+                                                            newTabs[selectedFrameIndex] = tab.copy(block_layout = "HORIZONTAL")
+                                                            config = config.copy(tabs = newTabs)
+                                                        }
+                                                    )
+                                                    Text("Horizontal")
+                                                }
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    RadioButton(
+                                                        selected = tab.block_layout == "VERTICAL",
+                                                        onClick = {
+                                                            val newTabs = config.tabs.toMutableList()
+                                                            newTabs[selectedFrameIndex] = tab.copy(block_layout = "VERTICAL")
+                                                            config = config.copy(tabs = newTabs)
+                                                        }
+                                                    )
+                                                    Text("Vertical")
+                                                }
                                             }
                                         }
                                     }
