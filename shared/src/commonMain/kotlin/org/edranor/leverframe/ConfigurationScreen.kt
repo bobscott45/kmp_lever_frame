@@ -831,9 +831,10 @@ fun MobileRuleCard(
                 }
             }
             
+            Text("Primary Condition", style = MaterialTheme.typography.labelMedium, color = LeverFrameTheme.Colors.Brass)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 var typeExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }, modifier = Modifier.weight(1f)) {
+                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }, modifier = Modifier.weight(1.5f)) {
                     OutlinedTextField(
                         value = rule.target_type,
                         onValueChange = {},
@@ -860,30 +861,33 @@ fun MobileRuleCard(
                     modifier = Modifier.weight(1f),
                     colors = brassTextFieldColors()
                 )
-
-                var stateExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = stateExpanded, onExpandedChange = { stateExpanded = !stateExpanded }, modifier = Modifier.weight(1.5f)) {
-                    OutlinedTextField(
-                        value = rule.state,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("State") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
-                        val options = if (rule.target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
-                        options.forEach { s ->
-                            DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(state = s)); stateExpanded = false })
-                        }
+            }
+            
+            var stateExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = stateExpanded, onExpandedChange = { stateExpanded = !stateExpanded }, modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = rule.state,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Required State") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
+                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                    colors = brassTextFieldColors()
+                )
+                ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
+                    val options = if (rule.target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+                    options.forEach { s ->
+                        DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(state = s)); stateExpanded = false })
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("OR Alternate Condition (Optional)", style = MaterialTheme.typography.labelMedium, color = LeverFrameTheme.Colors.Brass)
+            
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 var altTypeExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = altTypeExpanded, onExpandedChange = { altTypeExpanded = !altTypeExpanded }, modifier = Modifier.weight(1f)) {
+                ExposedDropdownMenuBox(expanded = altTypeExpanded, onExpandedChange = { altTypeExpanded = !altTypeExpanded }, modifier = Modifier.weight(1.5f)) {
                     OutlinedTextField(
                         value = rule.alt_target_type,
                         onValueChange = {},
@@ -910,23 +914,23 @@ fun MobileRuleCard(
                     modifier = Modifier.weight(1f),
                     colors = brassTextFieldColors()
                 )
-
-                var altStateExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = altStateExpanded, onExpandedChange = { altStateExpanded = !altStateExpanded }, modifier = Modifier.weight(1.5f)) {
-                    OutlinedTextField(
-                        value = rule.alt_state,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Alt State") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altStateExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
-                        val options = if (rule.alt_target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
-                        options.forEach { s ->
-                            DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(alt_state = s)); altStateExpanded = false })
-                        }
+            }
+            
+            var altStateExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = altStateExpanded, onExpandedChange = { altStateExpanded = !altStateExpanded }, modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = rule.alt_state,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Alt Required State") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altStateExpanded) },
+                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                    colors = brassTextFieldColors()
+                )
+                ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
+                    val options = if (rule.alt_target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+                    options.forEach { s ->
+                        DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(alt_state = s)); altStateExpanded = false })
                     }
                 }
             }
