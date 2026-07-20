@@ -75,9 +75,9 @@ This frame protects a junction where a branch line diverges from a main line. It
 - **Lever 8 (DOWN HOME)**: The home signal for the down direction. *Locks Lever 7 REVERSED*. Also *locks to DOWN MAIN BLOCK EMPTY*.
 
 ### South Box (Yard Frame)
-This frame controls a small yard crossover.
+This frame controls a small yard crossover. It includes a Digital Block Shelf monitoring the "YARD" block to ensure safe shunting.
 - **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 REVERSED*.
-- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover. *Locks Lever 3 REVERSED*.
+- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover. *Locks Lever 3 REVERSED*. Also *locks to YARD BLOCK EMPTY*.
 - **Lever 3 (FRAME RELEASE)**: A ground frame release mechanism.
 
 ### Demonstrating the Interlocking
@@ -88,6 +88,8 @@ Try the following sequences in the app:
 4. Try to pull **Lever 4** again. It is now locked by Lever 3.
 5. Pull **Lever 2** again. It now clears because Lever 4 is Normal and Lever 3 is Reversed.
 6. Pull **Lever 1 (UP DISTANT)**. It clears because Lever 2 satisfies the 'OR' condition.
+7. Tap the **UP MAIN** block on the Digital Block Shelf above the levers to manually toggle it to "Occupied".
+8. Try to pull **Lever 2 (UP MAIN HOME)** again. It will be locked because it is cross-interlocked to the UP MAIN block. (If the lever was already Reversed, it would snap back to Normal due to the Auto-Reverser feature).
 
 ## Project Structure
 
