@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **UI Enhancements**: Block occupancy boxes dynamically scale with font size to conserve screen space. Default block label font size reduced to 8.
-- **Configuration UI**: Added confirmation popups when deleting levers or blocks to prevent accidental data loss.
+- **Configuration UI**: Added confirmation popups when deleting levers or blocks to prevent accidental data loss. Split the 'Configure' menu option into separate 'System Settings' and 'Frames' options to simplify navigation. The configuration screens now feature shortened titles to better fit portrait orientations, and the 'Reset to Defaults' functionality has been safely divided into system-only and frames-only actions.
 
 ## [1.0.3] - 2026-07-19
 
