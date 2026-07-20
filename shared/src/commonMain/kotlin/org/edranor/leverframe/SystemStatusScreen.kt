@@ -98,7 +98,7 @@ fun SystemStatusScreen(
             ) {
                 StatusItem("Node Name", config.node_name)
                 StatusItem("Node ID", config.node_id)
-                StatusItem("Version", "1.1.0-dev")
+                StatusItem("Version", "1.1.1-dev")
                 StatusItem("IP Address", ipAddress)
                 StatusItem("TCP Port", port.toString())
                 StatusItem("Network Status", networkStatus)
