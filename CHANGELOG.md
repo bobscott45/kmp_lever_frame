@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
-- 
+- **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
 - 
