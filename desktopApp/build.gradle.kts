@@ -20,7 +20,7 @@ compose.desktop {
         mainClass = "org.edranor.leverframe.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "LeverFrame"
             packageVersion = libs.versions.app.version.get().substringBefore("-")
             
