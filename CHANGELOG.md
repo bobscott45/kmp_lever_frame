@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Documentation**: Completely rewrote the `README.md` to use neutral language and extracted all detailed configuration and operational instructions into a newly created `USER_GUIDE.md` (which now includes documentation for the Save feature and a refined structural flow).
+- **Documentation**: Updated the main README with explicit documentation covering the default configurations for the Yard block (South Box) and provided a step-by-step example on how block states affect interlocking and the Auto-Reverser.
 - **Digital Block Shelf**: A new visual shelf above the levers to track and toggle digital block occupancies.
 - **Cross-Interlocking**: Levers can now interlock against digital block states (occupied/empty) in addition to other levers.
 - **Auto-Reversers**: Signals can be configured to automatically snap back to Danger when an interlocked block becomes occupied, with full cascading locking logic for distant signals.
