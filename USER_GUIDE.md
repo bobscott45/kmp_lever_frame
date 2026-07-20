@@ -34,7 +34,7 @@ The System Status overlay provides crucial information at a glance:
 *   **External Event Policy**: Quickly change how the app responds to conflicting LCC events (Strict Local, Override Allowed, or Accept & Warn).
 *   **Quick Toggles**: Conveniently toggle LCC Master behavior and "Restore Last State" directly from this screen without entering full configuration mode.
 
-### System Settings (Configure)
+### System Configuration
 
 Tapping "Configure" takes you to the **System Settings** screen. This controls the top-level behavior of the application and its connection to the OpenLCB / LCC network.
 
@@ -48,11 +48,34 @@ Tapping "Configure" takes you to the **System Settings** screen. This controls t
 *   **LCC Master**: Toggle whether this application acts as the master authority for the lever states on the network.
 *   **Enable Sound**: Toggles auditory feedback.
 
-**Importing and Exporting**
-At the bottom of the System Settings screen, you'll find options to **Export** and **Import** your configuration.
+**Importing, Exporting and Saving**
+At the top of the System Settings screen, you'll find options to **Save**, **Export**, and **Import** your configuration.
 <screenshot of the Export and Import buttons/dialog>
 *   **Export**: Saves your entire frame, blocks, and interlocking configuration to a standard JSON file.
 *   **Import**: Loads a JSON configuration file, overwriting the current setup. 
+*   **Save**: Saves your current frame configuration to the device's storage. If no changes have been made, the option is disabled. 
+
+## Frame Configuration
+
+From the System Settings (Configure) screen, navigate to the **Tabs** section to view, add, or edit your frames.
+<screenshot of the Tab list screen>
+
+When editing a specific Tab, you can configure display options (Name, Label Lines, Block Layout). From the Tab edit screen, you can delve deeper into configuring the **Blocks** and **Levers** for that specific frame.
+
+### Lever Configuration & Interlocking
+
+<screenshot of an individual Lever configuration screen>
+
+When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
+
+**Mechanical Interlocking Engine**
+Scroll down in the Lever Configuration screen to find the **Interlocking** section. A lever **cannot be pulled** unless **all** of its interlocking conditions are met.
+
+<screenshot of adding/editing an interlocking condition dialog>
+
+*   **Basic Lever Locking**: Require another lever to be in a specific position (e.g., Lever 4 locks Lever 3 NORMAL).
+*   **Cross-Interlocking (Blocks)**: Lock levers based on the live state of your Digital Block Shelf (e.g., Lever 2 locks the "UP MAIN" block EMPTY).
+*   **Conditional 'OR' Logic**: Set an **Alt Target** to allow a lever to be pulled if *either* of two conditions is true (e.g., Lever 1 requires Lever 2 OR Lever 5 to be REVERSED).
 
 ---
 
@@ -90,24 +113,3 @@ Every lever is composed of several distinct visual and interactive parts:
 
 ---
 
-## Frame (Tab) & Interlocking Configuration
-
-From the System Settings (Configure) screen, navigate to the **Tabs** section to view, add, or edit your frames.
-<screenshot of the Tab list screen>
-
-When editing a specific Tab, you can configure display options (Name, Label Lines, Block Layout). From the Tab edit screen, you can delve deeper into configuring the **Blocks** and **Levers** for that specific frame.
-
-### Lever Configuration & Interlocking
-
-<screenshot of an individual Lever configuration screen>
-
-When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
-
-**Mechanical Interlocking Engine**
-Scroll down in the Lever Configuration screen to find the **Interlocking** section. A lever **cannot be pulled** unless **all** of its interlocking conditions are met.
-
-<screenshot of adding/editing an interlocking condition dialog>
-
-*   **Basic Lever Locking**: Require another lever to be in a specific position (e.g., Lever 4 locks Lever 3 NORMAL).
-*   **Cross-Interlocking (Blocks)**: Lock levers based on the live state of your Digital Block Shelf (e.g., Lever 2 locks the "UP MAIN" block EMPTY).
-*   **Conditional 'OR' Logic**: Set an **Alt Target** to allow a lever to be pulled if *either* of two conditions is true (e.g., Lever 1 requires Lever 2 OR Lever 5 to be REVERSED).
