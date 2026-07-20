@@ -999,98 +999,88 @@ fun BlockDetailScreen(
     onBlockChange: (JsonBlock) -> Unit,
     onDelete: () -> Unit
 ) {
-    var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Basic") })
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("LCC") })
-        }
-        
         LazyColumn(
             modifier = Modifier.fillMaxSize().weight(1f),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (selectedTab == 0) {
-                item {
-                    // Basic Info Group
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                                IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
-                                    Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
-                                }
+            item {
+                // Basic Info Group
+                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+                            IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
+                                Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                             }
-                            if (showDeleteDialog) {
-                                AlertDialog(
-                                    onDismissRequest = { showDeleteDialog = false },
-                                    title = { Text("Delete Block") },
-                                    text = { Text("Are you sure you want to delete this block?") },
-                                    confirmButton = {
-                                        TextButton(onClick = { showDeleteDialog = false; onDelete() }) {
-                                            Text("Delete", color = MaterialTheme.colorScheme.error)
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { showDeleteDialog = false }) {
-                                            Text("Cancel")
-                                        }
+                        }
+                        if (showDeleteDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialog = false },
+                                title = { Text("Delete Block") },
+                                text = { Text("Are you sure you want to delete this block?") },
+                                confirmButton = {
+                                    TextButton(onClick = { showDeleteDialog = false; onDelete() }) {
+                                        Text("Delete", color = MaterialTheme.colorScheme.error)
                                     }
-                                )
-                            }
-
-                            OutlinedTextField(
-                                value = block.label,
-                                onValueChange = { onBlockChange(block.copy(label = it)) },
-                                label = { Text("Label") },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = brassTextFieldColors()
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDeleteDialog = false }) {
+                                        Text("Cancel")
+                                    }
+                                }
                             )
                         }
+
+                        OutlinedTextField(
+                            value = block.label,
+                            onValueChange = { onBlockChange(block.copy(label = it)) },
+                            label = { Text("Label") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = brassTextFieldColors()
+                        )
                     }
                 }
             }
             
-            if (selectedTab == 1) {
-                item {
-                    // LCC Events Group
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                            
-                            val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
-                            
-                            val occupiedSuffix = block.lcc_event_occupied
-                            val occupiedFull = if (occupiedSuffix.isBlank()) "" else prefix + occupiedSuffix
-                            val isOccupiedValid = occupiedFull.isBlank() || LccNode.parseEventId(occupiedFull).length == 16
-                            OutlinedTextField(
-                                value = occupiedSuffix,
-                                onValueChange = { onBlockChange(block.copy(lcc_event_occupied = it)) },
-                                label = { Text("Event ID (Occupied)") },
-                                prefix = { Text(prefix, color = Color.Gray) },
-                                modifier = Modifier.fillMaxWidth(),
-                                isError = !isOccupiedValid,
-                                supportingText = if (!isOccupiedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(occupiedFull)}") } },
-                                colors = brassTextFieldColors()
-                            )
-                            
-                            val emptySuffix = block.lcc_event_empty
-                            val emptyFull = if (emptySuffix.isBlank()) "" else prefix + emptySuffix
-                            val isEmptyValid = emptyFull.isBlank() || LccNode.parseEventId(emptyFull).length == 16
-                            OutlinedTextField(
-                                value = emptySuffix,
-                                onValueChange = { onBlockChange(block.copy(lcc_event_empty = it)) },
-                                label = { Text("Event ID (Empty)") },
-                                prefix = { Text(prefix, color = Color.Gray) },
-                                modifier = Modifier.fillMaxWidth(),
-                                isError = !isEmptyValid,
-                                supportingText = if (!isEmptyValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(emptyFull)}") } },
-                                colors = brassTextFieldColors()
-                            )
-                        }
+            item {
+                // LCC Events Group
+                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                    Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+                        
+                        val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
+                        
+                        val occupiedSuffix = block.lcc_event_occupied
+                        val occupiedFull = if (occupiedSuffix.isBlank()) "" else prefix + occupiedSuffix
+                        val isOccupiedValid = occupiedFull.isBlank() || LccNode.parseEventId(occupiedFull).length == 16
+                        OutlinedTextField(
+                            value = occupiedSuffix,
+                            onValueChange = { onBlockChange(block.copy(lcc_event_occupied = it)) },
+                            label = { Text("Event ID (Occupied)") },
+                            prefix = { Text(prefix, color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            isError = !isOccupiedValid,
+                            supportingText = if (!isOccupiedValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(occupiedFull)}") } },
+                            colors = brassTextFieldColors()
+                        )
+                        
+                        val emptySuffix = block.lcc_event_empty
+                        val emptyFull = if (emptySuffix.isBlank()) "" else prefix + emptySuffix
+                        val isEmptyValid = emptyFull.isBlank() || LccNode.parseEventId(emptyFull).length == 16
+                        OutlinedTextField(
+                            value = emptySuffix,
+                            onValueChange = { onBlockChange(block.copy(lcc_event_empty = it)) },
+                            label = { Text("Event ID (Empty)") },
+                            prefix = { Text(prefix, color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            isError = !isEmptyValid,
+                            supportingText = if (!isEmptyValid) { { Text("Invalid event format") } } else { { Text("Parsed: ${LccNode.parseEventId(emptyFull)}") } },
+                            colors = brassTextFieldColors()
+                        )
                     }
                 }
             }
