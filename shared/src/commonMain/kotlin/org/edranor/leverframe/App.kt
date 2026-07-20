@@ -522,7 +522,7 @@ fun TopMenuBar(
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Frames", fontSize = 14.sp) },
+                    text = { Text("Frame Configuration", fontSize = 14.sp) },
                     onClick = { 
                         viewModel.enterConfigMode(ConfigMode.FRAMES)
                         menuExpanded = false

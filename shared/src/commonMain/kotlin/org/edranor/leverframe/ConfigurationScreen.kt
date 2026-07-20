@@ -56,6 +56,7 @@ fun ConfigurationScreen(
         selectedFrameIndex = config.tabs.size - 1
     }
     var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
+    var editingLeverIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
     var showSaveWarning by remember { mutableStateOf(false) }
     var showSystemResetWarning by remember { mutableStateOf(false) }
@@ -63,10 +64,23 @@ fun ConfigurationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (initialMode == ConfigMode.SYSTEM) "System Settings" else "Frames", color = LeverFrameTheme.Colors.Brass) },
+                title = { 
+                    if (editingLeverIndex != null) {
+                        val frameName = config.tabs.getOrNull(selectedFrameIndex)?.name ?: "Frame"
+                        Text("$frameName - Lever ${editingLeverIndex!! + 1}", color = LeverFrameTheme.Colors.Brass)
+                    } else {
+                        Text(if (initialMode == ConfigMode.SYSTEM) "System Settings" else "Frames", color = LeverFrameTheme.Colors.Brass) 
+                    }
+                },
                 navigationIcon = {
-                    TextButton(onClick = onClose) {
-                        Text("✕", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
+                    if (editingLeverIndex != null) {
+                        TextButton(onClick = { editingLeverIndex = null }) {
+                            Text("←", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
+                        }
+                    } else {
+                        TextButton(onClick = onClose) {
+                            Text("✕", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
+                        }
                     }
                 },
                 actions = {
@@ -108,6 +122,30 @@ fun ConfigurationScreen(
                 }
             } else {
                 // FRAMES & LEVERS VIEW
+                if (editingLeverIndex != null) {
+                    val tab = config.tabs[selectedFrameIndex]
+                    val lever = tab.levers[editingLeverIndex!!]
+                    LeverDetailScreen(
+                        nodeId = config.node_id,
+                        leverIndex = editingLeverIndex!!,
+                        lever = lever,
+                        onLeverChange = { newLever ->
+                            val newTabs = config.tabs.toMutableList()
+                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
+                            newLevers[editingLeverIndex!!] = newLever
+                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                            config = config.copy(tabs = newTabs)
+                        },
+                        onDelete = {
+                            val newTabs = config.tabs.toMutableList()
+                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
+                            newLevers.removeAt(editingLeverIndex!!)
+                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                            config = config.copy(tabs = newTabs)
+                            editingLeverIndex = null
+                        }
+                    )
+                } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Frame Selection Dropdown
                     var frameSelectorExpanded by remember { mutableStateOf(false) }
@@ -326,25 +364,25 @@ fun ConfigurationScreen(
 
                             if (selectedFrameConfigTab == 1) {
                                 itemsIndexed(tab.levers) { leverIndex, lever ->
-                                    MobileLeverCard(
-                                        nodeId = config.node_id,
-                                        leverIndex = leverIndex,
-                                        lever = lever,
-                                        onLeverChange = { newLever ->
-                                            val newTabs = config.tabs.toMutableList()
-                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                            newLevers[leverIndex] = newLever
-                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                            config = config.copy(tabs = newTabs)
-                                        },
-                                        onDelete = {
-                                            val newTabs = config.tabs.toMutableList()
-                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                            newLevers.removeAt(leverIndex)
-                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                            config = config.copy(tabs = newTabs)
-                                        }
-                                    )
+                                    ElevatedCard(
+                                        modifier = Modifier.fillMaxWidth().clickable { editingLeverIndex = leverIndex }
+                                    ) {
+                                        ListItem(
+                                            headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever", style = MaterialTheme.typography.bodyMedium) },
+                                            supportingContent = { Text(lever.type) },
+                                            leadingContent = {
+                                                Box(
+                                                    modifier = Modifier.size(32.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text("${leverIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                                                }
+                                            },
+                                            trailingContent = {
+                                                Text("→", style = MaterialTheme.typography.titleMedium)
+                                            }
+                                        )
+                                    }
                                 }
 
                                 item {
@@ -376,6 +414,7 @@ fun ConfigurationScreen(
                     ) {
                         Text("Reset ALL Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
+                }
                 }
             }
         }
@@ -585,39 +624,30 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MobileLeverCard(
+fun LeverDetailScreen(
     nodeId: String,
     leverIndex: Int,
     lever: JsonLever,
     onLeverChange: (JsonLever) -> Unit,
     onDelete: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column {
-            ListItem(
-                headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever", style = MaterialTheme.typography.bodyMedium) },
-                supportingContent = { Text(lever.type) },
-                leadingContent = {
-                    Box(
-                        modifier = Modifier.size(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("${leverIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                trailingContent = {
-                    Text(if (expanded) "▲" else "▼", style = MaterialTheme.typography.titleMedium)
-                },
-                modifier = Modifier.clickable { expanded = !expanded }
-            )
-
-            if (expanded) {
-                HorizontalDivider()
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
+            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Basic") })
+            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("LCC") })
+            Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Rules") })
+        }
+        
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().weight(1f),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (selectedTab == 0) {
+                item {
                     // Basic Info Group
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -713,7 +743,11 @@ fun MobileLeverCard(
                             }
                         }
                     }
-
+                }
+            }
+            
+            if (selectedTab == 1) {
+                item {
                     // LCC Events Group
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -750,42 +784,48 @@ fun MobileLeverCard(
                             )
                         }
                     }
-
-                    // Interlocking Rules Group
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Interlocking Rules", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                                TextButton(onClick = {
-                                    val newRules = lever.interlocking.toMutableList()
-                                    newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
-                                    onLeverChange(lever.copy(interlocking = newRules))
-                                }) {
-                                    Text("＋ Add Rule")
-                                }
-                            }
-
-                            lever.interlocking.forEachIndexed { rIndex, rule ->
-                                MobileRuleCard(
-                                    ruleIndex = rIndex,
-                                    rule = rule,
-                                    onRuleChange = { newRule ->
-                                        val newRules = lever.interlocking.toMutableList()
-                                        newRules[rIndex] = newRule
-                                        onLeverChange(lever.copy(interlocking = newRules))
-                                    },
-                                    onDelete = {
-                                        val newRules = lever.interlocking.toMutableList()
-                                        newRules.removeAt(rIndex)
-                                        onLeverChange(lever.copy(interlocking = newRules))
-                                    }
-                                )
-                            }
+                }
+            }
+            
+            if (selectedTab == 2) {
+                item {
+                    // Interlocking Rules Group Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Interlocking Rules", style = MaterialTheme.typography.titleMedium, color = LeverFrameTheme.Colors.Brass)
+                        TextButton(onClick = {
+                            val newRules = lever.interlocking.toMutableList()
+                            newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
+                            onLeverChange(lever.copy(interlocking = newRules))
+                        }) {
+                            Text("＋ Add Rule")
                         }
+                    }
+                }
+                
+                itemsIndexed(lever.interlocking) { rIndex, rule ->
+                    MobileRuleCard(
+                        ruleIndex = rIndex,
+                        rule = rule,
+                        onRuleChange = { newRule ->
+                            val newRules = lever.interlocking.toMutableList()
+                            newRules[rIndex] = newRule
+                            onLeverChange(lever.copy(interlocking = newRules))
+                        },
+                        onDelete = {
+                            val newRules = lever.interlocking.toMutableList()
+                            newRules.removeAt(rIndex)
+                            onLeverChange(lever.copy(interlocking = newRules))
+                        }
+                    )
+                }
+                
+                if (lever.interlocking.isEmpty()) {
+                    item {
+                        Text("No rules defined for this lever.", color = Color.Gray, modifier = Modifier.padding(16.dp))
                     }
                 }
             }

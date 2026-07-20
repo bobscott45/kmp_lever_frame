@@ -18,12 +18,13 @@ The interface is divided into several key sections:
 
 ## The Hamburger Menu
 
-Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with two primary options:
+Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with three primary options:
 
 <screenshot of the hamburger menu dropdown>
 
 1.  **System Status**: Opens an overlay to check your network connection and adjust quick settings.
-2.  **Configure**: Enters the configuration mode to edit the entire lever frame setup (System Settings).
+2.  **System Settings**: Enters the configuration mode to edit top-level application and network settings.
+3.  **Frame Configuration**: Enters the configuration mode to edit the frames, levers, and interlocking rules.
 
 ### System Status
 
@@ -34,11 +35,7 @@ The System Status overlay provides crucial information at a glance:
 *   **External Event Policy**: Quickly change how the app responds to conflicting LCC events (Strict Local, Override Allowed, or Accept & Warn).
 *   **Quick Toggles**: Conveniently toggle LCC Master behavior and "Restore Last State" directly from this screen without entering full configuration mode.
 
-### Configure
-
-Tapping "Configure" takes you to the **Settings** screen which is divided into System and Frames. 
-
-### System
+### System Settings
 
 This controls the top-level behavior of the application and its connection to the OpenLCB / LCC network.
 
@@ -86,28 +83,29 @@ button at the end of the list.
 
 <screenshot of the Lever configuration screen>
 
-Pressing on a lever description will show the configuration settings for that lever. The settings are divided into Basic Info, LCC Ec
-vents and Interlocking Rules.
+Pressing on a lever description will open a dedicated **Lever Detail Screen** to configure the settings for that lever. The settings are organized into three tabs: **Basic**, **LCC**, and **Rules**.
 
-#### Basic Info
+To return to the main list of levers, tap the **← Back** button in the top app bar.
 
-To delete a lever click on the X at the top right of the Basic Info section.
+#### Basic (Tab)
+
+To delete a lever, click on the **X** at the top right of the Basic Info section.
 
 * **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired.
 * **Lever Type**: The functional type and color of the lever (e.g., Home Signal is Red, Distant Signal is Yellow, Points are Black).
 * **LCC Enabled**: Toggles whether this lever transmits and responds to LCC network events.
 * **Auto-Reverser**: When enabled, the lever will automatically snap back to its Normal position if any of its interlocking rules fail (e.g., when a train enters an interlocked block).
 
-#### LCC Events (Optional)
+#### LCC (Tab)
 
 * **Event ID (Normal)**: The LCC Event ID broadcast when the lever is pushed to the Normal (up) position.
 * **Event ID (Reversed)**: The LCC Event ID broadcast when the lever is pulled to the Reversed (down) position.
 
-#### Interlocking Rules
+#### Rules (Tab)
 
-Click + Add Rule to create a new rule. For each rule a settings panel is displayed. Click on X at the top right of a rule settings panel to delete the rule.
+Click **+ Add Rule** to create a new interlocking rule. For each rule, a settings panel is displayed. Click on the **X** at the top right of a rule settings panel to delete the rule.
 
-Each rule is divided into Primary Condition  OR Alternate Condition (Optional)
+Each rule is divided into a **Primary Condition** and an optional **Alternate Condition**.
 
 ##### Primary Condition
 
