@@ -12,7 +12,7 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 
 * **Cross-Platform**: Run the same lever frame logic and UI on an Android tablet, an iPad, or a Desktop PC.
 * **Native Kotlin OpenLCB / LCC Integration**: Comprehensive, 100% native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
-* **In-App Configuration**: No web server needed! Configure LCC events, network settings, and conflict policies natively within the app. Configurations can be exported and imported as JSON.
+* **In-App Configuration**: No web server needed! Configure LCC events, network settings, and conflict policies natively within the app. Configurations can be exported and imported as JSON (via native file dialogs on Desktop, and via the system clipboard on mobile devices).
 * **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
 * **Digital Block Shelf**: Define and monitor track occupancy blocks directly above the lever frame. 
 * **Cross-Interlocking & Auto-Reversers**: Interlock mechanical levers directly to digital block occupancies. Signals can be configured as "Auto-Reversers", automatically snapping back to Danger when a train enters a block, mimicking prototypical track-circuit interlocking.

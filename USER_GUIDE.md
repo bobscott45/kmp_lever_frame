@@ -52,8 +52,8 @@ This controls the top-level behavior of the application and its connection to th
 **Importing, Exporting and Saving**
 At the top of the System Settings screen, you'll find options to **Save**, **Export**, and **Import** your configuration.
 <screenshot of the Export and Import buttons/dialog>
-*   **Export**: Saves your entire frame, blocks, and interlocking configuration to a standard JSON file.
-*   **Import**: Loads a JSON configuration file, overwriting the current setup. 
+*   **Export**: Exports your entire frame, blocks, and interlocking configuration as standard JSON. *Note: On the Desktop app, this opens a native save file dialog. On Android/iOS, this displays the JSON in a popup for you to copy to your system clipboard.*
+*   **Import**: Loads a JSON configuration, overwriting the current setup. *Note: On the Desktop app, this opens a native open file dialog. On Android/iOS, this opens a popup where you can paste the JSON from your system clipboard.*
 *   **Save**: Saves your current frame configuration to the device's storage. If no changes have been made, the option is disabled. 
 
 ## Frame
