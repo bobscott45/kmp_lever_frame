@@ -18,13 +18,16 @@ The interface is divided into several key sections:
 
 ## The Hamburger Menu
 
-Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with three primary options:
+Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with five options:
 
 <screenshot of the hamburger menu dropdown>
 
 1.  **System Status**: Opens an overlay to check your network connection and adjust quick settings.
 2.  **System Settings**: Enters the configuration mode to edit top-level application and network settings.
 3.  **Frame Configuration**: Enters the configuration mode to edit the frames, levers, and interlocking rules.
+4.  **Import**: Loads a JSON configuration, overwriting the current setup.
+5.  **Export**: Exports your entire frame, blocks, and interlocking configuration as standard JSON.
+
 
 ### System Status
 
@@ -49,12 +52,7 @@ This controls the top-level behavior of the application and its connection to th
 *   **LCC Master**: Toggle whether this application acts as the master authority for the lever states on the network.
 *   **Enable Sound**: Toggles auditory feedback.
 
-**Importing, Exporting and Saving**
-You can **Import** and **Export** your configuration at any time from the top-right hamburger menu (⋮) on the main screen. The option to **Save** your configuration appears in the top app bar when you are editing your settings in the configuration screens.
-<screenshot of the Export and Import buttons/dialog>
-*   **Export**: Exports your entire frame, blocks, and interlocking configuration as standard JSON. *Note: On the Desktop app, this opens a native save file dialog. On Android/iOS, this displays the JSON in a popup for you to copy to your system clipboard.*
-*   **Import**: Loads a JSON configuration, overwriting the current setup. *Note: On the Desktop app, this opens a native open file dialog. On Android/iOS, this opens a popup where you can paste the JSON from your system clipboard.*
-*   **Save**: Saves your current frame configuration to the device's storage. If no changes have been made, the option is disabled. 
+If changes are pending, the Save button at the top right of the panel will become active.
 
 ## Frame
 
@@ -65,6 +63,8 @@ Allows adding, editing and deleting frames. Select an existing frame to edit its
 When editing a specific Tab, you can configure display options (Name, Label Lines, Block Layout). From the Tab edit screen, you can delve deeper into configuring the **Blocks** and **Levers** for that specific frame.
 
 The settings for each frame are divided into three tabs: Settings, Levers and Blocks.
+
+If changes are pending, the Save button at the top right of the panel will become active.
 
 ### Settings
 
@@ -174,4 +174,15 @@ Every lever is composed of several distinct visual and interactive parts:
     *   *Tip: You can tap the collar button to manually lock (`LOCKED`) a lever, placing a virtual "collar" on it to prevent accidental pulling. Tap again to unlock.*
 
 ---
+## Import
+
+You can **Import** your configuration from the top-right hamburger menu (⋮) on the main screen.
+
+*Note: On the Desktop app, this opens a native open file dialog. On Android/iOS, this opens a popup where you can paste the JSON from your system clipboard.*
+
+## Export
+You can **Export** your configuration from the top-right hamburger menu (⋮) on the main screen.
+
+*Note: On the Desktop app, this opens a native save file dialog. On Android/iOS, this displays the JSON in a popup for you to copy to your system clipboard.*
+
 
