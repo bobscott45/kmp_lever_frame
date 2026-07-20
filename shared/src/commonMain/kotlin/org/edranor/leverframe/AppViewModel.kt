@@ -311,12 +311,12 @@ class AppViewModel(
         _uiState.update { it.copy(isStatusMode = true, statusLeverIndex = leverIndex) }
     }
 
-    fun enterConfigMode() {
-        _uiState.update { it.copy(isConfigMode = true) }
+    fun enterConfigMode(mode: ConfigMode) {
+        _uiState.update { it.copy(configMode = mode) }
     }
 
     fun exitConfigMode() {
-        _uiState.update { it.copy(isConfigMode = false) }
+        _uiState.update { it.copy(configMode = ConfigMode.NONE) }
     }
 
     fun configSaved() {

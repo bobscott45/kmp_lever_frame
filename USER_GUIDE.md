@@ -25,7 +25,7 @@ Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown wi
 1.  **System Status**: Opens an overlay to check your network connection and adjust quick settings.
 2.  **Configure**: Enters the configuration mode to edit the entire lever frame setup (System Settings).
 
-### System Status Screen
+### System Status
 
 <screenshot of the System Status screen>
 
@@ -34,9 +34,13 @@ The System Status overlay provides crucial information at a glance:
 *   **External Event Policy**: Quickly change how the app responds to conflicting LCC events (Strict Local, Override Allowed, or Accept & Warn).
 *   **Quick Toggles**: Conveniently toggle LCC Master behavior and "Restore Last State" directly from this screen without entering full configuration mode.
 
-### System Configuration
+### Configure
 
-Tapping "Configure" takes you to the **System Settings** screen. This controls the top-level behavior of the application and its connection to the OpenLCB / LCC network.
+Tapping "Configure" takes you to the **Settings** screen which is divided into System and Frames. 
+
+### System
+
+This controls the top-level behavior of the application and its connection to the OpenLCB / LCC network.
 
 <screenshot of the System Settings screen>
 
@@ -55,16 +59,69 @@ At the top of the System Settings screen, you'll find options to **Save**, **Exp
 *   **Import**: Loads a JSON configuration file, overwriting the current setup. 
 *   **Save**: Saves your current frame configuration to the device's storage. If no changes have been made, the option is disabled. 
 
-## Frame Configuration
+## Frame
 
-From the System Settings (Configure) screen, navigate to the **Tabs** section to view, add, or edit your frames.
+Allows adding, editing and deleting frames. Select an existing frame to edit its configuration or press +Add to create a new frame.
+
 <screenshot of the Tab list screen>
 
 When editing a specific Tab, you can configure display options (Name, Label Lines, Block Layout). From the Tab edit screen, you can delve deeper into configuring the **Blocks** and **Levers** for that specific frame.
 
-### Lever Configuration & Interlocking
+The settings for each frame are divided into three tabs: Settings, Levers and Blocks.
 
-<screenshot of an individual Lever configuration screen>
+### Settings
+
+* **Frame Title**: The name of the frame, displayed on its tab at the top of the screen.
+* **Lever Label Lines**: The number of lines allocated for the brass nameplate text on each lever. Increase this if you have long, multi-line labels.
+* **Lever Line Height**: The height of each text line on the brass nameplate.
+* **Block Font Size**: The size of the text used for the Digital Block Shelf labels.
+* **Block Layout**: Choose between **Horizontal** (blocks side-by-side) or **Vertical** (blocks stacked) for the Digital Block Shelf.
+
+### Levers
+
+Levers can be added, edited or deleted.
+
+Existing levers are listed with their lever number and description. Levers can be added by pressing the +Add Lever
+button at the end of the list.
+
+<screenshot of the Lever configuration screen>
+
+Pressing on a lever description will show the configuration settings for that lever. The settings are divided into Basic Info, LCC Ec
+vents and Interlocking Rules.
+
+#### Basic Info
+
+To delete a lever click on the X at the top right of the Basic Info section.
+
+* **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired.
+* **Lever Type**: The functional type and color of the lever (e.g., Home Signal is Red, Distant Signal is Yellow, Points are Black).
+* **LCC Enabled**: Toggles whether this lever transmits and responds to LCC network events.
+* **Auto-Reverser**: When enabled, the lever will automatically snap back to its Normal position if any of its interlocking rules fail (e.g., when a train enters an interlocked block).
+
+#### LCC Events (Optional)
+
+* **Event ID (Normal)**: The LCC Event ID broadcast when the lever is pushed to the Normal (up) position.
+* **Event ID (Reversed)**: The LCC Event ID broadcast when the lever is pulled to the Reversed (down) position.
+
+#### Interlocking Rules
+
+Click + Add Rule to create a new rule. For each rule a settings panel is displayed. Click on X at the top right of a rule settings panel to delete the rule.
+
+Each rule is divided into Primary Condition  OR Alternate Condition (Optional)
+
+##### Primary Condition
+
+* **Type**: Choose whether to interlock against another **LEVER** or a track **BLOCK**.
+* **Index**: The numerical index of the target lever or block (e.g., enter `4` to lock against Lever 4).
+* **Required State**: The state the target must be in for this lever to be pulled (e.g., `NORMAL` or `REVERSED` for levers, `EMPTY` or `OCCUPIED` for blocks).
+
+##### Alternate Condition (Optional)
+
+This acts as a logical 'OR' condition. If the Primary Condition fails, the lever can still be pulled if this Alternate Condition is met.
+
+* **Alt Type**: Choose between **LEVER** or **BLOCK** for the alternate condition.
+* **Alt Index**: The numerical index of the alternate target (this label title is displayed within the edit box until you enter a value).
+* **Alt Required State**: The required state for the alternate target.
 
 When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
 
@@ -77,6 +134,9 @@ Scroll down in the Lever Configuration screen to find the **Interlocking** secti
 *   **Cross-Interlocking (Blocks)**: Lock levers based on the live state of your Digital Block Shelf (e.g., Lever 2 locks the "UP MAIN" block EMPTY).
 *   **Conditional 'OR' Logic**: Set an **Alt Target** to allow a lever to be pulled if *either* of two conditions is true (e.g., Lever 1 requires Lever 2 OR Lever 5 to be REVERSED).
 
+### Blocks
+
+<screenshot of an individual block configuration screen>
 ---
 
 ## The Block Occupancy Shelf

@@ -21,13 +21,15 @@
  */
 package org.edranor.leverframe
 
+enum class ConfigMode { NONE, SYSTEM, FRAMES }
+
 data class LeverFrameUiState(
     val tabs: List<Pair<String, TabDef>> = emptyList(),
     val selectedTabIndex: Int = 0,
     val leverStates: List<BooleanArray> = emptyList(),
     val manualLocks: List<BooleanArray> = emptyList(),
     val blockStates: List<BooleanArray> = emptyList(),
-    val isConfigMode: Boolean = false,
+    val configMode: ConfigMode = ConfigMode.NONE,
     val isStatusMode: Boolean = false,
     val statusLeverIndex: Int? = null,
     val errorMessage: String? = null,
@@ -45,7 +47,7 @@ data class LeverFrameUiState(
 
         if (tabs != other.tabs) return false
         if (selectedTabIndex != other.selectedTabIndex) return false
-        if (isConfigMode != other.isConfigMode) return false
+        if (configMode != other.configMode) return false
         if (isStatusMode != other.isStatusMode) return false
         if (statusLeverIndex != other.statusLeverIndex) return false
         if (errorMessage != other.errorMessage) return false
@@ -80,7 +82,7 @@ data class LeverFrameUiState(
         result = 31 * result + leverStates.sumOf { it.contentHashCode() }
         result = 31 * result + manualLocks.sumOf { it.contentHashCode() }
         result = 31 * result + blockStates.sumOf { it.contentHashCode() }
-        result = 31 * result + isConfigMode.hashCode()
+        result = 31 * result + configMode.hashCode()
         result = 31 * result + isStatusMode.hashCode()
         result = 31 * result + (statusLeverIndex ?: 0)
         result = 31 * result + (errorMessage?.hashCode() ?: 0)

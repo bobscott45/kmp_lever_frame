@@ -118,9 +118,10 @@ fun App() {
                 }
             }
 
-            if (state.isConfigMode) {
+            if (state.configMode != ConfigMode.NONE) {
                 ConfigurationScreen(
                     initialConfig = state.config,
+                    initialMode = state.configMode,
                     onUpdateSystemConfig = viewModel::updateSystemConfig,
                     onClose = viewModel::exitConfigMode
                 )
@@ -507,9 +508,16 @@ fun TopMenuBar(
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Configure", fontSize = 14.sp) },
+                    text = { Text("System Settings", fontSize = 14.sp) },
                     onClick = { 
-                        viewModel.enterConfigMode()
+                        viewModel.enterConfigMode(ConfigMode.SYSTEM)
+                        menuExpanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Frames", fontSize = 14.sp) },
+                    onClick = { 
+                        viewModel.enterConfigMode(ConfigMode.FRAMES)
                         menuExpanded = false
                     }
                 )

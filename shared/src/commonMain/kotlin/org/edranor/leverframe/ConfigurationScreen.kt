@@ -41,14 +41,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun ConfigurationScreen(
     initialConfig: JsonConfig,
+    initialMode: ConfigMode,
     onUpdateSystemConfig: (JsonConfig) -> Unit,
     onClose: () -> Unit
 ) {
     var config by remember { mutableStateOf(initialConfig) }
     val coroutineScope = rememberCoroutineScope()
     
-    // Main navigation tabs: 0 for System Settings, 1 for Frames
-    var selectedMainTab by rememberSaveable { mutableStateOf(0) }
+    // Main navigation is now controlled by initialMode
     
     // Sub-navigation for the selected Frame
     var selectedFrameIndex by rememberSaveable { mutableStateOf(0) }
@@ -61,13 +61,14 @@ fun ConfigurationScreen(
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var showSaveWarning by remember { mutableStateOf(false) }
-    var showResetWarning by remember { mutableStateOf(false) }
+    var showSystemResetWarning by remember { mutableStateOf(false) }
+    var showFramesResetWarning by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", color = LeverFrameTheme.Colors.Brass) },
+                title = { Text(if (initialMode == ConfigMode.SYSTEM) "System Settings" else "Frames", color = LeverFrameTheme.Colors.Brass) },
                 navigationIcon = {
                     TextButton(onClick = onClose) {
                         Text("✕", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
@@ -122,21 +123,7 @@ fun ConfigurationScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Main Top Navigation
-            PrimaryTabRow(selectedTabIndex = selectedMainTab) {
-                Tab(
-                    selected = selectedMainTab == 0,
-                    onClick = { selectedMainTab = 0 },
-                    text = { Text("System", color = if (selectedMainTab == 0) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
-                )
-                Tab(
-                    selected = selectedMainTab == 1,
-                    onClick = { selectedMainTab = 1 },
-                    text = { Text("Frames", color = if (selectedMainTab == 1) LeverFrameTheme.Colors.Brass else androidx.compose.ui.graphics.Color.White) }
-                )
-            }
-
-            if (selectedMainTab == 0) {
+            if (initialMode == ConfigMode.SYSTEM) {
                 // SYSTEM SETTINGS VIEW
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -148,11 +135,11 @@ fun ConfigurationScreen(
                     }
                     item {
                         OutlinedButton(
-                            onClick = { showResetWarning = true },
+                            onClick = { showSystemResetWarning = true },
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Reset ALL Settings & Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text("Reset System Settings to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 }
@@ -418,6 +405,14 @@ fun ConfigurationScreen(
                             Text("No Frames configured.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
+                    
+                    OutlinedButton(
+                        onClick = { showFramesResetWarning = true },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Reset ALL Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
                 }
             }
         }
@@ -445,25 +440,64 @@ fun ConfigurationScreen(
         )
     }
 
-    if (showResetWarning) {
+    if (showSystemResetWarning) {
         AlertDialog(
-            onDismissRequest = { showResetWarning = false },
-            title = { Text("Reset to Defaults", color = MaterialTheme.colorScheme.error) },
-            text = { Text("WARNING: This will completely erase ALL System Settings and ALL Frame configurations (including levers and blocks) and replace them with the factory default configuration.\n\nThis cannot be undone. Are you sure?") },
+            onDismissRequest = { showSystemResetWarning = false },
+            title = { Text("Reset System Settings", color = MaterialTheme.colorScheme.error) },
+            text = { Text("WARNING: This will erase all System Settings and replace them with the factory defaults. Frame configurations will NOT be affected.\n\nThis cannot be undone. Are you sure?") },
             confirmButton = {
                 TextButton(onClick = {
-                    showResetWarning = false
+                    showSystemResetWarning = false
                     try {
-                        config = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
+                        val default = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
+                        config = config.copy(
+                            node_id = default.node_id,
+                            node_name = default.node_name,
+                            jmri_hub_ip = default.jmri_hub_ip,
+                            wifi_ssid = default.wifi_ssid,
+                            wifi_password = default.wifi_password,
+                            wifi_station_password = default.wifi_station_password,
+                            conflict_policy = default.conflict_policy,
+                            display_sleep_timeout_ms = default.display_sleep_timeout_ms,
+                            restore_last_state = default.restore_last_state,
+                            lcc_master = default.lcc_master,
+                            enable_sound = default.enable_sound
+                        )
                     } catch (e: Exception) {
-                        println("Failed to reset: ${e.message}")
+                        println("Failed to reset system settings: ${e.message}")
                     }
                 }) {
                     Text("Reset", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showResetWarning = false }) { Text("Cancel") }
+                TextButton(onClick = { showSystemResetWarning = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    if (showFramesResetWarning) {
+        AlertDialog(
+            onDismissRequest = { showFramesResetWarning = false },
+            title = { Text("Reset Frames", color = MaterialTheme.colorScheme.error) },
+            text = { Text("WARNING: This will completely erase ALL Frame configurations (including levers and blocks) and replace them with the factory default North Junction frame.\n\nThis cannot be undone. Are you sure?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showFramesResetWarning = false
+                    try {
+                        val default = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
+                        config = config.copy(tabs = default.tabs)
+                        selectedFrameIndex = 0
+                        selectedFrameConfigTab = 0
+                    } catch (e: Exception) {
+                        println("Failed to reset frames: ${e.message}")
+                    }
+                }) {
+                    Text("Reset", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFramesResetWarning = false }) { Text("Cancel") }
             }
         )
     }
@@ -958,7 +992,7 @@ fun MobileRuleCard(
                 IntTextField(
                     value = if (rule.alt_target == -1) -1 else rule.alt_target + 1,
                     onValueChange = { onRuleChange(rule.copy(alt_target = if (it == -1) -1 else it - 1)) },
-                    label = "Alt Idx",
+                    label = "Alt Index",
                     modifier = Modifier.weight(1f),
                     colors = brassTextFieldColors()
                 )

@@ -244,12 +244,12 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Config mode
-        viewModel.enterConfigMode()
+        viewModel.enterConfigMode(ConfigMode.SYSTEM)
         testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.isConfigMode)
+        assertEquals(ConfigMode.SYSTEM, viewModel.uiState.value.configMode)
         viewModel.exitConfigMode()
         testDispatcher.scheduler.advanceUntilIdle()
-        assertFalse(viewModel.uiState.value.isConfigMode)
+        assertEquals(ConfigMode.NONE, viewModel.uiState.value.configMode)
 
         // Status mode
         viewModel.enterStatusMode()
