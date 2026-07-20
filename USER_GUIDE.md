@@ -134,7 +134,10 @@ Scroll down in the Lever Configuration screen to find the **Interlocking** secti
 
 ### Blocks
 
-<screenshot of an individual block configuration screen>
+Similar to levers, pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration is organized into two tabs:
+
+* **Basic (Tab)**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf. You can delete the block by clicking the **X** in the top right corner.
+* **LCC (Tab)**: Define the LCC Event IDs that will trigger this block to show as "Occupied" or "Empty".
 ---
 
 ## The Block Occupancy Shelf

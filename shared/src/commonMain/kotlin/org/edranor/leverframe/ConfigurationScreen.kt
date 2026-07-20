@@ -57,6 +57,7 @@ fun ConfigurationScreen(
     }
     var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
     var editingLeverIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var editingBlockIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
     var showSaveWarning by remember { mutableStateOf(false) }
     var showSystemResetWarning by remember { mutableStateOf(false) }
@@ -68,6 +69,9 @@ fun ConfigurationScreen(
                     if (editingLeverIndex != null) {
                         val frameName = config.tabs.getOrNull(selectedFrameIndex)?.name ?: "Frame"
                         Text("$frameName - Lever ${editingLeverIndex!! + 1}", color = LeverFrameTheme.Colors.Brass)
+                    } else if (editingBlockIndex != null) {
+                        val frameName = config.tabs.getOrNull(selectedFrameIndex)?.name ?: "Frame"
+                        Text("$frameName - Block ${editingBlockIndex!! + 1}", color = LeverFrameTheme.Colors.Brass)
                     } else {
                         Text(if (initialMode == ConfigMode.SYSTEM) "System Settings" else "Frames", color = LeverFrameTheme.Colors.Brass) 
                     }
@@ -75,6 +79,10 @@ fun ConfigurationScreen(
                 navigationIcon = {
                     if (editingLeverIndex != null) {
                         TextButton(onClick = { editingLeverIndex = null }) {
+                            Text("←", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
+                        }
+                    } else if (editingBlockIndex != null) {
+                        TextButton(onClick = { editingBlockIndex = null }) {
                             Text("←", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
                         }
                     } else {
@@ -143,6 +151,29 @@ fun ConfigurationScreen(
                             newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
                             config = config.copy(tabs = newTabs)
                             editingLeverIndex = null
+                        }
+                    )
+                } else if (editingBlockIndex != null) {
+                    val tab = config.tabs[selectedFrameIndex]
+                    val block = tab.blocks[editingBlockIndex!!]
+                    BlockDetailScreen(
+                        nodeId = config.node_id,
+                        blockIndex = editingBlockIndex!!,
+                        block = block,
+                        onBlockChange = { newBlock ->
+                            val newTabs = config.tabs.toMutableList()
+                            val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
+                            newBlocks[editingBlockIndex!!] = newBlock
+                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                            config = config.copy(tabs = newTabs)
+                        },
+                        onDelete = {
+                            val newTabs = config.tabs.toMutableList()
+                            val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
+                            newBlocks.removeAt(editingBlockIndex!!)
+                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                            config = config.copy(tabs = newTabs)
+                            editingBlockIndex = null
                         }
                     )
                 } else {
@@ -324,25 +355,24 @@ fun ConfigurationScreen(
                             // as they are split into sub-tabs
 
                             itemsIndexed(tab.blocks) { blockIndex, block ->
-                                MobileBlockCard(
-                                    nodeId = config.node_id,
-                                    blockIndex = blockIndex,
-                                    block = block,
-                                    onBlockChange = { newBlock ->
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
-                                        newBlocks[blockIndex] = newBlock
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
-                                        config = config.copy(tabs = newTabs)
-                                    },
-                                    onDelete = {
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
-                                        newBlocks.removeAt(blockIndex)
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
-                                        config = config.copy(tabs = newTabs)
-                                    }
-                                )
+                                ElevatedCard(
+                                    modifier = Modifier.fillMaxWidth().clickable { editingBlockIndex = blockIndex }
+                                ) {
+                                    ListItem(
+                                        headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block", style = MaterialTheme.typography.bodyMedium) },
+                                        leadingContent = {
+                                            Box(
+                                                modifier = Modifier.size(32.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text("${blockIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+                                            }
+                                        },
+                                        trailingContent = {
+                                            Text("→", style = MaterialTheme.typography.titleMedium)
+                                        }
+                                    )
+                                }
                             }
 
                             item {
@@ -962,38 +992,29 @@ fun MobileRuleCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MobileBlockCard(
+fun BlockDetailScreen(
     nodeId: String,
     blockIndex: Int,
     block: JsonBlock,
     onBlockChange: (JsonBlock) -> Unit,
     onDelete: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column {
-            ListItem(
-                headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block", style = MaterialTheme.typography.bodyMedium) },
-                leadingContent = {
-                    Box(
-                        modifier = Modifier.size(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("${blockIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                trailingContent = {
-                    Text(if (expanded) "▲" else "▼", style = MaterialTheme.typography.titleMedium)
-                },
-                modifier = Modifier.clickable { expanded = !expanded }
-            )
-
-            if (expanded) {
-                HorizontalDivider()
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
+            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Basic") })
+            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("LCC") })
+        }
+        
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().weight(1f),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (selectedTab == 0) {
+                item {
                     // Basic Info Group
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -1030,7 +1051,11 @@ fun MobileBlockCard(
                             )
                         }
                     }
-
+                }
+            }
+            
+            if (selectedTab == 1) {
+                item {
                     // LCC Events Group
                     Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
