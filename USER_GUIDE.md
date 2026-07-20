@@ -58,7 +58,7 @@ At the top of the System Settings screen, you'll find options to **Save**, **Exp
 
 ## Frame
 
-Allows adding, editing and deleting frames. Select an existing frame to edit its configuration or press +Add to create a new frame.
+Allows adding, editing and deleting frames. Select an existing frame to edit its configuration, use the **✕ Delete** button to remove the currently selected frame, or press +Add to create a new frame.
 
 <screenshot of the Tab list screen>
 
@@ -89,21 +89,22 @@ To return to the main list of levers, tap the **← Back** button in the top app
 
 #### Basic (Tab)
 
-To delete a lever, click on the **X** at the top right of the Basic Info section.
+To delete a lever, click on the **✕ Delete** button at the top right of the Basic Info section.
 
 * **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired.
 * **Lever Type**: The functional type and color of the lever (e.g., Home Signal is Red, Distant Signal is Yellow, Points are Black).
-* **LCC Enabled**: Toggles whether this lever transmits and responds to LCC network events.
-* **Auto-Reverser**: When enabled, the lever will automatically snap back to its Normal position if any of its interlocking rules fail (e.g., when a train enters an interlocked block).
 
 #### LCC (Tab)
 
+* **LCC Enabled**: Toggles whether this lever transmits and responds to LCC network events.
 * **Event ID (Normal)**: The LCC Event ID broadcast when the lever is pushed to the Normal (up) position.
 * **Event ID (Reversed)**: The LCC Event ID broadcast when the lever is pulled to the Reversed (down) position.
 
 #### Rules (Tab)
 
-Click **+ Add Rule** to create a new interlocking rule. For each rule, a settings panel is displayed. Click on the **X** at the top right of a rule settings panel to delete the rule.
+* **Auto-Reverser**: When enabled, the lever will automatically snap back to its Normal position if any of its interlocking rules fail (e.g., when a train enters an interlocked block).
+
+Click **+ Add Rule** to create a new interlocking rule. For each rule, a settings panel is displayed. Click on the **✕ Delete** button at the top right of a rule settings panel to delete the rule.
 
 Each rule is divided into a **Primary Condition** and an optional **Alternate Condition**.
 
@@ -136,7 +137,7 @@ Scroll down in the Lever Configuration screen to find the **Interlocking** secti
 
 Similar to levers, pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
 
-* **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf. You can delete the block by clicking the **X** in the top right corner.
+* **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf. You can delete the block by clicking the **✕ Delete** button in the top right corner.
 * **LCC Events**: Define the LCC Event IDs that will trigger this block to show as "Occupied" or "Empty".
 ---
 

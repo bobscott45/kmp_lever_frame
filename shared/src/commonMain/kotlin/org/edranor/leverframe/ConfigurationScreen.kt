@@ -62,6 +62,7 @@ fun ConfigurationScreen(
     var showSaveWarning by remember { mutableStateOf(false) }
     var showSystemResetWarning by remember { mutableStateOf(false) }
     var showFramesResetWarning by remember { mutableStateOf(false) }
+    var showFrameDeleteWarning by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -261,15 +262,8 @@ fun ConfigurationScreen(
                                             label = { Text("Frame Title") },
                                             modifier = Modifier.weight(1f).padding(end = 16.dp)
                                         )
-                                        IconButton(onClick = {
-                                            val newTabs = config.tabs.toMutableList()
-                                            newTabs.removeAt(selectedFrameIndex)
-                                            config = config.copy(tabs = newTabs)
-                                            if (selectedFrameIndex >= newTabs.size && newTabs.isNotEmpty()) {
-                                                selectedFrameIndex = newTabs.size - 1
-                                            }
-                                        }) {
-                                            Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                                        TextButton(onClick = { showFrameDeleteWarning = true }) {
+                                            Text("✕ Delete", color = MaterialTheme.colorScheme.error)
                                         }
                                     }
                                 }
@@ -533,6 +527,30 @@ fun ConfigurationScreen(
             }
         )
     }
+
+    if (showFrameDeleteWarning) {
+        AlertDialog(
+            onDismissRequest = { showFrameDeleteWarning = false },
+            title = { Text("Delete Frame") },
+            text = { Text("Are you sure you want to delete this entire frame and all its configuration?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showFrameDeleteWarning = false
+                    val newTabs = config.tabs.toMutableList()
+                    newTabs.removeAt(selectedFrameIndex)
+                    config = config.copy(tabs = newTabs)
+                    if (selectedFrameIndex >= newTabs.size && newTabs.isNotEmpty()) {
+                        selectedFrameIndex = newTabs.size - 1
+                    }
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFrameDeleteWarning = false }) { Text("Cancel") }
+            }
+        )
+    }
 }
 
 @Composable
@@ -683,8 +701,8 @@ fun LeverDetailScreen(
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                 Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                                IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
-                                    Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                                TextButton(onClick = { showDeleteDialog = true }) {
+                                    Text("✕ Delete", color = MaterialTheme.colorScheme.error)
                                 }
                             }
                             if (showDeleteDialog) {
@@ -744,6 +762,18 @@ fun LeverDetailScreen(
                                 }
                             }
 
+                        }
+                    }
+                }
+            }
+            
+            if (selectedTab == 1) {
+                item {
+                    // LCC Events Group
+                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("LCC Configuration", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+                            
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -756,32 +786,9 @@ fun LeverDetailScreen(
                                     colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
                                 )
                             }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text("Auto-Reverser", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                                    Text("(Return to Normal if rules fail)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                }
-                                Switch(
-                                    checked = lever.auto_reverser,
-                                    onCheckedChange = { onLeverChange(lever.copy(auto_reverser = it)) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if (selectedTab == 1) {
-                item {
-                    // LCC Events Group
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("LCC Events (Optional)", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("LCC Events (Optional)", style = MaterialTheme.typography.bodyMedium, color = LeverFrameTheme.Colors.Brass)
                             
                             val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
                             
@@ -819,6 +826,24 @@ fun LeverDetailScreen(
             
             if (selectedTab == 2) {
                 item {
+                    Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Auto-Reverser", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                Text("(Return to Normal if rules fail)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            }
+                            Switch(
+                                checked = lever.auto_reverser,
+                                onCheckedChange = { onLeverChange(lever.copy(auto_reverser = it)) },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
+                            )
+                        }
+                    }
+                    
                     // Interlocking Rules Group Header
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -872,14 +897,14 @@ fun MobileRuleCard(
     onDelete: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Rule ${ruleIndex + 1}", style = MaterialTheme.typography.labelLarge)
-                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp).offset(x = 4.dp)) {
-                    Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = onDelete, modifier = Modifier.offset(x = 8.dp)) {
+                    Text("✕ Delete", color = MaterialTheme.colorScheme.error)
                 }
             }
             
@@ -1013,8 +1038,8 @@ fun BlockDetailScreen(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text("Basic Info", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                            IconButton(onClick = { showDeleteDialog = true }, modifier = Modifier.size(24.dp)) {
-                                Text("✕", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                            TextButton(onClick = { showDeleteDialog = true }) {
+                                Text("✕ Delete", color = MaterialTheme.colorScheme.error)
                             }
                         }
                         if (showDeleteDialog) {

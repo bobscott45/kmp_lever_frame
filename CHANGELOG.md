@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI Enhancements**: Refactored the Lever and Block Configuration screens from expandable accordion lists to clean, tabbed drill-down pages to eliminate scroll fatigue.
 - **UI Enhancements**: Block occupancy boxes dynamically scale with font size to conserve screen space. Default block label font size reduced to 8.
 - **Configuration UI**: Added confirmation popups when deleting levers or blocks to prevent accidental data loss. Split the 'Configure' menu option into separate 'System Settings' and 'Frames' options to simplify navigation. The configuration screens now feature shortened titles to better fit portrait orientations, and the 'Reset to Defaults' functionality has been safely divided into system-only and frames-only actions.
+- **Configuration UI**: Reorganized the Lever Detail screen by moving "LCC Enabled" to the LCC tab and "Auto-Reverser" to the Rules tab. Standardized delete buttons to explicitly read "✕ Delete" and added a safeguard confirmation prompt before deleting a Frame.
+
+### Fixed
+- **Configuration UI**: Fixed a visual inconsistency where the interlocking rules cards had a lighter background color than the other configuration tabs.
 
 ## [1.0.3] - 2026-07-19
 
