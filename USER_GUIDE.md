@@ -50,7 +50,7 @@ This controls the top-level behavior of the application and its connection to th
 *   **Enable Sound**: Toggles auditory feedback.
 
 **Importing, Exporting and Saving**
-At the top of the System Settings screen, you'll find options to **Save**, **Export**, and **Import** your configuration.
+You can **Import** and **Export** your configuration at any time from the top-right hamburger menu (⋮) on the main screen. The option to **Save** your configuration appears in the top app bar when you are editing your settings in the configuration screens.
 <screenshot of the Export and Import buttons/dialog>
 *   **Export**: Exports your entire frame, blocks, and interlocking configuration as standard JSON. *Note: On the Desktop app, this opens a native save file dialog. On Android/iOS, this displays the JSON in a popup for you to copy to your system clipboard.*
 *   **Import**: Loads a JSON configuration, overwriting the current setup. *Note: On the Desktop app, this opens a native open file dialog. On Android/iOS, this opens a popup where you can paste the JSON from your system clipboard.*
