@@ -57,14 +57,9 @@ fun ConfigurationScreen(
     }
     var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
 
-    val clipboardManager = LocalClipboardManager.current
-    var showExportDialog by remember { mutableStateOf(false) }
-    var showImportDialog by remember { mutableStateOf(false) }
     var showSaveWarning by remember { mutableStateOf(false) }
     var showSystemResetWarning by remember { mutableStateOf(false) }
     var showFramesResetWarning by remember { mutableStateOf(false) }
-    var importText by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,38 +70,6 @@ fun ConfigurationScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { 
-                        if (isFilePickerAvailable) {
-                            importConfigurationFile { json ->
-                                if (json != null) {
-                                    try {
-                                        val importedConfig = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(json)
-                                        config = importedConfig
-                                    } catch (e: Exception) {
-                                        println("Failed to import: ${e.message}")
-                                    }
-                                }
-                            }
-                        } else {
-                            showImportDialog = true
-                        }
-                    }) {
-                        Text("Import")
-                    }
-                    TextButton(onClick = { 
-                        if (isFilePickerAvailable) {
-                            try {
-                                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config)
-                                exportConfigurationFile(jsonString)
-                            } catch (e: Exception) {
-                                println("Failed to export: ${e.message}")
-                            }
-                        } else {
-                            showExportDialog = true
-                        }
-                    }) {
-                        Text("Export")
-                    }
                     val hasChanges = config != initialConfig
                     TextButton(
                         onClick = { showSaveWarning = true },
@@ -498,69 +461,6 @@ fun ConfigurationScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showFramesResetWarning = false }) { Text("Cancel") }
-            }
-        )
-    }
-
-    if (showExportDialog) {
-        AlertDialog(
-            onDismissRequest = { showExportDialog = false },
-            title = { Text("Export Configuration") },
-            text = {
-                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config)
-                OutlinedTextField(
-                    value = jsonString,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config)
-                    clipboardManager.setText(AnnotatedString(jsonString))
-                    showExportDialog = false
-                }) {
-                    Text("Copy to Clipboard")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showExportDialog = false }) { Text("Close") }
-            }
-        )
-    }
-
-    if (showImportDialog) {
-        AlertDialog(
-            onDismissRequest = { showImportDialog = false },
-            title = { Text("Import Configuration") },
-            text = {
-                OutlinedTextField(
-                    value = importText,
-                    onValueChange = { importText = it },
-                    label = { Text("Paste JSON here") },
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    try {
-                        val importedConfig = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(importText)
-                        config = importedConfig
-                        showImportDialog = false
-                        importText = ""
-                    } catch (e: Exception) {
-                        println("Failed to import: ${e.message}")
-                    }
-                }) {
-                    Text("Import")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { 
-                    showImportDialog = false
-                    importText = ""
-                }) { Text("Cancel") }
             }
         )
     }

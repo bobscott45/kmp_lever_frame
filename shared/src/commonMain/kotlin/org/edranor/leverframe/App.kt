@@ -50,6 +50,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import kotlinx.coroutines.launch
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -484,6 +486,11 @@ fun TopMenuBar(
     state: LeverFrameUiState,
     viewModel: AppViewModel
 ) {
+    val clipboardManager = LocalClipboardManager.current
+    var showExportDialog by remember { mutableStateOf(false) }
+    var showImportDialog by remember { mutableStateOf(false) }
+    var importText by remember { mutableStateOf("") }
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -521,8 +528,108 @@ fun TopMenuBar(
                         menuExpanded = false
                     }
                 )
+                Divider(modifier = Modifier.padding(vertical = 4.dp))
+                DropdownMenuItem(
+                    text = { Text("Import Configuration", fontSize = 14.sp) },
+                    onClick = { 
+                        if (isFilePickerAvailable) {
+                            importConfigurationFile { json ->
+                                if (json != null) {
+                                    try {
+                                        val importedConfig = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(json)
+                                        viewModel.updateSystemConfig(importedConfig)
+                                    } catch (e: Exception) {
+                                        println("Failed to import: ${e.message}")
+                                    }
+                                }
+                            }
+                        } else {
+                            showImportDialog = true
+                        }
+                        menuExpanded = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Export Configuration", fontSize = 14.sp) },
+                    onClick = { 
+                        if (isFilePickerAvailable) {
+                            try {
+                                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                                exportConfigurationFile(jsonString)
+                            } catch (e: Exception) {
+                                println("Failed to export: ${e.message}")
+                            }
+                        } else {
+                            showExportDialog = true
+                        }
+                        menuExpanded = false
+                    }
+                )
             }
         }
+    }
+
+    if (showExportDialog) {
+        AlertDialog(
+            onDismissRequest = { showExportDialog = false },
+            title = { Text("Export Configuration") },
+            text = {
+                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                OutlinedTextField(
+                    value = jsonString,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                    clipboardManager.setText(AnnotatedString(jsonString))
+                    showExportDialog = false
+                }) {
+                    Text("Copy to Clipboard")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExportDialog = false }) { Text("Close") }
+            }
+        )
+    }
+
+    if (showImportDialog) {
+        AlertDialog(
+            onDismissRequest = { showImportDialog = false },
+            title = { Text("Import Configuration") },
+            text = {
+                OutlinedTextField(
+                    value = importText,
+                    onValueChange = { importText = it },
+                    label = { Text("Paste JSON here") },
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    try {
+                        val importedConfig = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(importText)
+                        viewModel.updateSystemConfig(importedConfig)
+                        showImportDialog = false
+                        importText = ""
+                    } catch (e: Exception) {
+                        println("Failed to import: ${e.message}")
+                    }
+                }) {
+                    Text("Import")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showImportDialog = false
+                    importText = ""
+                }) { Text("Cancel") }
+            }
+        )
     }
 }
 
