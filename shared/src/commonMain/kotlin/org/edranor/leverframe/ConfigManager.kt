@@ -61,7 +61,17 @@ data class JsonTab(
     val block_layout: String = "HORIZONTAL",
     val block_label_size: Int = 8,
     val levers: List<JsonLever> = emptyList(),
-    val blocks: List<JsonBlock> = emptyList()
+    val blocks: List<JsonBlock> = emptyList(),
+    val schematic_elements: List<JsonSchematicElement> = emptyList()
+)
+
+@Serializable
+data class JsonSchematicElement(
+    val type: String,
+    val x: Int,
+    val y: Int,
+    val linked_lever: Int = -1,
+    val linked_block: String = ""
 )
 
 @Serializable
@@ -105,7 +115,7 @@ object ConfigManager : AppConfigRepository {
         encodeDefaults = true
     }
 
-    val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 2, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "lcc_master": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "blocks": [{"label": "UP MAIN", "lcc_event_occupied": "", "lcc_event_empty": ""}, {"label": "UP BRANCH", "lcc_event_occupied": "", "lcc_event_empty": ""}, {"label": "DOWN MAIN", "lcc_event_occupied": "", "lcc_event_empty": ""}], "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 0, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 1, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "blocks": [{"label": "YARD", "lcc_event_occupied": "", "lcc_event_empty": ""}], "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 0, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}]}]}"""
+    val defaultPrototypicalConfigJson = """{"wifi_ssid": "", "wifi_password": "signalman", "wifi_station_password": "", "conflict_policy": 2, "display_sleep_timeout_ms": 60000, "restore_last_state": true, "lcc_master": true, "tabs": [{"name": "North Junction", "label_lines": 2, "label_line_height": 18, "blocks": [{"label": "UP MAIN", "lcc_event_occupied": "", "lcc_event_empty": ""}, {"label": "UP BRANCH", "lcc_event_occupied": "", "lcc_event_empty": ""}, {"label": "DOWN MAIN", "lcc_event_occupied": "", "lcc_event_empty": ""}], "levers": [{"label": "UP\nDISTANT", "type": "DISTANT_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": 4, "alt_state": "REVERSED"}]}, {"label": "UP MAIN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 0, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FPL FOR\nPOINTS 4", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "JUNCTION\nPOINTS", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "NORMAL", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "UP BRANCH\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 3, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 1, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nADVANCED", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "DOWN\nHOME", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 6, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 2, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}], "schematic_elements": [{"type": "STRAIGHT_H", "x": 0, "y": 1, "linked_block": "UP MAIN"}, {"type": "SIGNAL_LEFT", "x": 1, "y": 1, "linked_lever": 1}, {"type": "STRAIGHT_H", "x": 2, "y": 1, "linked_block": "UP MAIN"}, {"type": "TURNOUT_RIGHT", "x": 3, "y": 1, "linked_lever": 3, "linked_block": "UP MAIN"}, {"type": "STRAIGHT_H", "x": 4, "y": 1, "linked_block": "UP MAIN"}, {"type": "SIGNAL_LEFT", "x": 1, "y": 0, "linked_lever": 4}, {"type": "STRAIGHT_H", "x": 2, "y": 0, "linked_block": "UP BRANCH"}, {"type": "STRAIGHT_H", "x": 3, "y": 0, "linked_block": "UP BRANCH"}]}, {"name": "South Box", "label_lines": 2, "label_line_height": 18, "blocks": [{"label": "YARD", "lcc_event_occupied": "", "lcc_event_empty": ""}], "levers": [{"label": "SHUNT\nAHEAD", "type": "HOME_SIGNAL", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 1, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "YARD\nCROSSOVER", "type": "POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": [{"target": 2, "state": "REVERSED", "alt_target": -1, "alt_state": "NORMAL"}, {"target": 0, "state": "EMPTY", "target_type": "BLOCK", "alt_target": -1, "alt_state": "NORMAL"}]}, {"label": "FRAME\nRELEASE", "type": "FACING_POINTS", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}, {"label": "SPARE", "type": "SPARE", "lcc_event_normal": "", "lcc_event_reversed": "", "lcc_enabled": true, "interlocking": []}], "schematic_elements": [{"type": "STRAIGHT_H", "x": 0, "y": 0, "linked_block": "YARD"}, {"type": "TURNOUT_RIGHT", "x": 1, "y": 0, "linked_lever": 1, "linked_block": "YARD"}, {"type": "STRAIGHT_H", "x": 2, "y": 0, "linked_block": "YARD"}, {"type": "SIGNAL_LEFT", "x": 0, "y": 1, "linked_lever": 0}]}]}"""
 
     override var currentConfig by mutableStateOf(jsonFormat.decodeFromString<JsonConfig>(defaultPrototypicalConfigJson))
 
@@ -171,13 +181,25 @@ object ConfigManager : AppConfigRepository {
                     lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else ""
                 )
             }
+            
+            val schematicElements = jsonTab.schematic_elements.map { jsonElem ->
+                SchematicElementDef(
+                    type = jsonElem.type,
+                    x = jsonElem.x,
+                    y = jsonElem.y,
+                    linkedLever = jsonElem.linked_lever,
+                    linkedBlock = jsonElem.linked_block
+                )
+            }
+
             jsonTab.name to TabDef(
                 levers = levers,
                 labelLines = jsonTab.label_lines,
                 labelLineHeight = jsonTab.label_line_height,
                 blockLayout = jsonTab.block_layout,
                 blockLabelSize = jsonTab.block_label_size,
-                blocks = blocks
+                blocks = blocks,
+                schematicElements = schematicElements
             )
         }
     }

@@ -174,6 +174,23 @@ fun App() {
                         networkError = state.networkError,
                         onDismissNetworkError = viewModel::dismissNetworkError
                     )
+                    
+                    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+                        val currentTabDef = state.tabs[state.selectedTabIndex].second
+                        if (currentTabDef.schematicElements.isNotEmpty()) {
+                            SchematicScreen(
+                                tabDef = currentTabDef,
+                                leverStates = state.leverStates[state.selectedTabIndex],
+                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(0.4f)
+                                    .padding(bottom = 8.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
+                    }
+
                     BlockShelfGroup(state, viewModel)
                     LeverTrackGroup(state, viewModel, soundPlayer)
                 }

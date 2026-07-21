@@ -58,13 +58,22 @@ data class BlockDef(
     val lcc_event_empty: String = ""
 )
 
+data class SchematicElementDef(
+    val type: String,
+    val x: Int,
+    val y: Int,
+    val linkedLever: Int = -1,
+    val linkedBlock: String = ""
+)
+
 data class TabDef(
     val levers: List<LeverDef>,
     val labelLines: Int = 2,
     val labelLineHeight: Int = 18,
     val blockLayout: String = "HORIZONTAL",
     val blockLabelSize: Int = 8,
-    val blocks: List<BlockDef> = emptyList()
+    val blocks: List<BlockDef> = emptyList(),
+    val schematicElements: List<SchematicElementDef> = emptyList()
 )
 
 object Interlocking {
