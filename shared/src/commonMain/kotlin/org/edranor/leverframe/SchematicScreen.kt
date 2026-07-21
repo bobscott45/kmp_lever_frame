@@ -273,9 +273,9 @@ fun SchematicScreen(
                     if (elements.size == 1 && elements.first().type.contains("SIGNAL")) {
                         val elem = elements.first()
                         if (elem.type == "SIGNAL_RIGHT") {
-                            textCenterX -= gridSizeX * 0.4f
-                        } else if (elem.type == "SIGNAL_LEFT") {
                             textCenterX += gridSizeX * 0.4f
+                        } else if (elem.type == "SIGNAL_LEFT") {
+                            textCenterX -= gridSizeX * 0.4f
                         }
                     }
                     
