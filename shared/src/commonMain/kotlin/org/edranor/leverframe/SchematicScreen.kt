@@ -25,7 +25,9 @@ fun SchematicScreen(
     modifier: Modifier = Modifier
 ) {
     val maxX = tabDef.schematicElements.maxOfOrNull { it.x } ?: 0
+    val maxY = tabDef.schematicElements.maxOfOrNull { it.y } ?: 0
     val cellsX = (maxX + 2).coerceAtLeast(1)
+    val cellsY = (maxY + 1).coerceAtLeast(1)
 
     val textMeasurer = rememberTextMeasurer()
 
@@ -45,8 +47,9 @@ fun SchematicScreen(
                 .horizontalScroll(rememberScrollState()),
             contentAlignment = Alignment.Center
         ) {
+            val heightDp = (cellsY * 40).dp
             Canvas(
-                modifier = Modifier.width(widthDp).fillMaxHeight()
+                modifier = Modifier.width(widthDp).height(heightDp)
             ) {
                 val gridSizeX = gridDpX.toPx()
                 val gridSizeY = 40.dp.toPx()
@@ -118,7 +121,7 @@ fun SchematicScreen(
                             )
                             drawText(
                                 textMeasurer = textMeasurer,
-                                text = "${element.linkedLever}",
+                                text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                 topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
                             )
