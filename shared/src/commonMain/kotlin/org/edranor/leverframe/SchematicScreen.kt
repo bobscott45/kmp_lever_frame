@@ -134,8 +134,50 @@ fun SchematicScreen(
                                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
                                 strokeWidth = 4f
                             )
+                            val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
+                            val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
                             drawCircle(
-                                color = if (isReversed) Color.Green else Color.Red,
+                                color = if (isReversed) Color.Green else normalColor,
+                                radius = gridSizeY / 5,
+                                center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
+                            )
+                            drawText(
+                                textMeasurer = textMeasurer,
+                                text = "${element.linkedLever + 1}",
+                                style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                            )
+                        }
+                        "SIGNAL_RIGHT" -> {
+                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
+                            if (leftElement == null) {
+                                // Check if a turnout from the row below points up to this cell
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_RIGHT" }
+                            }
+                            val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
+                            
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+
+                            // Draw left half of track through the signal cell
+                            drawLine(
+                                color = leftColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw right half of track through the signal cell
+                            drawLine(
+                                color = rightColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
+                            val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+                            drawCircle(
+                                color = if (isReversed) Color.Green else normalColor,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
