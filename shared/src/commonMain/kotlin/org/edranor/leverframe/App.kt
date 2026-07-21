@@ -174,12 +174,14 @@ fun App() {
                     val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
                     
                     Column(modifier = Modifier.fillMaxSize()) {
-                        TopMenuBar(state, viewModel)
-                        ErrorBanners(
-                            errorMessage = state.errorMessage,
-                            networkError = state.networkError,
-                            onDismissNetworkError = viewModel::dismissNetworkError
-                        )
+                        if (!isLandscapeCompact) {
+                            TopMenuBar(state, viewModel)
+                            ErrorBanners(
+                                errorMessage = state.errorMessage,
+                                networkError = state.networkError,
+                                onDismissNetworkError = viewModel::dismissNetworkError
+                            )
+                        }
                         
                         if (isLandscapeCompact) {
                             Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
@@ -222,6 +224,12 @@ fun App() {
                                 }
                                 val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.67f else 1.0f)
                                 Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    TopMenuBar(state, viewModel)
+                                    ErrorBanners(
+                                        errorMessage = state.errorMessage,
+                                        networkError = state.networkError,
+                                        onDismissNetworkError = viewModel::dismissNetworkError
+                                    )
                                     BlockShelfGroup(state, viewModel)
                                     LeverTrackGroup(state, viewModel, soundPlayer)
                                 }
