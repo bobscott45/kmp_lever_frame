@@ -32,7 +32,8 @@ fun SchematicScreen(
     val textMeasurer = rememberTextMeasurer()
 
     BoxWithConstraints(
-        modifier = modifier.background(Color(0xFF1E1E1E))
+        modifier = modifier.background(Color(0xFF1E1E1E)),
+        contentAlignment = Alignment.Center
     ) {
         val minGridSizeX = 40.dp
         val maxGridSizeX = 120.dp
@@ -47,7 +48,7 @@ fun SchematicScreen(
                 .horizontalScroll(rememberScrollState()),
             contentAlignment = Alignment.Center
         ) {
-            val heightDp = (cellsY * 40).dp
+            val heightDp = (cellsY * 40 + 10).dp // Add 10dp padding at the bottom to prevent text clipping
             Canvas(
                 modifier = Modifier.width(widthDp).height(heightDp)
             ) {
