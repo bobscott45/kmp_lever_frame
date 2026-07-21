@@ -75,7 +75,7 @@ data class TabDef(
     val blockLayout: String = "HORIZONTAL",
     val blockLabelSize: Int = 8,
     val showLeverNumbers: Boolean = true,
-    val showBlockNumbers: Boolean = true,
+    val showBlockNumbers: Boolean = false,
     val useShortCodes: Boolean = false,
     val useShortCodesInIndicators: Boolean = false,
     val schematicGridSize: Int = 40,

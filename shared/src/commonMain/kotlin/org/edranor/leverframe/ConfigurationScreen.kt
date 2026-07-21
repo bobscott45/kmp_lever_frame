@@ -1361,7 +1361,7 @@ private fun JsonConfig.withoutUiAndRules(): JsonConfig {
     return this.copy(tabs = this.tabs.map { tab ->
         tab.copy(
             show_lever_numbers = true,
-            show_block_numbers = true,
+            show_block_numbers = false,
             use_short_codes = false,
             use_short_codes_in_indicators = false,
             schematic_grid_size = 40,

@@ -61,7 +61,7 @@ data class JsonTab(
     val block_layout: String = "HORIZONTAL",
     val block_label_size: Int = 8,
     val show_lever_numbers: Boolean = true,
-    val show_block_numbers: Boolean = true,
+    val show_block_numbers: Boolean = false,
     val use_short_codes: Boolean = false,
     val use_short_codes_in_indicators: Boolean = false,
     val schematic_grid_size: Int = 40,
