@@ -151,6 +151,71 @@ fun SchematicScreen(
                                 topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
                             )
                         }
+                        "BRACKET_SIGNAL" -> {
+                            val isReversed1 = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            val isReversed2 = if (element.linkedLever2 in leverStates.indices) leverStates[element.linkedLever2] else false
+                            
+                            val leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
+                            val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
+                            
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+
+                            // Draw left half of track
+                            drawLine(
+                                color = leftColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw right half of track
+                            drawLine(
+                                color = rightColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            
+                            // Draw bracket structure
+                            drawLine(
+                                color = Color.Gray,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY * 0.4f),
+                                strokeWidth = 2f
+                            )
+                            drawLine(
+                                color = Color.Gray,
+                                start = Offset(px + gridSizeX * 0.3f, py + gridSizeY * 0.4f),
+                                end = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.4f),
+                                strokeWidth = 2f
+                            )
+                            
+                            // Draw Main Signal (linked_lever)
+                            drawCircle(
+                                color = if (isReversed1) Color.Green else Color.Red,
+                                radius = gridSizeY / 6,
+                                center = Offset(px + gridSizeX * 0.3f, py + gridSizeY * 0.4f - gridSizeY / 6)
+                            )
+                            drawText(
+                                textMeasurer = textMeasurer,
+                                text = "${element.linkedLever + 1}",
+                                style = TextStyle(color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                topLeft = Offset(px + gridSizeX * 0.3f - gridSizeY / 10, py + gridSizeY * 0.4f - gridSizeY / 6 - gridSizeY / 10)
+                            )
+
+                            // Draw Branch Signal (linked_lever_2)
+                            drawCircle(
+                                color = if (isReversed2) Color.Green else Color.Red,
+                                radius = gridSizeY / 6,
+                                center = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.4f)
+                            )
+                            drawText(
+                                textMeasurer = textMeasurer,
+                                text = "${element.linkedLever2 + 1}",
+                                style = TextStyle(color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                topLeft = Offset(px + gridSizeX * 0.7f - gridSizeY / 10, py + gridSizeY * 0.4f - gridSizeY / 10)
+                            )
+                        }
                     }
                 }
             }
