@@ -32,6 +32,8 @@ data class LeverFrameUiState(
     val configMode: ConfigMode = ConfigMode.NONE,
     val isStatusMode: Boolean = false,
     val statusLeverIndex: Int? = null,
+    val initialEditFrameIndex: Int? = null,
+    val initialEditLeverIndex: Int? = null,
     val errorMessage: String? = null,
     val networkError: String? = null,
     val conflictingLevers: List<Int> = emptyList(),
@@ -50,6 +52,8 @@ data class LeverFrameUiState(
         if (configMode != other.configMode) return false
         if (isStatusMode != other.isStatusMode) return false
         if (statusLeverIndex != other.statusLeverIndex) return false
+        if (initialEditFrameIndex != other.initialEditFrameIndex) return false
+        if (initialEditLeverIndex != other.initialEditLeverIndex) return false
         if (errorMessage != other.errorMessage) return false
         if (networkError != other.networkError) return false
         if (conflictingLevers != other.conflictingLevers) return false

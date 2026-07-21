@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 fun ConfigurationScreen(
     initialConfig: JsonConfig,
     initialMode: ConfigMode,
+    initialSelectedFrameIndex: Int = 0,
+    initialEditingLeverIndex: Int? = null,
     onUpdateSystemConfig: (JsonConfig, Boolean) -> Unit,
     onClose: () -> Unit
 ) {
@@ -51,12 +53,12 @@ fun ConfigurationScreen(
     // Main navigation is now controlled by initialMode
     
     // Sub-navigation for the selected Frame
-    var selectedFrameIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedFrameIndex by rememberSaveable { mutableStateOf(initialSelectedFrameIndex) }
     if (selectedFrameIndex >= config.tabs.size && config.tabs.isNotEmpty()) {
         selectedFrameIndex = config.tabs.size - 1
     }
     var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
-    var editingLeverIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var editingLeverIndex by rememberSaveable { mutableStateOf(initialEditingLeverIndex) }
     var editingBlockIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
     var showSaveWarning by remember { mutableStateOf(false) }

@@ -47,6 +47,7 @@ fun LeverStatusScreen(
     leverStates: BooleanArray,
     blockStates: BooleanArray,
     onClose: () -> Unit,
+    onEditConfig: () -> Unit,
     onLccEnabledChange: (Boolean) -> Unit
 ) {
     Box(
@@ -183,6 +184,16 @@ fun LeverStatusScreen(
         }
         
         Spacer(modifier = Modifier.height(24.dp))
+        
+        Button(
+            onClick = onEditConfig,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = LeverFrameTheme.Colors.Brass, contentColor = Color.Black)
+        ) {
+            Text("Edit Configuration", fontWeight = FontWeight.Bold)
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
         
         Button(
             onClick = onClose,

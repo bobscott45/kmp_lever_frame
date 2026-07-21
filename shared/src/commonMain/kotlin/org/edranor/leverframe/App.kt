@@ -124,6 +124,8 @@ fun App() {
                 ConfigurationScreen(
                     initialConfig = state.config,
                     initialMode = state.configMode,
+                    initialSelectedFrameIndex = state.initialEditFrameIndex ?: 0,
+                    initialEditingLeverIndex = state.initialEditLeverIndex,
                     onUpdateSystemConfig = { cfg, rulesOnly -> viewModel.updateSystemConfig(cfg, rulesOnly) },
                     onClose = viewModel::exitConfigMode
                 )
@@ -213,6 +215,10 @@ fun App() {
                             leverStates = state.leverStates[state.selectedTabIndex],
                             blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
                             onClose = viewModel::dismissStatusLever,
+                            onEditConfig = {
+                                viewModel.dismissStatusLever()
+                                viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex, leverIndex = index)
+                            },
                             onLccEnabledChange = { checked ->
                                 viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
                             }
