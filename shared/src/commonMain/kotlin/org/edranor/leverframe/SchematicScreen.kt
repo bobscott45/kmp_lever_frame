@@ -115,7 +115,11 @@ fun SchematicScreen(
                         }
                         "SIGNAL_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                            val leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
+                            var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
+                            if (leftElement == null) {
+                                // Check if a turnout from the row below points up to this cell
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_RIGHT" }
+                            }
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
