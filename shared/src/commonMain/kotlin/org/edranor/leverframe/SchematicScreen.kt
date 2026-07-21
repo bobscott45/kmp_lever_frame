@@ -73,14 +73,7 @@ fun SchematicScreen(
 
                     val trackColor = getBlockColor(element.linkedBlock)
 
-                    if (element.linkedBlock.isNotEmpty() && element.type.startsWith("STRAIGHT")) {
-                        drawText(
-                            textMeasurer = textMeasurer,
-                            text = element.linkedBlock,
-                            style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold),
-                            topLeft = Offset(px + 4f, py + gridSizeY / 4)
-                        )
-                    }
+
 
                     when (element.type) {
                         "STRAIGHT_H" -> drawLine(
@@ -213,6 +206,34 @@ fun SchematicScreen(
                             )
                         }
                     }
+                }
+
+                // Draw block names once per block, centered across all their straight elements
+                val blockElementsMap = tabDef.schematicElements
+                    .filter { it.linkedBlock.isNotEmpty() && it.type.startsWith("STRAIGHT") }
+                    .groupBy { it.linkedBlock }
+
+                blockElementsMap.forEach { (blockName, elements) ->
+                    val minX = elements.minOf { it.x }
+                    val maxX = elements.maxOf { it.x }
+                    val minY = elements.minOf { it.y }
+                    val maxY = elements.maxOf { it.y }
+                    
+                    val centerPx = startX + (minX + maxX + 1) * gridSizeX / 2f
+                    val centerPy = (minY + maxY + 1) * gridSizeY / 2f
+                    
+                    val textLayout = textMeasurer.measure(
+                        text = blockName,
+                        style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    )
+                    
+                    drawText(
+                        textLayoutResult = textLayout,
+                        topLeft = Offset(
+                            x = centerPx - textLayout.size.width / 2f,
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 4f
+                        )
+                    )
                 }
             }
         }
