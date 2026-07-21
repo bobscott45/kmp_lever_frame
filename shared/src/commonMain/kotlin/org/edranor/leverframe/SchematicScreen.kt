@@ -143,7 +143,7 @@ fun SchematicScreen(
                             )
                             drawCircle(
                                 color = if (isReversed) Color.Green else Color.Red,
-                                radius = gridSizeY / 4,
+                                radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
                             drawText(
@@ -178,45 +178,38 @@ fun SchematicScreen(
                                 strokeWidth = 4f
                             )
                             
-                            // Draw main stem (straight on)
-                            drawLine(
-                                color = Color.Gray,
-                                start = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
-                                end = Offset(px + gridSizeX * 0.65f, py + gridSizeY * 0.25f),
-                                strokeWidth = 2f
-                            )
                             // Draw branch stem (feather diverging to the left)
                             drawLine(
                                 color = Color.Gray,
-                                start = Offset(px + gridSizeX * 0.65f, py + gridSizeY * 0.5f),
-                                end = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.25f),
+                                start = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f),
                                 strokeWidth = 2f
                             )
                             
-                            // Draw Main Signal (linked_lever)
+                            // Draw Main Signal (linked_lever) on the track
                             drawCircle(
                                 color = if (isReversed1) Color.Green else Color.Red,
                                 radius = gridSizeY / 5,
-                                center = Offset(px + gridSizeX * 0.65f, py + gridSizeY * 0.25f)
+                                center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2)
                             )
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX * 0.85f, py + gridSizeY * 0.25f - gridSizeY / 6)
+                                topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY / 1.3f)
                             )
 
-                            // Draw Branch Signal (linked_lever_2)
+                            // Draw Branch Signal (linked_lever_2) above
                             drawCircle(
                                 color = if (isReversed2) Color.Green else Color.Red,
                                 radius = gridSizeY / 5,
-                                center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.25f)
+                                center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f)
                             )
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever2 + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX * 0.05f, py + gridSizeY * 0.25f - gridSizeY / 6)
+                                topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py + gridSizeY / 1.3f)
                             )
                         }
                     }
