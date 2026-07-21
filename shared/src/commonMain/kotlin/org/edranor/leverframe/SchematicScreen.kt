@@ -32,12 +32,12 @@ fun SchematicScreen(
     BoxWithConstraints(
         modifier = modifier.background(Color(0xFF1E1E1E))
     ) {
-        val minGridSize = 40.dp
-        val maxGridSize = 120.dp
+        val minGridSizeX = 40.dp
+        val maxGridSizeX = 120.dp
         
-        val calculatedGridSize = maxWidth / cellsX
-        val gridDp = calculatedGridSize.coerceIn(minGridSize, maxGridSize)
-        val widthDp = gridDp * cellsX
+        val calculatedGridSizeX = maxWidth / cellsX
+        val gridDpX = calculatedGridSizeX.coerceIn(minGridSizeX, maxGridSizeX)
+        val widthDp = gridDpX * cellsX
 
         Box(
             modifier = Modifier
@@ -48,76 +48,77 @@ fun SchematicScreen(
             Canvas(
                 modifier = Modifier.width(widthDp).fillMaxHeight()
             ) {
-                val gridSize = gridDp.toPx()
+                val gridSizeX = gridDpX.toPx()
+                val gridSizeY = 40.dp.toPx()
 
-            tabDef.schematicElements.forEach { element ->
-                val px = element.x * gridSize
-                val py = element.y * gridSize
+                tabDef.schematicElements.forEach { element ->
+                    val px = element.x * gridSizeX
+                    val py = element.y * gridSizeY
 
-                val isBlockOccupied = if (element.linkedBlock.isNotEmpty()) {
-                    val blockIndex = tabDef.blocks.indexOfFirst { it.label == element.linkedBlock }
-                    if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
-                } else false
+                    val isBlockOccupied = if (element.linkedBlock.isNotEmpty()) {
+                        val blockIndex = tabDef.blocks.indexOfFirst { it.label == element.linkedBlock }
+                        if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
+                    } else false
 
-                val trackColor = if (isBlockOccupied) Color.Red else Color.LightGray
+                    val trackColor = if (isBlockOccupied) Color.Red else Color.LightGray
 
-                if (element.linkedBlock.isNotEmpty() && element.type.startsWith("STRAIGHT")) {
-                    drawText(
-                        textMeasurer = textMeasurer,
-                        text = element.linkedBlock,
-                        style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold),
-                        topLeft = Offset(px + 4f, py + gridSize / 4)
-                    )
-                }
-
-                when (element.type) {
-                    "STRAIGHT_H" -> drawLine(
-                        color = trackColor,
-                        start = Offset(px, py + gridSize / 2),
-                        end = Offset(px + gridSize, py + gridSize / 2),
-                        strokeWidth = 4f
-                    )
-                    "STRAIGHT_V" -> drawLine(
-                        color = trackColor,
-                        start = Offset(px + gridSize / 2, py),
-                        end = Offset(px + gridSize / 2, py + gridSize),
-                        strokeWidth = 4f
-                    )
-                    "TURNOUT_RIGHT" -> {
-                        val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                        // Draw main line
-                        drawLine(
-                            color = trackColor,
-                            start = Offset(px, py + gridSize / 2),
-                            end = Offset(px + gridSize, py + gridSize / 2),
-                            strokeWidth = 4f
-                        )
-                        // Draw diverging line
-                        val divergeColor = if (isReversed) Color.Green else trackColor
-                        drawLine(
-                            color = divergeColor,
-                            start = Offset(px + gridSize / 2, py + gridSize / 2),
-                            end = Offset(px + gridSize, py),
-                            strokeWidth = 4f
-                        )
-                    }
-                    "SIGNAL_LEFT" -> {
-                        val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                        drawCircle(
-                            color = if (isReversed) Color.Green else Color.Red,
-                            radius = gridSize / 4,
-                            center = Offset(px + gridSize / 2, py + gridSize / 2)
-                        )
+                    if (element.linkedBlock.isNotEmpty() && element.type.startsWith("STRAIGHT")) {
                         drawText(
                             textMeasurer = textMeasurer,
-                            text = "${element.linkedLever}",
-                            style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                            topLeft = Offset(px + gridSize / 2.5f, py + gridSize / 1.3f)
+                            text = element.linkedBlock,
+                            style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                            topLeft = Offset(px + 4f, py + gridSizeY / 4)
                         )
+                    }
+
+                    when (element.type) {
+                        "STRAIGHT_H" -> drawLine(
+                            color = trackColor,
+                            start = Offset(px, py + gridSizeY / 2),
+                            end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                            strokeWidth = 4f
+                        )
+                        "STRAIGHT_V" -> drawLine(
+                            color = trackColor,
+                            start = Offset(px + gridSizeX / 2, py),
+                            end = Offset(px + gridSizeX / 2, py + gridSizeY),
+                            strokeWidth = 4f
+                        )
+                        "TURNOUT_RIGHT" -> {
+                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            // Draw main line
+                            drawLine(
+                                color = trackColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw diverging line
+                            val divergeColor = if (isReversed) Color.Green else trackColor
+                            drawLine(
+                                color = divergeColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py),
+                                strokeWidth = 4f
+                            )
+                        }
+                        "SIGNAL_LEFT" -> {
+                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            drawCircle(
+                                color = if (isReversed) Color.Green else Color.Red,
+                                radius = gridSizeY / 4,
+                                center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
+                            )
+                            drawText(
+                                textMeasurer = textMeasurer,
+                                text = "${element.linkedLever}",
+                                style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                            )
+                        }
                     }
                 }
             }
         }
     }
-}
 }
