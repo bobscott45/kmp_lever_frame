@@ -209,7 +209,7 @@ fun SchematicScreen(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever2 + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py - gridSizeY * 0.25f)
+                                topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py - gridSizeY * 0.4f)
                             )
                         }
                     }
