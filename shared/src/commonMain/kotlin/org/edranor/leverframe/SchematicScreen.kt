@@ -105,7 +105,9 @@ fun SchematicScreen(
                                 strokeWidth = 4f
                             )
                             // Draw diverging line
-                            val divergeColor = if (isReversed) Color.Green else trackColor
+                            val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y - 1 }
+                            val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+                            val divergeColor = if (isReversed) Color.Green else divergeBlockColor
                             drawLine(
                                 color = divergeColor,
                                 start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
