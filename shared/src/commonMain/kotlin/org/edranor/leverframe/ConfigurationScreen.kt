@@ -407,6 +407,24 @@ fun ConfigurationScreen(
                                             )
                                             Text("Show Block Numbers", modifier = Modifier.padding(start = 8.dp))
                                         }
+                                        Row(
+                                            modifier = Modifier.weight(1f).clickable {
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(use_short_codes = !tab.use_short_codes)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = tab.use_short_codes,
+                                                onCheckedChange = { 
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = tab.copy(use_short_codes = it)
+                                                    config = config.copy(tabs = newTabs)
+                                                }
+                                            )
+                                            Text("Use Short Codes on Schematic", modifier = Modifier.padding(start = 8.dp))
+                                        }
                                     }
                                 }
                             }
@@ -1186,6 +1204,13 @@ fun BlockDetailScreen(
                             value = block.label,
                             onValueChange = { onBlockChange(block.copy(label = it)) },
                             label = { Text("Label") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = brassTextFieldColors()
+                        )
+                        OutlinedTextField(
+                            value = block.short_code,
+                            onValueChange = { onBlockChange(block.copy(short_code = it)) },
+                            label = { Text("Short Code (for Schematic)") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = brassTextFieldColors()
                         )

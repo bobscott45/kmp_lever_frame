@@ -264,8 +264,15 @@ fun SchematicScreen(
                     val centerPx = startX + (minX + maxX + 1) * gridSizeX / 2f
                     val centerPy = (minY + maxY + 1) * gridSizeY / 2f
                     
+                    val blockDef = tabDef.blocks.find { it.label == blockName }
+                    val displayText = if (tabDef.useShortCodes && blockDef?.shortCode?.isNotBlank() == true) {
+                        blockDef.shortCode
+                    } else {
+                        blockName
+                    }
+                    
                     val textLayout = textMeasurer.measure(
-                        text = blockName,
+                        text = displayText,
                         style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     )
                     

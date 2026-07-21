@@ -54,6 +54,7 @@ data class LeverDef(
 
 data class BlockDef(
     val label: String = "",
+    val shortCode: String = "",
     val lcc_event_occupied: String = "",
     val lcc_event_empty: String = ""
 )
@@ -75,6 +76,7 @@ data class TabDef(
     val blockLabelSize: Int = 8,
     val showLeverNumbers: Boolean = true,
     val showBlockNumbers: Boolean = true,
+    val useShortCodes: Boolean = false,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

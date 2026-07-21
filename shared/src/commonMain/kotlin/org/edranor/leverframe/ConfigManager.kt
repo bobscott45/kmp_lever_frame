@@ -62,6 +62,7 @@ data class JsonTab(
     val block_label_size: Int = 8,
     val show_lever_numbers: Boolean = true,
     val show_block_numbers: Boolean = true,
+    val use_short_codes: Boolean = false,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -80,6 +81,7 @@ data class JsonSchematicElement(
 @Serializable
 data class JsonBlock(
     val label: String = "",
+    val short_code: String = "",
     val lcc_event_occupied: String = "",
     val lcc_event_empty: String = ""
 )
@@ -180,6 +182,7 @@ object ConfigManager : AppConfigRepository {
                 
                 BlockDef(
                     label = jsonBlock.label,
+                    shortCode = jsonBlock.short_code,
                     lcc_event_occupied = if (occupiedSuffix.isNotBlank()) "${config.node_id}.$occupiedSuffix" else "",
                     lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else ""
                 )
@@ -204,6 +207,7 @@ object ConfigManager : AppConfigRepository {
                 blockLabelSize = jsonTab.block_label_size,
                 showLeverNumbers = jsonTab.show_lever_numbers,
                 showBlockNumbers = jsonTab.show_block_numbers,
+                useShortCodes = jsonTab.use_short_codes,
                 blocks = blocks,
                 schematicElements = schematicElements
             )
