@@ -138,6 +138,8 @@ fun ConfigurationScreen(
                         nodeId = config.node_id,
                         leverIndex = editingLeverIndex!!,
                         lever = lever,
+                        allLevers = tab.levers,
+                        allBlocks = tab.blocks,
                         onLeverChange = { newLever ->
                             val newTabs = config.tabs.toMutableList()
                             val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
@@ -720,6 +722,8 @@ fun LeverDetailScreen(
     nodeId: String,
     leverIndex: Int,
     lever: JsonLever,
+    allLevers: List<JsonLever>,
+    allBlocks: List<JsonBlock>,
     onLeverChange: (JsonLever) -> Unit,
     onDelete: () -> Unit
 ) {
@@ -909,6 +913,8 @@ fun LeverDetailScreen(
                     MobileRuleCard(
                         ruleIndex = rIndex,
                         rule = rule,
+                        allLevers = allLevers,
+                        allBlocks = allBlocks,
                         onRuleChange = { newRule ->
                             val newRules = lever.interlocking.toMutableList()
                             newRules[rIndex] = newRule
@@ -937,6 +943,8 @@ fun LeverDetailScreen(
 fun MobileRuleCard(
     ruleIndex: Int,
     rule: JsonInterlocking,
+    allLevers: List<JsonLever>,
+    allBlocks: List<JsonBlock>,
     onRuleChange: (JsonInterlocking) -> Unit,
     onDelete: () -> Unit
 ) {
@@ -975,13 +983,35 @@ fun MobileRuleCard(
                     }
                 }
                 
-                IntTextField(
-                    value = rule.target + 1,
-                    onValueChange = { onRuleChange(rule.copy(target = it - 1)) },
-                    label = "Index",
-                    modifier = Modifier.weight(1f),
-                    colors = brassTextFieldColors()
-                )
+                var targetExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = targetExpanded, onExpandedChange = { targetExpanded = !targetExpanded }, modifier = Modifier.weight(1.5f)) {
+                    val labelText = if (rule.target_type == "BLOCK") {
+                        allBlocks.getOrNull(rule.target)?.label?.replace("\n", " ") ?: "Block ${rule.target + 1}"
+                    } else {
+                        allLevers.getOrNull(rule.target)?.label?.replace("\n", " ") ?: "Lever ${rule.target + 1}"
+                    }
+                    
+                    OutlinedTextField(
+                        value = labelText,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Target") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = targetExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                        colors = brassTextFieldColors()
+                    )
+                    ExposedDropdownMenu(expanded = targetExpanded, onDismissRequest = { targetExpanded = false }) {
+                        if (rule.target_type == "BLOCK") {
+                            allBlocks.forEachIndexed { idx, blk ->
+                                DropdownMenuItem(text = { Text("[${idx + 1}] ${blk.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(target = idx)); targetExpanded = false })
+                            }
+                        } else {
+                            allLevers.forEachIndexed { idx, lvr ->
+                                DropdownMenuItem(text = { Text("[${idx + 1}] ${lvr.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(target = idx)); targetExpanded = false })
+                            }
+                        }
+                    }
+                }
             }
             
             var stateExpanded by remember { mutableStateOf(false) }
@@ -1028,13 +1058,38 @@ fun MobileRuleCard(
                     }
                 }
 
-                IntTextField(
-                    value = if (rule.alt_target == -1) -1 else rule.alt_target + 1,
-                    onValueChange = { onRuleChange(rule.copy(alt_target = if (it == -1) -1 else it - 1)) },
-                    label = "Alt Index",
-                    modifier = Modifier.weight(1f),
-                    colors = brassTextFieldColors()
-                )
+                var altTargetExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = altTargetExpanded, onExpandedChange = { altTargetExpanded = !altTargetExpanded }, modifier = Modifier.weight(1.5f)) {
+                    val labelText = if (rule.alt_target == -1) {
+                        "None"
+                    } else if (rule.alt_target_type == "BLOCK") {
+                        allBlocks.getOrNull(rule.alt_target)?.label?.replace("\n", " ") ?: "Block ${rule.alt_target + 1}"
+                    } else {
+                        allLevers.getOrNull(rule.alt_target)?.label?.replace("\n", " ") ?: "Lever ${rule.alt_target + 1}"
+                    }
+                    
+                    OutlinedTextField(
+                        value = labelText,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Alt Target") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altTargetExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                        colors = brassTextFieldColors()
+                    )
+                    ExposedDropdownMenu(expanded = altTargetExpanded, onDismissRequest = { altTargetExpanded = false }) {
+                        DropdownMenuItem(text = { Text("None") }, onClick = { onRuleChange(rule.copy(alt_target = -1)); altTargetExpanded = false })
+                        if (rule.alt_target_type == "BLOCK") {
+                            allBlocks.forEachIndexed { idx, blk ->
+                                DropdownMenuItem(text = { Text("[${idx + 1}] ${blk.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(alt_target = idx)); altTargetExpanded = false })
+                            }
+                        } else {
+                            allLevers.forEachIndexed { idx, lvr ->
+                                DropdownMenuItem(text = { Text("[${idx + 1}] ${lvr.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(alt_target = idx)); altTargetExpanded = false })
+                            }
+                        }
+                    }
+                }
             }
             
             var altStateExpanded by remember { mutableStateOf(false) }

@@ -111,7 +111,7 @@ Each rule is divided into a **Primary Condition** and an optional **Alternate Co
 ##### Primary Condition
 
 * **Type**: Choose whether to interlock against another **LEVER** or a track **BLOCK**.
-* **Index**: The numerical index of the target lever or block (e.g., enter `4` to lock against Lever 4).
+* **Target**: Select the specific target lever or block from the dropdown menu (e.g., choose `[4] UP BRANCH HOME` to lock against Lever 4).
 * **Required State**: The state the target must be in for this lever to be pulled (e.g., `NORMAL` or `REVERSED` for levers, `EMPTY` or `OCCUPIED` for blocks).
 
 ##### Alternate Condition (Optional)
@@ -119,9 +119,9 @@ Each rule is divided into a **Primary Condition** and an optional **Alternate Co
 This acts as a logical 'OR' condition. If the Primary Condition fails, the lever can still be pulled if this Alternate Condition is met.
 
 * **Alt Type**: Choose between **LEVER** or **BLOCK** for the alternate condition.
-* **Alt Index**: The numerical index of the alternate target (this label title is displayed within the edit box until you enter a value).
+* **Alt Target**: Select the alternate target from the dropdown menu.
 * **Alt Required State**: The required state for the alternate target.
-* **To Delete**: To remove an alternate condition entirely, simply delete the number in the **Alt Index** text box so it is completely empty. When saved, the condition will be disabled (internally represented as `-1`).
+* **To Delete**: To remove an alternate condition entirely, simply select `None` from the **Alt Target** dropdown menu. When saved, the condition will be disabled.
 
 When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
 
