@@ -26,7 +26,7 @@ fun SchematicScreen(
 ) {
     val maxX = tabDef.schematicElements.maxOfOrNull { it.x } ?: 0
     val maxY = tabDef.schematicElements.maxOfOrNull { it.y } ?: 0
-    val cellsX = (maxX + 2).coerceAtLeast(1)
+    val cellsX = (maxX + 1).coerceAtLeast(1)
     val cellsY = (maxY + 1).coerceAtLeast(1)
 
     val textMeasurer = rememberTextMeasurer()
