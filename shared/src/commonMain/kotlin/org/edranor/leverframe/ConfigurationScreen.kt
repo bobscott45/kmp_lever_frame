@@ -1202,7 +1202,14 @@ fun BlockDetailScreen(
 
                         OutlinedTextField(
                             value = block.label,
-                            onValueChange = { onBlockChange(block.copy(label = it)) },
+                            onValueChange = { newLabel -> 
+                                val oldAutoShort = block.label.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
+                                val newAutoShort = newLabel.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
+                                
+                                val newShortCode = if (block.short_code.isBlank() || block.short_code == oldAutoShort) newAutoShort else block.short_code
+                                
+                                onBlockChange(block.copy(label = newLabel, short_code = newShortCode)) 
+                            },
                             label = { Text("Label") },
                             modifier = Modifier.fillMaxWidth(),
                             colors = brassTextFieldColors()
