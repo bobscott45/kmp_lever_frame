@@ -431,12 +431,25 @@ fun LeverComponent(
                         contentAlignment = Alignment.Center
                     ) {
                         val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.9f)
-                        Text(
-                            text = if (leverDef.autoReverser) "A" else "${leverIndex + 1}",
-                            color = textColor,
-                            fontSize = (18 * scale).sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "${leverIndex + 1}",
+                                color = textColor,
+                                fontSize = (18 * scale).sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (leverDef.autoReverser) {
+                                Text(
+                                    text = "A",
+                                    color = textColor,
+                                    fontSize = (10 * scale).sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
 
                     // Locking Pin
