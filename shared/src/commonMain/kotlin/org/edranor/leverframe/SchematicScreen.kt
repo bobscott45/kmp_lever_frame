@@ -38,7 +38,8 @@ fun SchematicScreen(
         val minGridSizeX = 40.dp
         val maxGridSizeX = 120.dp
         
-        val calculatedGridSizeX = maxWidth / cellsX
+        val containerMaxWidth = maxWidth
+        val calculatedGridSizeX = containerMaxWidth / cellsX
         val gridDpX = calculatedGridSizeX.coerceIn(minGridSizeX, maxGridSizeX)
         val widthDp = gridDpX * cellsX
 
@@ -49,11 +50,15 @@ fun SchematicScreen(
             contentAlignment = Alignment.Center
         ) {
             val heightDp = (cellsY * 40 + 10).dp // Add 10dp padding at the bottom to prevent text clipping
+            val canvasWidthDp = maxOf(widthDp, containerMaxWidth)
             Canvas(
-                modifier = Modifier.width(widthDp).height(heightDp)
+                modifier = Modifier.width(canvasWidthDp).height(heightDp)
             ) {
                 val gridSizeX = gridDpX.toPx()
                 val gridSizeY = 40.dp.toPx()
+                
+                val actualDrawingWidth = cellsX * gridSizeX
+                val startX = (size.width - actualDrawingWidth) / 2f
 
                 fun getBlockColor(blockName: String): Color {
                     if (blockName.isEmpty()) return Color.LightGray
@@ -63,7 +68,7 @@ fun SchematicScreen(
                 }
 
                 tabDef.schematicElements.forEach { element ->
-                    val px = element.x * gridSizeX
+                    val px = startX + element.x * gridSizeX
                     val py = element.y * gridSizeY
 
                     val trackColor = getBlockColor(element.linkedBlock)
