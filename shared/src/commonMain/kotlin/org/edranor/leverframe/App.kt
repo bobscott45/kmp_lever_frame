@@ -243,6 +243,7 @@ fun App() {
 @Composable
 fun LeverComponent(
     leverIndex: Int,
+    showLeverNumber: Boolean,
     leverDef: LeverDef,
     labelLines: Int,
     labelLineHeight: Int,
@@ -416,20 +417,22 @@ fun LeverComponent(
                     val thrownKnobTopY = trackHeight - knobSize - padding
                     
                     // Track Number
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(thrownKnobTopY - pinCenterY)
-                            .align(Alignment.TopCenter)
-                            .offset(y = pinCenterY),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "${leverIndex + 1}",
-                            color = Color.White.copy(alpha = 0.3f),
-                            fontSize = (18 * scale).sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    if (showLeverNumber) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(thrownKnobTopY - pinCenterY)
+                                .align(Alignment.TopCenter)
+                                .offset(y = pinCenterY),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${leverIndex + 1}",
+                                color = Color.White.copy(alpha = 0.3f),
+                                fontSize = (18 * scale).sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
                     val physicalRatio = when {
@@ -771,6 +774,7 @@ fun ColumnScope.LeverTrackGroup(
     
                         LeverComponent(
                             leverIndex = index,
+                            showLeverNumber = currentTabDef.showLeverNumbers,
                             leverDef = leverDef,
                             labelLines = currentTabDef.labelLines,
                             labelLineHeight = currentTabDef.labelLineHeight,
@@ -816,8 +820,9 @@ fun BlockShelfGroup(
             ) {
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
                     val isOccupied = blockStates[index]
+                    val labelText = if (currentTabDef.showBlockNumbers) "${index + 1} ${blockDef.label}" else blockDef.label
                     BlockIndicator(
-                        label = "${index + 1} ${blockDef.label}", 
+                        label = labelText, 
                         isOccupied = isOccupied,
                         layout = currentTabDef.blockLayout,
                         fontSize = currentTabDef.blockLabelSize,

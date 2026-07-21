@@ -341,6 +341,42 @@ fun ConfigurationScreen(
                                         }
                                     }
                                 }
+
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.weight(1f).clickable {
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = !tab.show_lever_numbers)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = tab.show_lever_numbers,
+                                                onCheckedChange = null
+                                            )
+                                            Text("Show Lever Numbers", modifier = Modifier.padding(start = 8.dp))
+                                        }
+                                        Row(
+                                            modifier = Modifier.weight(1f).clickable {
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = !tab.show_block_numbers)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = tab.show_block_numbers,
+                                                onCheckedChange = null
+                                            )
+                                            Text("Show Block Numbers", modifier = Modifier.padding(start = 8.dp))
+                                        }
+                                    }
+                                }
                             }
 
                             if (selectedFrameConfigTab == 2) {

@@ -72,6 +72,8 @@ data class TabDef(
     val labelLineHeight: Int = 18,
     val blockLayout: String = "HORIZONTAL",
     val blockLabelSize: Int = 8,
+    val showLeverNumbers: Boolean = true,
+    val showBlockNumbers: Boolean = true,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

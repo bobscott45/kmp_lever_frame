@@ -60,6 +60,8 @@ data class JsonTab(
     val label_line_height: Int = 18,
     val block_layout: String = "HORIZONTAL",
     val block_label_size: Int = 8,
+    val show_lever_numbers: Boolean = true,
+    val show_block_numbers: Boolean = true,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -198,6 +200,8 @@ object ConfigManager : AppConfigRepository {
                 labelLineHeight = jsonTab.label_line_height,
                 blockLayout = jsonTab.block_layout,
                 blockLabelSize = jsonTab.block_label_size,
+                showLeverNumbers = jsonTab.show_lever_numbers,
+                showBlockNumbers = jsonTab.show_block_numbers,
                 blocks = blocks,
                 schematicElements = schematicElements
             )
