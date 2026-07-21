@@ -817,7 +817,7 @@ fun BlockShelfGroup(
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
                     val isOccupied = blockStates[index]
                     BlockIndicator(
-                        label = "${index + 1}: ${blockDef.label}", 
+                        label = "${index + 1} ${blockDef.label}", 
                         isOccupied = isOccupied,
                         layout = currentTabDef.blockLayout,
                         fontSize = currentTabDef.blockLabelSize,
