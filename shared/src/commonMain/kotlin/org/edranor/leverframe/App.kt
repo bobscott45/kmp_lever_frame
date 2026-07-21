@@ -163,38 +163,67 @@ fun App() {
                     previousBlocks = currentBlocks.map { it.copyOf() }
                 }
 
-                Column(
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(LeverFrameTheme.Colors.DarkSurface)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .padding(16.dp)
                 ) {
-                    TopMenuBar(state, viewModel)
-                    ErrorBanners(
-                        errorMessage = state.errorMessage,
-                        networkError = state.networkError,
-                        onDismissNetworkError = viewModel::dismissNetworkError
-                    )
+                    val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
                     
-                    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-                        val currentTabDef = state.tabs[state.selectedTabIndex].second
-                        if (currentTabDef.schematicElements.isNotEmpty()) {
-                            SchematicScreen(
-                                tabDef = currentTabDef,
-                                leverStates = state.leverStates[state.selectedTabIndex],
-                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(0.4f)
-                                    .padding(bottom = 8.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            )
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        TopMenuBar(state, viewModel)
+                        ErrorBanners(
+                            errorMessage = state.errorMessage,
+                            networkError = state.networkError,
+                            onDismissNetworkError = viewModel::dismissNetworkError
+                        )
+                        
+                        if (isLandscapeCompact) {
+                            Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
+                                if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+                                    val currentTabDef = state.tabs[state.selectedTabIndex].second
+                                    if (currentTabDef.schematicElements.isNotEmpty()) {
+                                        SchematicScreen(
+                                            tabDef = currentTabDef,
+                                            leverStates = state.leverStates[state.selectedTabIndex],
+                                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .weight(0.5f)
+                                                .padding(end = 8.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
+                                }
+                                Column(modifier = Modifier.weight(0.5f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    BlockShelfGroup(state, viewModel)
+                                    LeverTrackGroup(state, viewModel, soundPlayer)
+                                }
+                            }
+                        } else {
+                            if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
+                                val currentTabDef = state.tabs[state.selectedTabIndex].second
+                                if (currentTabDef.schematicElements.isNotEmpty()) {
+                                    SchematicScreen(
+                                        tabDef = currentTabDef,
+                                        leverStates = state.leverStates[state.selectedTabIndex],
+                                        blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(0.4f)
+                                            .padding(top = 8.dp, bottom = 8.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                    )
+                                }
+                            }
+
+                            Column(modifier = Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                BlockShelfGroup(state, viewModel)
+                                LeverTrackGroup(state, viewModel, soundPlayer)
+                            }
                         }
                     }
-
-                    BlockShelfGroup(state, viewModel)
-                    LeverTrackGroup(state, viewModel, soundPlayer)
                 }
 
                 if (state.isStatusMode) {

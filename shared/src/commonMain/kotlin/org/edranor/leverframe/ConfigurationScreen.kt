@@ -247,9 +247,21 @@ fun ConfigurationScreen(
                             Tab(selected = selectedFrameConfigTab == 0, onClick = { selectedFrameConfigTab = 0 }, text = { Text("Settings") })
                             Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Levers") })
                             Tab(selected = selectedFrameConfigTab == 2, onClick = { selectedFrameConfigTab = 2 }, text = { Text("Blocks") })
+                            Tab(selected = selectedFrameConfigTab == 3, onClick = { selectedFrameConfigTab = 3 }, text = { Text("Schematic") })
                         }
 
                         // Content for the selected frame
+                        if (selectedFrameConfigTab == 3) {
+                            SchematicEditorScreen(
+                                tabDef = config.tabs[selectedFrameIndex],
+                                onTabDefChange = { newTab ->
+                                    val newTabs = config.tabs.toMutableList()
+                                    newTabs[selectedFrameIndex] = newTab
+                                    config = config.copy(tabs = newTabs)
+                                },
+                                modifier = Modifier.fillMaxSize().weight(1f)
+                            )
+                        } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().weight(1f),
                             contentPadding = PaddingValues(16.dp),
@@ -480,6 +492,7 @@ fun ConfigurationScreen(
                                     }
                                 }
                             }
+                        }
                         }
                     } else {
                         Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
