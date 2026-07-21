@@ -104,6 +104,13 @@ fun SchematicScreen(
                         }
                         "SIGNAL_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            // Draw horizontal track through the signal cell
+                            drawLine(
+                                color = trackColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
                             drawCircle(
                                 color = if (isReversed) Color.Green else Color.Red,
                                 radius = gridSizeY / 4,
