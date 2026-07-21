@@ -357,7 +357,11 @@ fun ConfigurationScreen(
                                         ) {
                                             Checkbox(
                                                 checked = tab.show_lever_numbers,
-                                                onCheckedChange = null
+                                                onCheckedChange = { 
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = it)
+                                                    config = config.copy(tabs = newTabs)
+                                                }
                                             )
                                             Text("Show Lever Numbers", modifier = Modifier.padding(start = 8.dp))
                                         }
@@ -371,7 +375,11 @@ fun ConfigurationScreen(
                                         ) {
                                             Checkbox(
                                                 checked = tab.show_block_numbers,
-                                                onCheckedChange = null
+                                                onCheckedChange = { 
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = it)
+                                                    config = config.copy(tabs = newTabs)
+                                                }
                                             )
                                             Text("Show Block Numbers", modifier = Modifier.padding(start = 8.dp))
                                         }
