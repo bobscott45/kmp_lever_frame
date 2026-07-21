@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **UI/UX**: Improved the visual display of the schematic by optimizing space (1/3 2/3 split in landscape mode) and refining how turnout lever numbers are displayed inside the points.
 - **UI/UX**: Block labels on the schematic now intelligently center themselves over straight track segments to avoid visual clutter on points and signals.
 - **UI/UX**: Context-aware configuration menu now automatically opens the frame editor to the currently viewed frame tab.
@@ -41,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **System Settings Updates**: Added a master 'Enable Sound' switch in the System Settings and moved the app version number to the System Status screen.
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **UI Enhancements**: Refactored the Lever and Block Configuration screens from expandable accordion lists to clean, tabbed drill-down pages to eliminate scroll fatigue.
 - **UI Enhancements**: Block occupancy boxes dynamically scale with font size to conserve screen space. Default block label font size reduced to 8.
 - **Configuration UI**: Added confirmation popups when deleting levers or blocks to prevent accidental data loss. Split the 'Configure' menu option into separate 'System Settings' and 'Frames' options to simplify navigation. The configuration screens now feature shortened titles to better fit portrait orientations, and the 'Reset to Defaults' functionality has been safely divided into system-only and frames-only actions.
@@ -56,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Added day-to-day Tag and Bump versioning workflow guidelines and Xcode configuration steps (`04a7df3`).
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **Security**: Untracked user-specific state and configuration files (`leverframe_config.json`, `leverframe_states.json`) from version control to prevent exposing local network credentials. Added `leverframe_config.template.json` for reference.
 - **Build System**: Upgraded Android Gradle Plugin (AGP) from 9.0.0 to 9.0.1 and disabled ProGuard for the Desktop app release build (`075b78d`).
 - **Build System**: Automated iOS version syncing by adding a Gradle task (`syncIosVersions`) to extract version from the TOML catalog and write to `Config.xcconfig` (`04a7df3`).
@@ -66,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2] - 2026-07-16
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **UI Spacing**: Grouped Event IDs and Interlocking Rules in the Lever Status popup with smaller vertical spacing to conserve screen real estate.
 - **Scroll Indication**: Added native-style fading edge overlays to the Lever Status popup to clearly indicate scrollable content boundaries.
 - **Interlock Feedback**: Removed the popup error message when attempting to throw a locked lever, replaced by a flashing white locking pin animation. The Lever Status dropdown also now displays dynamic '✅' and '❌' status indicators next to interlocking rules.
@@ -77,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2026-07-03
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **Licensing**: Updated source file headers to reflect dual-licensing, maintaining GPLv3 for source code while simplifying proprietary app store publishing.
 
 ## [1.0.0] - Initial Public Release Candidates
@@ -88,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Adaptive App Icons**: Generated a custom minimalist railway lever app icon with full support for Android 8.0+ Adaptive Icons (squircle, circle, teardrop compatible).
 
 ### Changed
+- **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **Architecture**: Refactored the core logic into an Unidirectional Data Flow (UDF) pattern utilizing an `AppViewModel`.
 - **Event ID Management**: Simplified the LCC event configuration UI. The system now automatically prefixes the user's base Node ID, so you only need to edit the last two suffix bytes when configuring a lever.
 - **Lever Animation**: Replaced static state toggling with high-performance Jetpack Compose spring physics for a more prototypical mechanical feel.
