@@ -96,10 +96,10 @@ fun ConfigurationScreen(
                 },
                 actions = {
                     val hasChanges = config != initialConfig
-                    val onlyRulesChanged = hasChanges && config.withoutRules() == initialConfig.withoutRules()
+                    val safeToUpdateSilently = hasChanges && config.withoutUiAndRules() == initialConfig.withoutUiAndRules()
                     TextButton(
                         onClick = { 
-                            if (onlyRulesChanged) {
+                            if (safeToUpdateSilently) {
                                 onUpdateSystemConfig(config, true)
                                 onClose()
                             } else {
@@ -368,12 +368,12 @@ fun ConfigurationScreen(
                                 }
 
                                 item {
-                                    Row(
+                                    Column(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Row(
-                                            modifier = Modifier.weight(1f).clickable {
+                                            modifier = Modifier.clickable {
                                                 val newTabs = config.tabs.toMutableList()
                                                 newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = !tab.show_lever_numbers)
                                                 config = config.copy(tabs = newTabs)
@@ -391,7 +391,7 @@ fun ConfigurationScreen(
                                             Text("Show Lever Numbers", modifier = Modifier.padding(start = 8.dp))
                                         }
                                         Row(
-                                            modifier = Modifier.weight(1f).clickable {
+                                            modifier = Modifier.clickable {
                                                 val newTabs = config.tabs.toMutableList()
                                                 newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = !tab.show_block_numbers)
                                                 config = config.copy(tabs = newTabs)
@@ -409,7 +409,7 @@ fun ConfigurationScreen(
                                             Text("Show Block Numbers", modifier = Modifier.padding(start = 8.dp))
                                         }
                                         Row(
-                                            modifier = Modifier.weight(1f).clickable {
+                                            modifier = Modifier.clickable {
                                                 val newTabs = config.tabs.toMutableList()
                                                 newTabs[selectedFrameIndex] = tab.copy(use_short_codes = !tab.use_short_codes)
                                                 config = config.copy(tabs = newTabs)
@@ -427,7 +427,7 @@ fun ConfigurationScreen(
                                             Text("Use Short Codes on Schematic", modifier = Modifier.padding(start = 8.dp))
                                         }
                                         Row(
-                                            modifier = Modifier.weight(1f).clickable {
+                                            modifier = Modifier.clickable {
                                                 val newTabs = config.tabs.toMutableList()
                                                 newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = !tab.use_short_codes_in_indicators)
                                                 config = config.copy(tabs = newTabs)
@@ -1327,5 +1327,23 @@ private fun JsonConfig.withoutRules(): JsonConfig {
         tab.copy(levers = tab.levers.map { lever ->
             lever.copy(interlocking = emptyList())
         })
+    })
+}
+
+private fun JsonConfig.withoutUiAndRules(): JsonConfig {
+    return this.copy(tabs = this.tabs.map { tab ->
+        tab.copy(
+            show_lever_numbers = true,
+            show_block_numbers = true,
+            use_short_codes = false,
+            use_short_codes_in_indicators = false,
+            label_lines = 2,
+            label_line_height = 18,
+            block_layout = "HORIZONTAL",
+            block_label_size = 8,
+            levers = tab.levers.map { lever ->
+                lever.copy(interlocking = emptyList())
+            }
+        )
     })
 }

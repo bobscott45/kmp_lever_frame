@@ -238,7 +238,7 @@ fun App() {
                             if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                                 val currentTabDef = state.tabs[state.selectedTabIndex].second
                                 if (currentTabDef.schematicElements.isNotEmpty()) {
-                                    val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.4f else 0.0f)
+                                    val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.25f else 0.0f)
                                     if (schematicWeight > 0.01f) {
                                         SchematicScreen(
                                             tabDef = currentTabDef,
@@ -273,7 +273,7 @@ fun App() {
                                 }
                             }
 
-                            val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.6f else 1.0f)
+                            val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.75f else 1.0f)
                             Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 BlockShelfGroup(state, viewModel)
                                 LeverTrackGroup(state, viewModel, soundPlayer)
