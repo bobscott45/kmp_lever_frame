@@ -9,7 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.Alignment
 
 @Composable
 fun SchematicScreen(
@@ -22,10 +28,13 @@ fun SchematicScreen(
     val maxX = tabDef.schematicElements.maxOfOrNull { it.x } ?: 0
     val widthDp = ((maxX + 2) * 40).dp
 
+    val textMeasurer = rememberTextMeasurer()
+
     Box(
         modifier = modifier
             .background(Color(0xFF1E1E1E))
-            .horizontalScroll(rememberScrollState())
+            .horizontalScroll(rememberScrollState()),
+        contentAlignment = Alignment.Center
     ) {
         Canvas(
             modifier = Modifier.width(widthDp).fillMaxHeight()
@@ -42,6 +51,15 @@ fun SchematicScreen(
                 } else false
 
                 val trackColor = if (isBlockOccupied) Color.Red else Color.LightGray
+
+                if (element.linkedBlock.isNotEmpty() && element.type.startsWith("STRAIGHT")) {
+                    drawText(
+                        textMeasurer = textMeasurer,
+                        text = element.linkedBlock,
+                        style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                        topLeft = Offset(px + 4f, py + gridSize / 4)
+                    )
+                }
 
                 when (element.type) {
                     "STRAIGHT_H" -> drawLine(
@@ -80,6 +98,12 @@ fun SchematicScreen(
                             color = if (isReversed) Color.Green else Color.Red,
                             radius = gridSize / 4,
                             center = Offset(px + gridSize / 2, py + gridSize / 2)
+                        )
+                        drawText(
+                            textMeasurer = textMeasurer,
+                            text = "${element.linkedLever}",
+                            style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                            topLeft = Offset(px + gridSize / 2.5f, py + gridSize / 1.3f)
                         )
                     }
                 }
