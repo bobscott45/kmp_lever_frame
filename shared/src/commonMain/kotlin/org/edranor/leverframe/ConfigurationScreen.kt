@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 fun ConfigurationScreen(
     initialConfig: JsonConfig,
     initialMode: ConfigMode,
-    onUpdateSystemConfig: (JsonConfig) -> Unit,
+    onUpdateSystemConfig: (JsonConfig, Boolean) -> Unit,
     onClose: () -> Unit
 ) {
     var config by remember { mutableStateOf(initialConfig) }
@@ -94,8 +94,16 @@ fun ConfigurationScreen(
                 },
                 actions = {
                     val hasChanges = config != initialConfig
+                    val onlyRulesChanged = hasChanges && config.withoutRules() == initialConfig.withoutRules()
                     TextButton(
-                        onClick = { showSaveWarning = true },
+                        onClick = { 
+                            if (onlyRulesChanged) {
+                                onUpdateSystemConfig(config, true)
+                                onClose()
+                            } else {
+                                showSaveWarning = true 
+                            }
+                        },
                         enabled = hasChanges
                     ) {
                         Text("Save", fontWeight = FontWeight.Bold)
@@ -498,7 +506,7 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showSaveWarning = false
-                    onUpdateSystemConfig(config)
+                    onUpdateSystemConfig(config, false)
                     onClose()
                 }) {
                     Text("Save & Reset")
@@ -1246,4 +1254,12 @@ fun IntTextField(
         modifier = modifier,
         colors = colors
     )
+}
+
+private fun JsonConfig.withoutRules(): JsonConfig {
+    return this.copy(tabs = this.tabs.map { tab ->
+        tab.copy(levers = tab.levers.map { lever ->
+            lever.copy(interlocking = emptyList())
+        })
+    })
 }

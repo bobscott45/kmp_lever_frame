@@ -124,7 +124,7 @@ fun App() {
                 ConfigurationScreen(
                     initialConfig = state.config,
                     initialMode = state.configMode,
-                    onUpdateSystemConfig = viewModel::updateSystemConfig,
+                    onUpdateSystemConfig = { cfg, rulesOnly -> viewModel.updateSystemConfig(cfg, rulesOnly) },
                     onClose = viewModel::exitConfigMode
                 )
             } else {

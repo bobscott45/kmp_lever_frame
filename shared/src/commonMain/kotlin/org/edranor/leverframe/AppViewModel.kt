@@ -414,14 +414,25 @@ class AppViewModel(
         }
     }
 
-    fun updateSystemConfig(newConfig: JsonConfig) {
+    fun updateSystemConfig(newConfig: JsonConfig, rulesOnly: Boolean = false) {
         val prevIp = configRepo.currentConfig.jmri_hub_ip
         viewModelScope.launch {
             configRepo.saveConfig(newConfig)
-            if (prevIp != newConfig.jmri_hub_ip) {
-                lccClient.initialize()
+            if (rulesOnly) {
+                val configStr = configRepo.toJsonString()
+                val parsedTabs = configRepo.parseConfig(configStr)
+                _uiState.update { 
+                    it.copy(
+                        tabs = parsedTabs,
+                        config = configRepo.currentConfig
+                    )
+                }
+            } else {
+                if (prevIp != newConfig.jmri_hub_ip) {
+                    lccClient.initialize()
+                }
+                loadConfig()
             }
-            loadConfig()
         }
     }
     
