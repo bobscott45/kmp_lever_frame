@@ -239,10 +239,11 @@ fun ConfigurationScreen(
                     }
 
                     if (config.tabs.isNotEmpty()) {
-                        TabRow(
+                        PrimaryScrollableTabRow(
                             selectedTabIndex = selectedFrameConfigTab,
                             containerColor = Color.Transparent,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            edgePadding = 0.dp
                         ) {
                             Tab(selected = selectedFrameConfigTab == 0, onClick = { selectedFrameConfigTab = 0 }, text = { Text("Settings") })
                             Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Levers") })
@@ -424,6 +425,24 @@ fun ConfigurationScreen(
                                                 }
                                             )
                                             Text("Use Short Codes on Schematic", modifier = Modifier.padding(start = 8.dp))
+                                        }
+                                        Row(
+                                            modifier = Modifier.weight(1f).clickable {
+                                                val newTabs = config.tabs.toMutableList()
+                                                newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = !tab.use_short_codes_in_indicators)
+                                                config = config.copy(tabs = newTabs)
+                                            },
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = tab.use_short_codes_in_indicators,
+                                                onCheckedChange = { 
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = it)
+                                                    config = config.copy(tabs = newTabs)
+                                                }
+                                            )
+                                            Text("Use Short Codes on Indicators", modifier = Modifier.padding(start = 8.dp))
                                         }
                                     }
                                 }
@@ -772,7 +791,7 @@ fun LeverDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
+        PrimaryScrollableTabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent, edgePadding = 0.dp) {
             Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("Basic") })
             Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("LCC") })
             Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Rules") })

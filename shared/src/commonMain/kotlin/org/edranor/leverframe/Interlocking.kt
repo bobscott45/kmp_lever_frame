@@ -77,6 +77,7 @@ data class TabDef(
     val showLeverNumbers: Boolean = true,
     val showBlockNumbers: Boolean = true,
     val useShortCodes: Boolean = false,
+    val useShortCodesInIndicators: Boolean = false,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

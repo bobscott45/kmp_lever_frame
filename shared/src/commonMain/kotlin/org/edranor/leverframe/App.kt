@@ -774,11 +774,12 @@ fun RowScope.MainTabRow(
     state: LeverFrameUiState,
     onTabSelected: (Int) -> Unit
 ) {
-    PrimaryTabRow(
+    PrimaryScrollableTabRow(
         selectedTabIndex = state.selectedTabIndex,
         containerColor = Color(0xFF1a1a1a),
         contentColor = Color.White,
-        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
+        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)),
+        edgePadding = 0.dp
     ) {
         state.tabs.forEachIndexed { index, pair ->
             Tab(
@@ -915,7 +916,8 @@ fun BlockShelfGroup(
             ) {
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
                     val isOccupied = blockStates[index]
-                    val labelText = if (currentTabDef.showBlockNumbers) "${index + 1} ${blockDef.label}" else blockDef.label
+                    val baseLabel = if (currentTabDef.useShortCodesInIndicators && blockDef.shortCode.isNotBlank()) blockDef.shortCode else blockDef.label
+                    val labelText = if (currentTabDef.showBlockNumbers) "${index + 1} $baseLabel" else baseLabel
                     BlockIndicator(
                         label = labelText, 
                         isOccupied = isOccupied,
