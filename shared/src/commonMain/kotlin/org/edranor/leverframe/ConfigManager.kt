@@ -64,6 +64,7 @@ data class JsonTab(
     val show_block_numbers: Boolean = true,
     val use_short_codes: Boolean = false,
     val use_short_codes_in_indicators: Boolean = false,
+    val schematic_grid_size: Int = 40,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -210,6 +211,7 @@ object ConfigManager : AppConfigRepository {
                 showBlockNumbers = jsonTab.show_block_numbers,
                 useShortCodes = jsonTab.use_short_codes,
                 useShortCodesInIndicators = jsonTab.use_short_codes_in_indicators,
+                schematicGridSize = jsonTab.schematic_grid_size,
                 blocks = blocks,
                 schematicElements = schematicElements
             )

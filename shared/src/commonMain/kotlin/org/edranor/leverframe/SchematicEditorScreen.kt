@@ -44,7 +44,7 @@ fun SchematicEditorScreen(
         modifier = modifier.background(Color(0xFF1E1E1E)),
         contentAlignment = Alignment.Center
     ) {
-        val minGridSizeX = 60.dp
+        val minGridSizeX = tabDef.schematic_grid_size.dp
         val maxGridSizeX = 120.dp
         
         val containerMaxWidth = maxWidth
@@ -53,7 +53,7 @@ fun SchematicEditorScreen(
         val widthDp = gridDpX * cellsX
         val canvasWidthDp = maxOf(widthDp, containerMaxWidth)
 
-        val heightDp = (cellsY * 60).dp 
+        val heightDp = (cellsY * tabDef.schematic_grid_size).dp
 
         Box(
             modifier = Modifier
@@ -68,7 +68,7 @@ fun SchematicEditorScreen(
                     .pointerInput(Unit) {
                         detectTapGestures { offset ->
                             val gridSizeX = gridDpX.toPx()
-                            val gridSizeY = 60.dp.toPx()
+                            val gridSizeY = tabDef.schematic_grid_size.dp.toPx()
                             
                             val actualDrawingWidth = cellsX * gridSizeX
                             val startX = (size.width - actualDrawingWidth) / 2f
@@ -88,7 +88,7 @@ fun SchematicEditorScreen(
                     }
             ) {
                 val gridSizeX = gridDpX.toPx()
-                val gridSizeY = 60.dp.toPx()
+                val gridSizeY = tabDef.schematic_grid_size.dp.toPx()
                 
                 val actualDrawingWidth = cellsX * gridSizeX
                 val startX = (size.width - actualDrawingWidth) / 2f
@@ -121,7 +121,7 @@ fun SchematicEditorScreen(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linked_lever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f)
                                 )
                             }
                         }

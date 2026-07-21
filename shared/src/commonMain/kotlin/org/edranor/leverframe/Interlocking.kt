@@ -78,6 +78,7 @@ data class TabDef(
     val showBlockNumbers: Boolean = true,
     val useShortCodes: Boolean = false,
     val useShortCodesInIndicators: Boolean = false,
+    val schematicGridSize: Int = 40,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

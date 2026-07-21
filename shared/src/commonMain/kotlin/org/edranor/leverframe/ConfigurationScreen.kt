@@ -26,6 +26,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -454,6 +456,21 @@ fun ConfigurationScreen(
                                             )
                                             Text("Use Short Codes on Indicators", modifier = Modifier.padding(start = 8.dp))
                                         }
+                                        OutlinedTextField(
+                                            value = tab.schematic_grid_size.toString(),
+                                            onValueChange = {
+                                                val intValue = it.toIntOrNull()
+                                                if (intValue != null && intValue > 0) {
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = tab.copy(schematic_grid_size = intValue)
+                                                    config = config.copy(tabs = newTabs)
+                                                }
+                                            },
+                                            label = { Text("Schematic Grid Size (min width)") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = brassTextFieldColors()
+                                        )
                                     }
                                 }
                             }
@@ -1347,6 +1364,7 @@ private fun JsonConfig.withoutUiAndRules(): JsonConfig {
             show_block_numbers = true,
             use_short_codes = false,
             use_short_codes_in_indicators = false,
+            schematic_grid_size = 40,
             label_lines = 2,
             label_line_height = 18,
             block_layout = "HORIZONTAL",

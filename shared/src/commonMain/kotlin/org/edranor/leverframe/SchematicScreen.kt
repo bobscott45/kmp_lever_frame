@@ -35,7 +35,7 @@ fun SchematicScreen(
         modifier = modifier.background(Color(0xFF1E1E1E)),
         contentAlignment = Alignment.Center
     ) {
-        val minGridSizeX = 40.dp
+        val minGridSizeX = tabDef.schematicGridSize.dp
         val maxGridSizeX = 120.dp
         
         val containerMaxWidth = maxWidth
@@ -49,13 +49,13 @@ fun SchematicScreen(
                 .horizontalScroll(rememberScrollState()),
             contentAlignment = Alignment.Center
         ) {
-            val heightDp = (cellsY * 40 + 10).dp // Add 10dp padding at the bottom to prevent text clipping
+            val heightDp = (cellsY * tabDef.schematicGridSize + 10).dp // Add 10dp padding at the bottom to prevent text clipping
             val canvasWidthDp = maxOf(widthDp, containerMaxWidth)
             Canvas(
                 modifier = Modifier.width(canvasWidthDp).height(heightDp)
             ) {
                 val gridSizeX = gridDpX.toPx()
-                val gridSizeY = 40.dp.toPx()
+                val gridSizeY = tabDef.schematicGridSize.dp.toPx()
                 
                 val actualDrawingWidth = cellsX * gridSizeX
                 val startX = (size.width - actualDrawingWidth) / 2f
@@ -112,7 +112,7 @@ fun SchematicScreen(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linkedLever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f)
                                 )
                             }
                         }
