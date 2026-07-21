@@ -207,22 +207,26 @@ fun App() {
                         )
                     } else {
                         val index = state.statusLeverIndex!!
-                        val leverDef = state.tabs[state.selectedTabIndex].second.levers[index]
+                        val tabDef = state.tabs.getOrNull(state.selectedTabIndex)?.second
+                        val leverDef = tabDef?.levers?.getOrNull(index)
                         
-                        LeverStatusScreen(
-                            leverIndex = index,
-                            leverDef = leverDef,
-                            leverStates = state.leverStates[state.selectedTabIndex],
-                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
-                            onClose = viewModel::dismissStatusLever,
-                            onEditConfig = {
-                                viewModel.dismissStatusLever()
-                                viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex, leverIndex = index)
-                            },
-                            onLccEnabledChange = { checked ->
-                                viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
-                            }
-                        )
+                        if (leverDef == null) {
+                            viewModel.dismissStatusLever()
+                        } else {
+                            LeverStatusScreen(
+                                leverIndex = index,
+                                leverDef = leverDef,
+                                leverStates = state.leverStates[state.selectedTabIndex],
+                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                onClose = viewModel::dismissStatusLever,
+                                onEditConfig = {
+                                    viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex, leverIndex = index)
+                                },
+                                onLccEnabledChange = { checked ->
+                                    viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
+                                }
+                            )
+                        }
                     }
                 }
             }
