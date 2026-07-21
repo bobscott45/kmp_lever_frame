@@ -190,13 +190,13 @@ fun App() {
                                             blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
                                             modifier = Modifier
                                                 .fillMaxHeight()
-                                                .weight(0.5f)
+                                                .weight(0.33f)
                                                 .padding(end = 8.dp)
                                                 .clip(RoundedCornerShape(8.dp))
                                         )
                                     }
                                 }
-                                Column(modifier = Modifier.weight(0.5f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Column(modifier = Modifier.weight(0.67f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                                     BlockShelfGroup(state, viewModel)
                                     LeverTrackGroup(state, viewModel, soundPlayer)
                                 }
