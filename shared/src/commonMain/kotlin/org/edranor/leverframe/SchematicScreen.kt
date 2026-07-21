@@ -109,7 +109,7 @@ fun SchematicScreen(
                             drawLine(
                                 color = divergeColor,
                                 start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                                end = Offset(px + gridSizeX, py),
+                                end = Offset(px + gridSizeX, py - gridSizeY / 2),
                                 strokeWidth = 4f
                             )
                         }
