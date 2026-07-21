@@ -412,14 +412,25 @@ fun LeverComponent(
                     val knobSize = 52.dp * scale
                     val padding = 4.dp * scale
                     
+                    val pinCenterY = trackHeight / 2
+                    val thrownKnobTopY = trackHeight - knobSize - padding
+                    
                     // Track Number
-                    Text(
-                        text = "${leverIndex + 1}",
-                        color = Color.White.copy(alpha = 0.3f),
-                        fontSize = (28 * scale).sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(thrownKnobTopY - pinCenterY)
+                            .align(Alignment.TopCenter)
+                            .offset(y = pinCenterY),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${leverIndex + 1}",
+                            color = Color.White.copy(alpha = 0.3f),
+                            fontSize = (18 * scale).sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
 
                     val physicalRatio = when {
                         positionRatio > 1f -> 1f - (positionRatio - 1f)
