@@ -660,7 +660,7 @@ fun TopMenuBar(
                 DropdownMenuItem(
                     text = { Text("Frame Configuration", fontSize = 14.sp) },
                     onClick = { 
-                        viewModel.enterConfigMode(ConfigMode.FRAMES)
+                        viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex)
                         menuExpanded = false
                     }
                 )
