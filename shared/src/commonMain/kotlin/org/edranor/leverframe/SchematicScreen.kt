@@ -24,22 +24,31 @@ fun SchematicScreen(
     blockStates: BooleanArray,
     modifier: Modifier = Modifier
 ) {
-    val gridDp = 40.dp
     val maxX = tabDef.schematicElements.maxOfOrNull { it.x } ?: 0
-    val widthDp = ((maxX + 2) * 40).dp
+    val cellsX = (maxX + 2).coerceAtLeast(1)
 
     val textMeasurer = rememberTextMeasurer()
 
-    Box(
-        modifier = modifier
-            .background(Color(0xFF1E1E1E))
-            .horizontalScroll(rememberScrollState()),
-        contentAlignment = Alignment.Center
+    BoxWithConstraints(
+        modifier = modifier.background(Color(0xFF1E1E1E))
     ) {
-        Canvas(
-            modifier = Modifier.width(widthDp).fillMaxHeight()
+        val minGridSize = 40.dp
+        val maxGridSize = 120.dp
+        
+        val calculatedGridSize = maxWidth / cellsX
+        val gridDp = calculatedGridSize.coerceIn(minGridSize, maxGridSize)
+        val widthDp = gridDp * cellsX
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .horizontalScroll(rememberScrollState()),
+            contentAlignment = Alignment.Center
         ) {
-            val gridSize = gridDp.toPx()
+            Canvas(
+                modifier = Modifier.width(widthDp).fillMaxHeight()
+            ) {
+                val gridSize = gridDp.toPx()
 
             tabDef.schematicElements.forEach { element ->
                 val px = element.x * gridSize
@@ -110,4 +119,5 @@ fun SchematicScreen(
             }
         }
     }
+}
 }
