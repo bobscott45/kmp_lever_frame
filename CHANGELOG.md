@@ -8,13 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.1.1-dev
 
 ### Added
+- **UI/UX**: Implemented an in-app Schematic Editor, allowing visual drag-and-drop creation of track layouts with immediate WYSIWYG feedback.
+- **UI/UX**: Added a collapsible 'shelf' view for the schematic display in the main operation screen.
+- **UI/UX**: The grid size for the schematic is now user-configurable in the Settings tab.
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
+- **UI/UX**: Improved the visual display of the schematic by optimizing space (1/3 2/3 split in landscape mode) and refining how turnout lever numbers are displayed inside the points.
+- **UI/UX**: Block labels on the schematic now intelligently center themselves over straight track segments to avoid visual clutter on points and signals.
+- **UI/UX**: Context-aware configuration menu now automatically opens the frame editor to the currently viewed frame tab.
+- **Logic**: Updated the default "South Box" and "North Junction" prototypical configurations to correctly enforce track circuit locking and resolve derailment traps.
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
-- 
+- **Logic**: Fixed default interlocking rules to prevent the 'Up Distant' signal from clearing for the branch line.
+- **Logic**: Removed the rigid sequential requirement to pull the Down Advanced before the Down Home in the default config.
+- **State**: Cosmetic UI changes in the frame editor no longer trigger a full state reload or network sync.
 
 ### Removed
 - **Cleanup**: Removed unused `Greeting.kt` and `GreetingUtil.kt` wizard boilerplate files.

@@ -11,6 +11,7 @@ The main screen is your operational view of the virtual interlocking frame.
 The interface is divided into several key sections:
 *   **Frame Tabs**: Located at the top left, allowing you to switch between multiple interlocking frames (e.g., North Junction, South Box).
 *   **Block Occupancy Shelf**: Positioned above the levers, displaying real-time track occupancy status.
+*   **Track Schematic (Optional)**: A collapsible shelf above the blocks that provides a live visual representation of your track layout, signals, and point positions.
 *   **Lever Row**: The primary interactive area containing your mechanical levers.
 *   **Hamburger Menu (⋮)**: Located at the top right, providing access to system tools and configuration.
 
@@ -62,7 +63,7 @@ Allows adding, editing and deleting frames. Select an existing frame to edit its
 
 When editing a specific Tab, you can configure display options (Name, Label Lines, Block Layout). From the Tab edit screen, you can delve deeper into configuring the **Blocks** and **Levers** for that specific frame.
 
-The settings for each frame are divided into three tabs: Settings, Levers and Blocks.
+The settings for each frame are divided into three tabs: Settings, Levers and Blocks. Additionally, you can launch the **Fullscreen Schematic Editor** from the top of the Frame configuration screen to visually draw and link your track layout.
 
 If changes are pending, the Save button at the top right of the panel will become active.
 
