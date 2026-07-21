@@ -64,21 +64,24 @@ Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or 
 The app includes a prototypical demonstration configuration by default, showcasing sequential signaling, mutually locking facing points, and conditional 'OR' route locking.
 
 ### North Junction (Main Frame)
-This frame protects a junction where a branch line diverges from a main line. It includes a Digital Block Shelf monitoring "UP MAIN", "UP BRANCH", and "DOWN MAIN". The Digital Block Shelf displays the occupancy status of these track sections based on LCC events. Blocks can be interlocked with levers to prevent clearing signals into occupied sections.
+This frame protects a junction where a branch line diverges from a main line. It includes a Digital Block Shelf monitoring "UP MAIN", "TO YARD", and "DOWN MAIN". The Digital Block Shelf displays the occupancy status of these track sections based on LCC events. Blocks can be interlocked with levers to prevent clearing signals into occupied sections.
 - **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 5 REVERSED*. This demonstrates conditional 'OR' logic.
 - **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 4 NORMAL and Lever 3 REVERSED*. Also *locks to UP MAIN BLOCK EMPTY* (Cross-Interlocking) and can be configured to Auto-Reverse.
 - **Lever 3 (FPL FOR POINTS 4)**: The Facing Point Lock.
 - **Lever 4 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 3 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
-- **Lever 5 (UP BRANCH HOME)**: Clears the train to turn off onto the branch line. *Locks Lever 4 REVERSED and Lever 3 REVERSED*. Also *locks to UP BRANCH BLOCK EMPTY*.
+- **Lever 5 (TO YARD HOME)**: Clears the train to turn off onto the branch line toward the Yard. *Locks Lever 4 REVERSED and Lever 3 REVERSED*. Also *locks to TO YARD BLOCK EMPTY*.
 - **Lever 6 (SPARE)**: A spare lever.
 - **Lever 7 (DOWN ADVANCED)**: An advanced starting signal for the down direction.
 - **Lever 8 (DOWN HOME)**: The home signal for the down direction. *Locks Lever 7 REVERSED*. Also *locks to DOWN MAIN BLOCK EMPTY*.
 
 ### South Box (Yard Frame)
-This frame controls a small yard crossover. It includes a Digital Block Shelf monitoring the "YARD" block to ensure safe shunting.
-- **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 REVERSED*.
-- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover. *Locks Lever 3 REVERSED*. Also *locks to YARD BLOCK EMPTY*.
-- **Lever 3 (FRAME RELEASE)**: A ground frame release mechanism.
+This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "YARD", and "SIDING".
+- **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 NORMAL*.
+- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover.
+- **Lever 3 (SIDING EXIT)**: A home signal controlling trains exiting the siding onto the yard approach. *Locks Lever 2 REVERSED*.
+- **Lever 4 (YARD HOME)**: The main arm of the bracket signal controlling entry into the yard. *Locks Lever 2 NORMAL*.
+- **Lever 5 (SIDING HOME)**: The diverging arm of the bracket signal controlling entry into the siding. *Locks Lever 2 REVERSED*.
+- **Lever 6 (YARD DISTANT)**: The distant signal providing advance warning for the Yard Home. *Locks Lever 4 REVERSED*.
 
 ### Demonstrating the Interlocking
 Try the following sequences in the app:
