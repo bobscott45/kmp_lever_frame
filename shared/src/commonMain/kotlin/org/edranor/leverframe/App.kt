@@ -242,6 +242,7 @@ fun App() {
 
 @Composable
 fun LeverComponent(
+    leverIndex: Int,
     leverDef: LeverDef,
     labelLines: Int,
     labelLineHeight: Int,
@@ -429,15 +430,13 @@ fun LeverComponent(
                             .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (leverDef.autoReverser) {
-                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.8f)
-                            Text(
-                                text = "A",
-                                color = textColor,
-                                fontSize = (16 * scale).sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.9f)
+                        Text(
+                            text = if (leverDef.autoReverser) "A" else "${leverIndex + 1}",
+                            color = textColor,
+                            fontSize = (18 * scale).sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     // Locking Pin
@@ -749,6 +748,7 @@ fun ColumnScope.LeverTrackGroup(
                         val isAlarmed = index in state.conflictingLevers
     
                         LeverComponent(
+                            leverIndex = index,
                             leverDef = leverDef,
                             labelLines = currentTabDef.labelLines,
                             labelLineHeight = currentTabDef.labelLineHeight,
@@ -795,7 +795,7 @@ fun BlockShelfGroup(
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
                     val isOccupied = blockStates[index]
                     BlockIndicator(
-                        label = blockDef.label, 
+                        label = "${index + 1}: ${blockDef.label}", 
                         isOccupied = isOccupied,
                         layout = currentTabDef.blockLayout,
                         fontSize = currentTabDef.blockLabelSize,
