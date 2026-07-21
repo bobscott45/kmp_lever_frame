@@ -108,7 +108,7 @@ fun SchematicEditorScreen(
                     val px = startX + element.x * gridSizeX
                     val py = element.y * gridSizeY
 
-                    val trackColor = Color.White
+                    val trackColor = Color.Gray
 
                     when (element.type) {
                         "STRAIGHT_H" -> drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
