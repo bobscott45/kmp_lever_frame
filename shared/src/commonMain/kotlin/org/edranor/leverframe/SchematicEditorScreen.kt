@@ -184,10 +184,12 @@ fun SchematicEditorScreen(
                     .groupBy { it.linked_block }
 
                 blockElementsMap.forEach { (blockName, elements) ->
-                    val minX = elements.minOf { it.x }
-                    val maxX = elements.maxOf { it.x }
-                    val minY = elements.minOf { it.y }
-                    val maxY = elements.maxOf { it.y }
+                    val straightElements = elements.filter { it.type == "STRAIGHT_H" || it.type == "STRAIGHT_V" }
+                    val elementsToCenter = if (straightElements.isNotEmpty()) straightElements else elements
+                    val minX = elementsToCenter.minOf { it.x }
+                    val maxX = elementsToCenter.maxOf { it.x }
+                    val minY = elementsToCenter.minOf { it.y }
+                    val maxY = elementsToCenter.maxOf { it.y }
                     
                     val centerPx = startX + (minX + maxX + 1) * gridSizeX / 2f
                     val centerPy = (minY + maxY + 1) * gridSizeY / 2f
