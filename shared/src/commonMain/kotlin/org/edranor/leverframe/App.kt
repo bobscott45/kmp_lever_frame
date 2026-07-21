@@ -163,6 +163,8 @@ fun App() {
                     previousBlocks = currentBlocks.map { it.copyOf() }
                 }
 
+                var isSchematicVisible by remember { mutableStateOf(true) }
+
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxSize()
@@ -184,19 +186,42 @@ fun App() {
                                 if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                                     val currentTabDef = state.tabs[state.selectedTabIndex].second
                                     if (currentTabDef.schematicElements.isNotEmpty()) {
-                                        SchematicScreen(
-                                            tabDef = currentTabDef,
-                                            leverStates = state.leverStates[state.selectedTabIndex],
-                                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                        val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.33f else 0.0f)
+                                        if (schematicWeight > 0.01f) {
+                                            SchematicScreen(
+                                                tabDef = currentTabDef,
+                                                leverStates = state.leverStates[state.selectedTabIndex],
+                                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .weight(schematicWeight)
+                                                    .padding(end = 4.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                            )
+                                        }
+                                        Box(
                                             modifier = Modifier
                                                 .fillMaxHeight()
-                                                .weight(0.33f)
-                                                .padding(end = 8.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                        )
+                                                .width(24.dp)
+                                                .clickable { isSchematicVisible = !isSchematicVisible },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Box(modifier = Modifier.fillMaxHeight().width(2.dp).background(Color.Gray.copy(alpha=0.5f)))
+                                            androidx.compose.material3.Surface(
+                                                shape = androidx.compose.foundation.shape.CircleShape,
+                                                color = LeverFrameTheme.Colors.DarkSurface,
+                                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(if (isSchematicVisible) "◀" else "▶", color = Color.LightGray, fontSize = 10.sp)
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                                Column(modifier = Modifier.weight(0.67f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.67f else 1.0f)
+                                Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                                     BlockShelfGroup(state, viewModel)
                                     LeverTrackGroup(state, viewModel, soundPlayer)
                                 }
@@ -205,20 +230,43 @@ fun App() {
                             if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                                 val currentTabDef = state.tabs[state.selectedTabIndex].second
                                 if (currentTabDef.schematicElements.isNotEmpty()) {
-                                    SchematicScreen(
-                                        tabDef = currentTabDef,
-                                        leverStates = state.leverStates[state.selectedTabIndex],
-                                        blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                    val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.4f else 0.0f)
+                                    if (schematicWeight > 0.01f) {
+                                        SchematicScreen(
+                                            tabDef = currentTabDef,
+                                            leverStates = state.leverStates[state.selectedTabIndex],
+                                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(schematicWeight)
+                                                .padding(top = 8.dp, bottom = 4.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
+                                    Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .weight(0.4f)
-                                            .padding(top = 8.dp, bottom = 8.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
+                                            .height(24.dp)
+                                            .clickable { isSchematicVisible = !isSchematicVisible },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.Gray.copy(alpha=0.5f)))
+                                        androidx.compose.material3.Surface(
+                                            shape = androidx.compose.foundation.shape.CircleShape,
+                                            color = LeverFrameTheme.Colors.DarkSurface,
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(if (isSchematicVisible) "▲" else "▼", color = Color.LightGray, fontSize = 10.sp)
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
-                            Column(modifier = Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.6f else 1.0f)
+                            Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 BlockShelfGroup(state, viewModel)
                                 LeverTrackGroup(state, viewModel, soundPlayer)
                             }
