@@ -121,6 +121,7 @@ This acts as a logical 'OR' condition. If the Primary Condition fails, the lever
 * **Alt Type**: Choose between **LEVER** or **BLOCK** for the alternate condition.
 * **Alt Index**: The numerical index of the alternate target (this label title is displayed within the edit box until you enter a value).
 * **Alt Required State**: The required state for the alternate target.
+* **To Delete**: To remove an alternate condition entirely, simply delete the number in the **Alt Index** text box so it is completely empty. When saved, the condition will be disabled (internally represented as `-1`).
 
 When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
 
