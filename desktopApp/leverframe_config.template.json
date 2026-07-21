@@ -109,6 +109,20 @@
               "alt_state": "NORMAL"
             }
           ]
+        },
+        {
+          "label": "DOWN\nDISTANT",
+          "type": "DISTANT_SIGNAL",
+          "lcc_event_normal": "",
+          "lcc_event_reversed": "",
+          "interlocking": [
+            {
+              "target": 7,
+              "state": "REVERSED",
+              "alt_target": -1,
+              "alt_state": "NORMAL"
+            }
+          ]
         }
       ]
     },
