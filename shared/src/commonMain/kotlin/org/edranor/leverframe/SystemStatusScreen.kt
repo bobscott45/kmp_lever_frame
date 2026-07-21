@@ -39,6 +39,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.launch
+import org.edranor.leverframe.shared.BuildKonfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +99,7 @@ fun SystemStatusScreen(
             ) {
                 StatusItem("Node Name", config.node_name)
                 StatusItem("Node ID", config.node_id)
-                StatusItem("Version", "1.1.1-dev")
+                StatusItem("Version", BuildKonfig.APP_VERSION)
                 StatusItem("IP Address", ipAddress)
                 StatusItem("TCP Port", port.toString())
                 StatusItem("Network Status", networkStatus)
