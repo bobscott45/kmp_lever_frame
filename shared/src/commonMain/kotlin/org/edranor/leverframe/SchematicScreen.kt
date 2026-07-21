@@ -61,10 +61,10 @@ fun SchematicScreen(
                 val startX = (size.width - actualDrawingWidth) / 2f
 
                 fun getBlockColor(blockName: String): Color {
-                    if (blockName.isEmpty()) return Color.LightGray
+                    if (blockName.isEmpty()) return Color.White
                     val blockIndex = tabDef.blocks.indexOfFirst { it.label == blockName }
                     val occupied = if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
-                    return if (occupied) Color.Red else Color.LightGray
+                    return if (occupied) Color.Red else Color.White
                 }
 
                 tabDef.schematicElements.forEach { element ->
@@ -126,7 +126,7 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val leftColor = trackColor
-                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
+                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: Color.White
 
                             // Draw left half of track through the signal cell
                             drawLine(
@@ -166,7 +166,7 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val rightColor = trackColor
-                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.White
 
                             // Draw left half of track through the signal cell
                             drawLine(
@@ -204,7 +204,7 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val rightColor = trackColor
-                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.White
 
                             // Draw left half of track
                             drawLine(
