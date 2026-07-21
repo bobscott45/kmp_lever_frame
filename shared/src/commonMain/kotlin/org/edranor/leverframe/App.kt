@@ -412,6 +412,15 @@ fun LeverComponent(
                     val knobSize = 52.dp * scale
                     val padding = 4.dp * scale
                     
+                    // Track Number
+                    Text(
+                        text = "${leverIndex + 1}",
+                        color = Color.White.copy(alpha = 0.3f),
+                        fontSize = (28 * scale).sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
                     val physicalRatio = when {
                         positionRatio > 1f -> 1f - (positionRatio - 1f)
                         positionRatio < 0f -> -positionRatio
@@ -430,25 +439,14 @@ fun LeverComponent(
                             .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier),
                         contentAlignment = Alignment.Center
                     ) {
-                        val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.9f)
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
+                        if (leverDef.autoReverser) {
+                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.8f)
                             Text(
-                                text = "${leverIndex + 1}",
+                                text = "A",
                                 color = textColor,
-                                fontSize = (18 * scale).sp,
+                                fontSize = (16 * scale).sp,
                                 fontWeight = FontWeight.Bold
                             )
-                            if (leverDef.autoReverser) {
-                                Text(
-                                    text = "A",
-                                    color = textColor,
-                                    fontSize = (10 * scale).sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                     }
 
