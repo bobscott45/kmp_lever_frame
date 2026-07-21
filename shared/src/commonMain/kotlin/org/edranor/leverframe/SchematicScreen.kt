@@ -269,11 +269,21 @@ fun SchematicScreen(
                         style = TextStyle(color = Color.LightGray, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     )
                     
+                    var textCenterX = centerPx
+                    if (elements.size == 1 && elements.first().type.contains("SIGNAL")) {
+                        val elem = elements.first()
+                        if (elem.type == "SIGNAL_RIGHT") {
+                            textCenterX -= gridSizeX * 0.4f
+                        } else if (elem.type == "SIGNAL_LEFT") {
+                            textCenterX += gridSizeX * 0.4f
+                        }
+                    }
+                    
                     drawText(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
-                            x = centerPx - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 2.5f
+                            x = textCenterX - textLayout.size.width / 2f,
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 4f
                         )
                     )
                 }
