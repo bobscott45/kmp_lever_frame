@@ -134,6 +134,12 @@ Scroll down in the Lever Configuration screen to find the **Interlocking** secti
 *   **Cross-Interlocking (Blocks)**: Lock levers based on the live state of your Digital Block Shelf (e.g., Lever 2 locks the "UP MAIN" block EMPTY).
 *   **Conditional 'OR' Logic**: Set an **Alt Target** to allow a lever to be pulled if *either* of two conditions is true (e.g., Lever 1 requires Lever 2 OR Lever 5 to be REVERSED).
 
+### Hot-Reloading Interlocking Rules
+
+When you edit *only* the **Interlocking Rules** of a lever (adding, removing, or changing targets) and click **Save**, the application will perform a **Hot-Reload**. This silently applies the new interlocking logic in the background without dropping your LCC connection, without triggering a warning dialog, and without resetting the current positions of your levers. 
+
+If you modify anything else—such as adding/deleting a lever, changing a label, or editing LCC event IDs—the app will fall back to a standard **Save & Reset**, returning all levers to NORMAL and restarting the network connection to ensure system consistency.
+
 ### Blocks
 
 Similar to levers, pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
@@ -164,6 +170,7 @@ Every lever is composed of several distinct visual and interactive parts:
 
 *   **Brass Nameplate (Header)**: Located at the top. Displays the lever's custom label and a colored bar denoting its type (e.g., Red for Home Signal, Black for Points).
     *   *Tip: Clicking or tapping the brass nameplate opens the **Lever Status Screen**—an overlay showing exactly which interlocking rule is failing (❌) or satisfied (✅) for that specific lever.*
+    *   *Tip: From the Status Screen, you can click **Edit Configuration** to instantly jump into configuring that specific lever. When you close the configuration, you will be smoothly dropped right back into the status screen!*
 *   **State Indicators**: Text such as "ON / OFF" or "NORMAL / THROWN" appears above and below the lever track, showing the current operational state.
 *   **Track & Handle (Knob)**: The main interactive component. Slide the handle downwards to pull the lever (`REVERSED`), or push it upwards to return it (`NORMAL`). If the handle displays an "**A**", it means the **Auto-Reverser** feature is active, and the lever will snap back to Normal automatically when a train enters an interlocked block.
 *   **Locking Pin**: If the lever is mechanically locked, a physical pin visually obstructs the handle track, preventing movement.

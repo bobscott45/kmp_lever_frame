@@ -243,10 +243,12 @@ class AppViewModelTest {
     fun testUiModeIntents() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
-        // Config mode
+        // Config mode without returning to status
         viewModel.enterConfigMode(ConfigMode.SYSTEM)
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(ConfigMode.SYSTEM, viewModel.uiState.value.configMode)
+        assertEquals(null, viewModel.uiState.value.initialEditFrameIndex)
+        assertEquals(null, viewModel.uiState.value.initialEditLeverIndex)
         viewModel.exitConfigMode()
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(ConfigMode.NONE, viewModel.uiState.value.configMode)
@@ -265,6 +267,22 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isStatusMode)
         assertEquals(1, viewModel.uiState.value.statusLeverIndex)
+        
+        // Jump to config from status mode
+        viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = 0, leverIndex = 1)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(ConfigMode.FRAMES, viewModel.uiState.value.configMode)
+        assertEquals(0, viewModel.uiState.value.initialEditFrameIndex)
+        assertEquals(1, viewModel.uiState.value.initialEditLeverIndex)
+        
+        // Exit config should restore status mode
+        viewModel.exitConfigMode()
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(ConfigMode.NONE, viewModel.uiState.value.configMode)
+        assertTrue(viewModel.uiState.value.isStatusMode)
+        assertEquals(1, viewModel.uiState.value.statusLeverIndex)
+        
+        // Dismiss status screen entirely
         viewModel.dismissStatusLever()
         testDispatcher.scheduler.advanceUntilIdle()
         assertFalse(viewModel.uiState.value.isStatusMode)
