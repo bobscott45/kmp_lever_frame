@@ -118,7 +118,7 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val leftColor = trackColor
-                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: Color.LightGray
+                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
 
                             // Draw left half of track through the signal cell
                             drawLine(
@@ -158,7 +158,7 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val rightColor = trackColor
-                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.LightGray
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
 
                             // Draw left half of track through the signal cell
                             drawLine(
@@ -196,19 +196,19 @@ fun SchematicScreen(
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
                             val rightColor = trackColor
-                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.LightGray
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: Color.DarkGray
 
                             // Draw left half of track
                             drawLine(
                                 color = leftColor,
                                 start = Offset(px, py + gridSizeY / 2),
-                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
                                 strokeWidth = 4f
                             )
                             // Draw right half of track
                             drawLine(
                                 color = rightColor,
-                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                start = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
                                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
                                 strokeWidth = 4f
                             )
@@ -273,7 +273,7 @@ fun SchematicScreen(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
                             x = centerPx - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 4f
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 2.5f
                         )
                     )
                 }
