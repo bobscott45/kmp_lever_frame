@@ -54,16 +54,18 @@ fun SchematicScreen(
                 val gridSizeX = gridDpX.toPx()
                 val gridSizeY = 40.dp.toPx()
 
+                fun getBlockColor(blockName: String): Color {
+                    if (blockName.isEmpty()) return Color.LightGray
+                    val blockIndex = tabDef.blocks.indexOfFirst { it.label == blockName }
+                    val occupied = if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
+                    return if (occupied) Color.Red else Color.LightGray
+                }
+
                 tabDef.schematicElements.forEach { element ->
                     val px = element.x * gridSizeX
                     val py = element.y * gridSizeY
 
-                    val isBlockOccupied = if (element.linkedBlock.isNotEmpty()) {
-                        val blockIndex = tabDef.blocks.indexOfFirst { it.label == element.linkedBlock }
-                        if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
-                    } else false
-
-                    val trackColor = if (isBlockOccupied) Color.Red else Color.LightGray
+                    val trackColor = getBlockColor(element.linkedBlock)
 
                     if (element.linkedBlock.isNotEmpty() && element.type.startsWith("STRAIGHT")) {
                         drawText(
@@ -107,13 +109,30 @@ fun SchematicScreen(
                         }
                         "SIGNAL_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                            // Draw horizontal track through the signal cell
-                            drawLine(
-                                color = trackColor,
-                                start = Offset(px, py + gridSizeY / 2),
-                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                                strokeWidth = 4f
-                            )
+                            val leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
+                            val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
+                            
+                            val leftColor = leftElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+                            val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+
+                            // Draw left half of track through the signal cell
+                            if (leftElement != null) {
+                                drawLine(
+                                    color = leftColor,
+                                    start = Offset(px, py + gridSizeY / 2),
+                                    end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                    strokeWidth = 4f
+                                )
+                            }
+                            // Draw right half of track through the signal cell
+                            if (rightElement != null) {
+                                drawLine(
+                                    color = rightColor,
+                                    start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                    end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                    strokeWidth = 4f
+                                )
+                            }
                             drawCircle(
                                 color = if (isReversed) Color.Green else Color.Red,
                                 radius = gridSizeY / 4,
