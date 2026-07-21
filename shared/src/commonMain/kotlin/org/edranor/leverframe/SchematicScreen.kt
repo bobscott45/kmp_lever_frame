@@ -122,23 +122,19 @@ fun SchematicScreen(
                             val rightColor = rightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
 
                             // Draw left half of track through the signal cell
-                            if (leftElement != null) {
-                                drawLine(
-                                    color = leftColor,
-                                    start = Offset(px, py + gridSizeY / 2),
-                                    end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                                    strokeWidth = 4f
-                                )
-                            }
+                            drawLine(
+                                color = leftColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
                             // Draw right half of track through the signal cell
-                            if (rightElement != null) {
-                                drawLine(
-                                    color = rightColor,
-                                    start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                                    end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                                    strokeWidth = 4f
-                                )
-                            }
+                            drawLine(
+                                color = rightColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
                             drawCircle(
                                 color = if (isReversed) Color.Green else Color.Red,
                                 radius = gridSizeY / 4,
