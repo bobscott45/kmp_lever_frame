@@ -107,6 +107,14 @@ fun SchematicScreen(
                                 end = Offset(px + gridSizeX, py - gridSizeY / 2),
                                 strokeWidth = 4f
                             )
+                            if (element.linkedLever >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linkedLever + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                )
+                            }
                         }
                         "SIGNAL_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false

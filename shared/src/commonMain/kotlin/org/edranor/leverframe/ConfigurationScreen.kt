@@ -60,6 +60,7 @@ fun ConfigurationScreen(
     var selectedFrameConfigTab by rememberSaveable { mutableStateOf(0) }
     var editingLeverIndex by rememberSaveable { mutableStateOf(initialEditingLeverIndex) }
     var editingBlockIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var isEditingSchematic by rememberSaveable { mutableStateOf(false) }
 
     var showSaveWarning by remember { mutableStateOf(false) }
     var showSystemResetWarning by remember { mutableStateOf(false) }
@@ -86,6 +87,10 @@ fun ConfigurationScreen(
                         }
                     } else if (editingBlockIndex != null) {
                         TextButton(onClick = { editingBlockIndex = null }) {
+                            Text("←", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
+                        }
+                    } else if (isEditingSchematic) {
+                        TextButton(onClick = { isEditingSchematic = false }) {
                             Text("←", style = MaterialTheme.typography.titleLarge, color = LeverFrameTheme.Colors.Brass)
                         }
                     } else {
@@ -189,6 +194,15 @@ fun ConfigurationScreen(
                             editingBlockIndex = null
                         }
                     )
+                } else if (isEditingSchematic) {
+                    SchematicEditorScreen(
+                        tabDef = config.tabs[selectedFrameIndex],
+                        onTabDefChange = { newTab ->
+                            val newTabs = config.tabs.toMutableList()
+                            newTabs[selectedFrameIndex] = newTab
+                            config = config.copy(tabs = newTabs)
+                        }
+                    )
                 } else {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Frame Selection Dropdown
@@ -253,15 +267,11 @@ fun ConfigurationScreen(
 
                         // Content for the selected frame
                         if (selectedFrameConfigTab == 3) {
-                            SchematicEditorScreen(
-                                tabDef = config.tabs[selectedFrameIndex],
-                                onTabDefChange = { newTab ->
-                                    val newTabs = config.tabs.toMutableList()
-                                    newTabs[selectedFrameIndex] = newTab
-                                    config = config.copy(tabs = newTabs)
-                                },
-                                modifier = Modifier.fillMaxSize().weight(1f)
-                            )
+                            Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                                Button(onClick = { isEditingSchematic = true }) {
+                                    Text("Open Fullscreen Schematic Editor")
+                                }
+                            }
                         } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().weight(1f),

@@ -116,6 +116,14 @@ fun SchematicEditorScreen(
                         "TURNOUT_RIGHT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
+                            if (element.linked_lever >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linked_lever + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                )
+                            }
                         }
                         "SIGNAL_LEFT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
