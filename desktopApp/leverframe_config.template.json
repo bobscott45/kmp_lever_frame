@@ -45,6 +45,14 @@
               "state": "REVERSED",
               "alt_target": -1,
               "alt_state": "NORMAL"
+            },
+            {
+              "target": 5,
+              "state": "EMPTY",
+              "target_type": "BLOCK",
+              "alt_target": -1,
+              "alt_state": "NORMAL",
+              "alt_target_type": "LEVER"
             }
           ]
         },
@@ -53,14 +61,32 @@
           "type": "FACING_POINTS",
           "lcc_event_normal": "",
           "lcc_event_reversed": "",
-          "interlocking": []
+          "interlocking": [
+            {
+              "target": 1,
+              "state": "EMPTY",
+              "target_type": "BLOCK",
+              "alt_target": -1,
+              "alt_state": "NORMAL",
+              "alt_target_type": "LEVER"
+            }
+          ]
         },
         {
           "label": "JUNCTION\nPOINTS",
           "type": "POINTS",
           "lcc_event_normal": "05.01.01.01.03.10.00.01",
           "lcc_event_reversed": "05.01.01.01.03.10.00.02",
-          "interlocking": []
+          "interlocking": [
+            {
+              "target": 1,
+              "state": "EMPTY",
+              "target_type": "BLOCK",
+              "alt_target": -1,
+              "alt_state": "NORMAL",
+              "alt_target_type": "LEVER"
+            }
+          ]
         },
         {
           "label": "UP BRANCH\nHOME",
@@ -79,6 +105,14 @@
               "state": "REVERSED",
               "alt_target": -1,
               "alt_state": "NORMAL"
+            },
+            {
+              "target": 1,
+              "state": "EMPTY",
+              "target_type": "BLOCK",
+              "alt_target": -1,
+              "alt_state": "NORMAL",
+              "alt_target_type": "LEVER"
             }
           ]
         },
