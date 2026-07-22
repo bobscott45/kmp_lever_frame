@@ -89,7 +89,7 @@ fun SchematicScreen(
                             end = Offset(px + gridSizeX / 2, py + gridSizeY),
                             strokeWidth = 4f
                         )
-                        "TURNOUT_RIGHT" -> {
+                        "TURNOUT_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
                             // Draw main line
                             drawLine(
@@ -117,12 +117,44 @@ fun SchematicScreen(
                                 )
                             }
                         }
+                        "TURNOUT_RIGHT" -> {
+                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            // Draw main line
+                            drawLine(
+                                color = trackColor,
+                                start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw diverging line
+                            val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y + 1 }
+                            val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+                            val divergeColor = if (isReversed) Color.Green else divergeBlockColor
+                            drawLine(
+                                color = divergeColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX, py + gridSizeY * 1.5f),
+                                strokeWidth = 4f
+                            )
+                            if (element.linkedLever >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linkedLever + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f)
+                                )
+                            }
+                        }
                         "SIGNAL_LEFT" -> {
                             val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
                             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             if (leftElement == null) {
                                 // Check if a turnout from the row below points up to this cell
-                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_RIGHT" }
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_LEFT"
+                            }
+                            if (leftElement == null) {
+                                // Check if a turnout from the row above points down to this cell
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == "TURNOUT_RIGHT" } }
                             }
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             
@@ -171,7 +203,11 @@ fun SchematicScreen(
                             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             if (leftElement == null) {
                                 // Check if a turnout from the row below points up to this cell
-                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_RIGHT" }
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_LEFT"
+                            }
+                            if (leftElement == null) {
+                                // Check if a turnout from the row above points down to this cell
+                                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == "TURNOUT_RIGHT" } }
                             }
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
                             

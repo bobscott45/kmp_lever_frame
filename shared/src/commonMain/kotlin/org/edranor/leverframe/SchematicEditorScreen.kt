@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -117,7 +118,7 @@ fun SchematicEditorScreen(
                     when (element.type) {
                         "STRAIGHT_H" -> drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                         "STRAIGHT_V" -> drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
-                        "TURNOUT_RIGHT" -> {
+                        "TURNOUT_LEFT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
@@ -126,6 +127,18 @@ fun SchematicEditorScreen(
                                     text = "${element.linked_lever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f)
+                                )
+                            }
+                        }
+                        "TURNOUT_RIGHT" -> {
+                            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 4f)
+                            if (element.linked_lever >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linked_lever + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f)
                                 )
                             }
                         }
@@ -173,7 +186,7 @@ fun SchematicEditorScreen(
                                 )
                             }
                         }
-                        "BRACKET_SIGNAL" -> {
+                        "BRACKET_SIGNAL_LEFT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(Color.Gray, Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2), Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f), strokeWidth = 2f)
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2))
@@ -199,15 +212,57 @@ fun SchematicEditorScreen(
                             val cy2 = py + gridSizeY * 0.15f
                             val arrowWidth2 = gridSizeY / 5 * 1.2f
                             val arrowHeight2 = gridSizeY / 5 * 0.8f
-                            drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
-                            drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
-                            drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
+                            rotate(-45f, Offset(cx2, cy2)) {
+                                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
+                                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
+                                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
+                            }
                             if (element.linked_lever_2 >= 0) {
                                 drawText(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linked_lever_2 + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
                                     topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py - gridSizeY * 0.4f)
+                                )
+                            }
+                        }
+                        "BRACKET_SIGNAL_RIGHT" -> {
+                            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                            drawLine(Color.Gray, Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2), Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.85f), strokeWidth = 2f)
+                            drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2))
+                            val arrowColor1 = Color.White
+                            val cx1 = px + gridSizeX * 0.65f
+                            val cy1 = py + gridSizeY / 2
+                            val arrowWidth1 = gridSizeY / 5 * 1.2f
+                            val arrowHeight1 = gridSizeY / 5 * 0.8f
+                            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 3f)
+                            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 3f)
+                            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 3f)
+                            if (element.linked_lever >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linked_lever + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY * 0.75f)
+                                )
+                            }
+                            drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.85f))
+                            val arrowColor2 = Color.White
+                            val cx2 = px + gridSizeX * 0.35f
+                            val cy2 = py + gridSizeY * 0.85f
+                            val arrowWidth2 = gridSizeY / 5 * 1.2f
+                            val arrowHeight2 = gridSizeY / 5 * 0.8f
+                            rotate(45f, Offset(cx2, cy2)) {
+                                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
+                                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
+                                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
+                            }
+                            if (element.linked_lever_2 >= 0) {
+                                drawText(
+                                    textMeasurer = textMeasurer,
+                                    text = "${element.linked_lever_2 + 1}",
+                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                    topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py + gridSizeY * 1.15f)
                                 )
                             }
                         }
@@ -272,7 +327,7 @@ fun SchematicEditorScreen(
             title = { Text("Edit Cell ($cx, $cy)") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val types = listOf("STRAIGHT_H", "STRAIGHT_V", "TURNOUT_RIGHT", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL")
+                    val types = listOf("STRAIGHT_H", "STRAIGHT_V", "TURNOUT_LEFT", "TURNOUT_RIGHT", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT")
                     var typeExpanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }) {
                         OutlinedTextField(
