@@ -76,9 +76,8 @@ This frame protects a junction where a branch line diverges from a main line. It
 - **Lever 4 (FPL FOR POINTS 5)**: The Facing Point Lock.
 - **Lever 5 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 4 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
 - **Lever 6 (SPARE)**: A spare lever.
-- **Lever 7 (DOWN ADVANCED)**: An advanced starting signal for the down direction.
-- **Lever 8 (DOWN HOME)**: The home signal for the down direction. *Locks Lever 7 REVERSED*. Also *locks to DOWN MAIN BLOCK EMPTY*.
-- **Lever 9 (DOWN DISTANT)**: The distant signal providing advance warning for the Down Home. *Locks Lever 8 REVERSED*.
+- **Lever 7 (DOWN HOME)**: The home signal for the down direction. *Locks to DOWN MAIN BLOCK EMPTY*.
+- **Lever 8 (DOWN DISTANT)**: The distant signal providing advance warning for the Down Home. *Locks Lever 7 REVERSED*.
 
 ### South Box (Yard Frame)
 This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "THROAT", "YARD", and "SIDING".
