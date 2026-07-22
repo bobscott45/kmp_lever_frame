@@ -134,7 +134,7 @@ fun SchematicEditorScreen(
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
                             val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
-                            val arrowColor = if (normalColor == Color.Red) Color.White else Color.Black
+                            val arrowColor = if (normalColor == Color.Red || normalColor == Color.Green) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
                             val cy = py + gridSizeY / 2
                             val arrowWidth = gridSizeY / 5 * 1.2f
@@ -156,7 +156,7 @@ fun SchematicEditorScreen(
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
                             val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
-                            val arrowColor = if (normalColor == Color.Red) Color.White else Color.Black
+                            val arrowColor = if (normalColor == Color.Red || normalColor == Color.Green) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
                             val cy = py + gridSizeY / 2
                             val arrowWidth = gridSizeY / 5 * 1.2f
