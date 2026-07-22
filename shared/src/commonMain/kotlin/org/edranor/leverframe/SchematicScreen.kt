@@ -66,6 +66,9 @@ fun SchematicScreen(
                     return if (occupied) Color.Red else Color.White
                 }
 
+                val arrowLeftText = textMeasurer.measure("←", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+                val arrowRightText = textMeasurer.measure("→", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+
                 tabDef.schematicElements.forEach { element ->
                     val px = startX + element.x * gridSizeX
                     val py = element.y * gridSizeY
@@ -149,6 +152,10 @@ fun SchematicScreen(
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
                             drawText(
+                                textLayoutResult = arrowLeftText,
+                                topLeft = Offset(px + gridSizeX / 2 - arrowLeftText.size.width / 2f, py + gridSizeY / 2 - arrowLeftText.size.height / 2f)
+                            )
+                            drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
@@ -187,6 +194,10 @@ fun SchematicScreen(
                                 color = if (isReversed) Color.Green else normalColor,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
+                            )
+                            drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX / 2 - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
                             )
                             drawText(
                                 textMeasurer = textMeasurer,
@@ -235,6 +246,10 @@ fun SchematicScreen(
                                 center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2)
                             )
                             drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX * 0.65f - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
+                            )
+                            drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
@@ -246,6 +261,10 @@ fun SchematicScreen(
                                 color = if (isReversed2) Color.Green else Color.Red,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f)
+                            )
+                            drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX * 0.35f - arrowRightText.size.width / 2f, py + gridSizeY * 0.15f - arrowRightText.size.height / 2f)
                             )
                             drawText(
                                 textMeasurer = textMeasurer,
@@ -300,7 +319,7 @@ fun SchematicScreen(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
                             x = textCenterX - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.3f
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.15f
                         )
                     )
                 }

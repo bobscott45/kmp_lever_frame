@@ -105,6 +105,9 @@ fun SchematicEditorScreen(
                     drawLine(gridColor, Offset(startX, py), Offset(startX + actualDrawingWidth, py), strokeWidth = gridStroke)
                 }
 
+                val arrowLeftText = textMeasurer.measure("←", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+                val arrowRightText = textMeasurer.measure("→", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+
                 // Draw Elements
                 tabDef.schematic_elements.forEach { element ->
                     val px = startX + element.x * gridSizeX
@@ -132,6 +135,10 @@ fun SchematicEditorScreen(
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
                             val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
+                            drawText(
+                                textLayoutResult = arrowLeftText,
+                                topLeft = Offset(px + gridSizeX / 2 - arrowLeftText.size.width / 2f, py + gridSizeY / 2 - arrowLeftText.size.height / 2f)
+                            )
                             if (element.linked_lever >= 0) {
                                 drawText(
                                     textMeasurer = textMeasurer,
@@ -146,6 +153,10 @@ fun SchematicEditorScreen(
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
                             val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
+                            drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX / 2 - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
+                            )
                             if (element.linked_lever >= 0) {
                                 drawText(
                                     textMeasurer = textMeasurer,
@@ -159,6 +170,10 @@ fun SchematicEditorScreen(
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(Color.Gray, Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2), Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f), strokeWidth = 2f)
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2))
+                            drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX * 0.65f - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
+                            )
                             if (element.linked_lever >= 0) {
                                 drawText(
                                     textMeasurer = textMeasurer,
@@ -168,6 +183,10 @@ fun SchematicEditorScreen(
                                 )
                             }
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f))
+                            drawText(
+                                textLayoutResult = arrowRightText,
+                                topLeft = Offset(px + gridSizeX * 0.35f - arrowRightText.size.width / 2f, py + gridSizeY * 0.15f - arrowRightText.size.height / 2f)
+                            )
                             if (element.linked_lever_2 >= 0) {
                                 drawText(
                                     textMeasurer = textMeasurer,
@@ -223,7 +242,7 @@ fun SchematicEditorScreen(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
                             x = textCenterX - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.3f
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.15f
                         )
                     )
                 }
