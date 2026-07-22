@@ -243,4 +243,46 @@ You can **Export** your configuration from the top-right hamburger menu (⋮) on
 
 *Note: On the Desktop app, this opens a native save file dialog. On Android/iOS, this displays the JSON in a popup for you to copy to your system clipboard.*
 
+---
+## Suggested LCC Event Numbering Scheme
 
+Because OpenLCB/LCC Event IDs are 64 bits (16 hex characters) and the first 48 bits (12 hex characters) are dedicated to your Node ID, you have 16 bits (4 hex characters) entirely at your disposal to define your local events. A good scheme should be **human-readable** so that when you are monitoring the network traffic or configuring JMRI, you can instantly recognize what an event means just by glancing at those last 4 characters.
+
+We highly recommend splitting those remaining 4 characters into two distinct bytes (e.g., `XX YY`):
+
+### 1. The `XX` Byte (Object Type & Frame)
+Use the first two characters to define the *type* of object generating the event, and optionally the frame it belongs to.
+
+**For a single frame:**
+*   `01` = Levers
+*   `02` = Track Blocks
+
+**If you want to distinguish multiple frames (e.g., North Jctn vs. South Box):**
+*   `11` = North Junction Levers
+*   `12` = North Junction Blocks
+*   `21` = South Box Levers
+*   `22` = South Box Blocks
+
+### 2. The `YY` Byte (Object Index & State)
+Use the last two characters to define the specific lever/block number and its *state*. The cleanest way to do this is to use the actual lever number, and add a hex offset (like `80`) to represent the "active/reversed" state. 
+
+**For Levers (`XX` = 11, 21):**
+*   `01` to `7F` = Lever is **Normal**
+*   `81` to `FF` = Lever is **Reversed** (simply add 80 hex to the lever number)
+    *   *Lever 1 Normal* = `01`
+    *   *Lever 1 Reversed* = `81`
+    *   *Lever 14 Normal* = `0E` 
+    *   *Lever 14 Reversed* = `8E`
+
+**For Blocks (`XX` = 12, 22):**
+*   `01` to `7F` = Block is **Empty**
+*   `81` to `FF` = Block is **Occupied**
+    *   *Block 1 Empty* = `01`
+    *   *Block 1 Occupied* = `81`
+
+### Example Full Event IDs
+If your Node ID is `02.01.57.11.22.33`:
+*   **Lever 2 is pulled (Reversed) on North Junction:** `02.01.57.11.22.33.11.82`
+*   **Block 4 becomes Occupied on North Junction:** `02.01.57.11.22.33.12.84`
+
+This structure prevents collisions entirely, scales to hundreds of levers/blocks without changing the pattern, and is incredibly easy to parse visually when debugging your JMRI routing tables!
