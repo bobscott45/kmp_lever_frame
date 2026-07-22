@@ -70,33 +70,34 @@ The app includes a prototypical demonstration configuration by default, showcasi
 
 ### North Junction (Main Frame)
 This frame protects a junction where a branch line diverges from a main line. It includes a Digital Block Shelf monitoring "UP MAIN", "TO YARD", and "DOWN MAIN". The Digital Block Shelf displays the occupancy status of these track sections based on LCC events. Blocks can be interlocked with levers to prevent clearing signals into occupied sections.
-- **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 5 REVERSED*. This demonstrates conditional 'OR' logic.
-- **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 4 NORMAL and Lever 3 REVERSED*. Also *locks to UP MAIN BLOCK EMPTY* (Cross-Interlocking) and can be configured to Auto-Reverse.
-- **Lever 3 (FPL FOR POINTS 4)**: The Facing Point Lock.
-- **Lever 4 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 3 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
-- **Lever 5 (TO YARD HOME)**: Clears the train to turn off onto the branch line toward the Yard. *Locks Lever 4 REVERSED and Lever 3 REVERSED*. Also *locks to TO YARD BLOCK EMPTY*.
+- **Lever 1 (UP DISTANT)**: The approach signal. *Locks Lever 2 REVERSED OR Lever 3 REVERSED*. This demonstrates conditional 'OR' logic.
+- **Lever 2 (UP MAIN HOME)**: Clears the train straight ahead. *Locks Lever 5 NORMAL and Lever 4 REVERSED*. Also *locks to UP MAIN BLOCK EMPTY* (Cross-Interlocking) and can be configured to Auto-Reverse.
+- **Lever 3 (TO YARD HOME)**: Clears the train to turn off onto the branch line toward the Yard. *Locks Lever 5 REVERSED and Lever 4 REVERSED*. Also *locks to TO YARD BLOCK EMPTY*.
+- **Lever 4 (FPL FOR POINTS 5)**: The Facing Point Lock.
+- **Lever 5 (JUNCTION POINTS)**: The physical turnout. *Locks Lever 4 NORMAL*, ensuring the points cannot be moved unless the physical bolt (FPL) is withdrawn.
 - **Lever 6 (SPARE)**: A spare lever.
 - **Lever 7 (DOWN ADVANCED)**: An advanced starting signal for the down direction.
 - **Lever 8 (DOWN HOME)**: The home signal for the down direction. *Locks Lever 7 REVERSED*. Also *locks to DOWN MAIN BLOCK EMPTY*.
+- **Lever 9 (DOWN DISTANT)**: The distant signal providing advance warning for the Down Home. *Locks Lever 8 REVERSED*.
 
 ### South Box (Yard Frame)
 This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "THROAT", "YARD", and "SIDING".
 
 *(Note: In a real-world prototypical setup, a small yard like this would generally use ground position light signals or shunting discs rather than full-sized semaphore Home and Distant signals. This configuration is deliberately "over-signalled" to demonstrate the application's advanced bracket signal and cascading distant signal capabilities in a compact space).*
-- **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 NORMAL*.
-- **Lever 2 (YARD CROSSOVER)**: The physical points for the crossover.
-- **Lever 3 (SIDING EXIT)**: A home signal controlling trains exiting the siding onto the yard approach. *Locks Lever 2 REVERSED*.
-- **Lever 4 (YARD HOME)**: The main arm of the bracket signal controlling entry into the yard. *Locks Lever 2 NORMAL*.
-- **Lever 5 (SIDING HOME)**: The diverging arm of the bracket signal controlling entry into the siding. *Locks Lever 2 REVERSED*.
-- **Lever 6 (YARD DISTANT)**: The distant signal providing advance warning for the Yard Home. *Locks Lever 4 REVERSED*.
+- **Lever 1 (YARD DISTANT)**: The distant signal providing advance warning for the Yard Home. *Locks Lever 2 REVERSED*.
+- **Lever 2 (YARD HOME)**: The main arm of the bracket signal controlling entry into the yard. *Locks Lever 4 NORMAL*.
+- **Lever 3 (SIDING HOME)**: The diverging arm of the bracket signal controlling entry into the siding. *Locks Lever 4 REVERSED*.
+- **Lever 4 (YARD CROSSOVER)**: The physical points for the crossover.
+- **Lever 5 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 4 NORMAL*.
+- **Lever 6 (SIDING EXIT)**: A home signal controlling trains exiting the siding onto the yard approach. *Locks Lever 4 REVERSED*.
 
 ### Demonstrating the Interlocking
 Try the following sequences in the app:
-1. Try to pull **Lever 2 (UP MAIN HOME)**. It will be locked because the Facing Point Lock (Lever 3) is not engaged.
-2. Try to pull **Lever 4 (JUNCTION POINTS)**. It is free to move because the FPL (Lever 3) is withdrawn.
-3. Pull **Lever 3 (FPL)** to lock the points.
-4. Try to pull **Lever 4** again. It is now locked by Lever 3.
-5. Pull **Lever 2** again. It now clears because Lever 4 is Normal and Lever 3 is Reversed.
+1. Try to pull **Lever 2 (UP MAIN HOME)**. It will be locked because the Facing Point Lock (Lever 4) is not engaged.
+2. Try to pull **Lever 5 (JUNCTION POINTS)**. It is free to move because the FPL (Lever 4) is withdrawn.
+3. Pull **Lever 4 (FPL)** to lock the points.
+4. Try to pull **Lever 5** again. It is now locked by Lever 4.
+5. Pull **Lever 2** again. It now clears because Lever 5 is Normal and Lever 4 is Reversed.
 6. Pull **Lever 1 (UP DISTANT)**. It clears because Lever 2 satisfies the 'OR' condition.
 7. Tap the **UP MAIN** block on the Digital Block Shelf above the levers to manually toggle it to "Occupied".
 8. Try to pull **Lever 2 (UP MAIN HOME)** again. It will be locked because it is cross-interlocked to the UP MAIN block. (If the lever was already Reversed, it would snap back to Normal due to the Auto-Reverser feature).
