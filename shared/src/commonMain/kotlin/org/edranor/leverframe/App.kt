@@ -40,6 +40,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -163,7 +164,8 @@ fun App() {
                     previousBlocks = currentBlocks.map { it.copyOf() }
                 }
 
-                var isSchematicVisible by remember { mutableStateOf(true) }
+                var isSchematicVisiblePortrait by rememberSaveable { mutableStateOf(true) }
+                var isSchematicVisibleLandscape by rememberSaveable { mutableStateOf(true) }
 
                 BoxWithConstraints(
                     modifier = Modifier
@@ -188,7 +190,7 @@ fun App() {
                                 if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                                     val currentTabDef = state.tabs[state.selectedTabIndex].second
                                     if (currentTabDef.schematicElements.isNotEmpty()) {
-                                        val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.33f else 0.0f)
+                                        val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.33f else 0.0f)
                                         if (schematicWeight > 0.01f) {
                                             SchematicScreen(
                                                 tabDef = currentTabDef,
@@ -205,7 +207,7 @@ fun App() {
                                             modifier = Modifier
                                                 .fillMaxHeight()
                                                 .width(24.dp)
-                                                .clickable { isSchematicVisible = !isSchematicVisible },
+                                                .clickable { isSchematicVisibleLandscape = !isSchematicVisibleLandscape },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Box(modifier = Modifier.fillMaxHeight().width(2.dp).background(Color.Gray.copy(alpha=0.5f)))
@@ -216,13 +218,13 @@ fun App() {
                                                 modifier = Modifier.size(24.dp)
                                             ) {
                                                 Box(contentAlignment = Alignment.Center) {
-                                                    Text(if (isSchematicVisible) "◀" else "▶", color = Color.LightGray, fontSize = 10.sp)
+                                                    Text(if (isSchematicVisibleLandscape) "◀" else "▶", color = Color.LightGray, fontSize = 10.sp)
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.67f else 1.0f)
+                                val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.67f else 1.0f)
                                 Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                                     TopMenuBar(state, viewModel)
                                     ErrorBanners(
@@ -238,7 +240,7 @@ fun App() {
                             if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
                                 val currentTabDef = state.tabs[state.selectedTabIndex].second
                                 if (currentTabDef.schematicElements.isNotEmpty()) {
-                                    val schematicWeight by animateFloatAsState(if (isSchematicVisible) 0.25f else 0.0f)
+                                    val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.25f else 0.0f)
                                     if (schematicWeight > 0.01f) {
                                         SchematicScreen(
                                             tabDef = currentTabDef,
@@ -255,7 +257,7 @@ fun App() {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(24.dp)
-                                            .clickable { isSchematicVisible = !isSchematicVisible },
+                                            .clickable { isSchematicVisiblePortrait = !isSchematicVisiblePortrait },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.Gray.copy(alpha=0.5f)))
@@ -266,14 +268,14 @@ fun App() {
                                             modifier = Modifier.size(24.dp)
                                         ) {
                                             Box(contentAlignment = Alignment.Center) {
-                                                Text(if (isSchematicVisible) "▲" else "▼", color = Color.LightGray, fontSize = 10.sp)
+                                                Text(if (isSchematicVisiblePortrait) "▲" else "▼", color = Color.LightGray, fontSize = 10.sp)
                                             }
                                         }
                                     }
                                 }
                             }
-
-                            val leversWeight by animateFloatAsState(if (isSchematicVisible) 0.75f else 1.0f)
+                            
+                            val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.75f else 1.0f)
                             Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 BlockShelfGroup(state, viewModel)
                                 LeverTrackGroup(state, viewModel, soundPlayer)

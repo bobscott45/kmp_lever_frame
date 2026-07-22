@@ -50,7 +50,7 @@ class ConfigManagerTest {
         
         val southBox = parsedTabs[1]
         assertEquals("South Box", southBox.first)
-        assertEquals(4, southBox.second.levers.size, "South Box should have 4 levers")
+        assertEquals(6, southBox.second.levers.size, "South Box should have 6 levers")
     }
 
     @Test

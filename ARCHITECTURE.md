@@ -27,7 +27,7 @@ The `AppViewModel` acts as the single source of truth for the application's stat
 ### 2.2 Configuration & Persistence (`ConfigManager.kt`)
 *   **`AppConfigRepository`**: An interface abstracting the persistence layer.
 *   **`ConfigManager`**: Implements the repository to serialize and deserialize the core configuration state using `kotlinx.serialization`. 
-*   It dynamically converts the user's `JsonConfig` definitions into parsed `LeverDef` structures used by the interlocking engine. 
+*   It dynamically converts the user's `JsonConfig` definitions into parsed `LeverDef` structures (used by the interlocking engine) and `SchematicElementDef` structures (representing grid coordinates for track components). 
 *   **Platform Specifics**: It relies on `expect/actual` functions (e.g., `saveConfigToFile`) to handle file I/O safely on Android, iOS, and JVM.
 
 ### 2.3 Interlocking Engine (`Interlocking.kt` & `AppViewModel.kt`)
@@ -45,7 +45,8 @@ The brain of the lever frame.
 Built entirely in Compose Multiplatform.
 *   **`App.kt`**: The root composable that observes the `AppViewModel` state and routes between the main views.
 *   **`LeverFrameScreen.kt`**: The primary operational UI, rendering the physical levers and their dynamic locking states.
-*   **`ConfigurationScreen.kt`**: An in-app editor for modifying the JSON structure safely, bypassing the need for an external web server.
+*   **`SchematicScreen.kt`**: Uses the Compose `Canvas` API to render a live, reactive panel diagram based on block/lever states and grid coordinates.
+*   **`ConfigurationScreen.kt` & `SchematicEditorScreen.kt`**: In-app editors for modifying the JSON configuration and drawing the track schematic visually, bypassing the need for external tools.
 *   **`SystemStatusScreen.kt` & `LeverStatusScreen.kt`**: Diagnostic overlays providing real-time feedback on network health and interlocking state.
 
 ## 3. Data Flow Example: Pulling a Lever

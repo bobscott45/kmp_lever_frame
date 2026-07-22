@@ -17,6 +17,24 @@ The interface is divided into several key sections:
 
 ---
 
+## Getting Started & Recommended Workflow
+
+Before diving into the configuration menus, it's helpful to understand the two ways you can use this application:
+
+1. **Standalone Simulator Mode**: You do **not** need a physical model railway, a network, or any hardware to use this app. You can simply define your blocks, levers, and schematic, and then tap the digital blocks on your screen to manually simulate train movements. The app's internal mechanical interlocking engine will lock and release levers exactly as it would in real life.
+2. **Hardware Mode**: If you have a physical layout with LCC hardware (via a JMRI hub), the app acts as a live control panel. You configure the network settings, and the app will respond to physical trains triggering LCC sensors on your layout.
+
+### Recommended Configuration Sequence
+
+Because the application is built as an inter-dependent system, we highly recommend following this specific sequence when building a new setup from scratch:
+
+1. **Hardware / Network (Optional)**: If using real hardware, go to **System Settings** and define your Node IDs, JMRI IP, and Wi-Fi configuration.
+2. **Define Blocks**: Go to **Frame Configuration > Blocks**. Define all your track occupancy sections first (and their LCC Event IDs if using hardware). 
+3. **Define Levers**: Go to **Frame Configuration > Levers**. Create your signals and points. Because you already created your blocks in Step 2, you can now easily assign interlocking rules that cross-reference those blocks.
+4. **Draw the Schematic**: Go to the **Fullscreen Schematic Editor**. Because your blocks and levers already exist, you can immediately link track cells to live inputs as you draw them.
+
+---
+
 ## The Hamburger Menu
 
 Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with five options:
@@ -74,6 +92,7 @@ If changes are pending, the Save button at the top right of the panel will becom
 * **Lever Line Height**: The height of each text line on the brass nameplate.
 * **Block Font Size**: The size of the text used for the Digital Block Shelf labels.
 * **Block Layout**: Choose between **Horizontal** (blocks side-by-side) or **Vertical** (blocks stacked) for the Digital Block Shelf.
+
 
 ### Levers
 
@@ -147,6 +166,27 @@ Similar to levers, pressing on a block description will open a dedicated **Block
 
 * **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf. You can delete the block by clicking the **✕ Delete** button in the top right corner.
 * **LCC Events**: Define the LCC Event IDs that will trigger this block to show as "Occupied" or "Empty".
+
+### Schematic Editor
+
+The application features a built-in visual editor for designing the track schematic that sits above your frame. Launch the **Fullscreen Schematic Editor** button from the top of the Frame configuration screen.
+
+<screenshot of the Schematic Editor>
+
+* **The Grid**: The editor is based on a standard graph-paper grid. Each piece of track or signal occupies exactly one square on this grid.
+* **Editing a Cell**: To place or modify an element, simply tap the desired square on the grid. This will open the **Edit Cell Panel**.
+* **Element Type**: In the edit cell panel, select the type of track piece or signal you want to place. To remove a piece, select "EMPTY". Available element types include:
+    * **Straights & Corners**: Standard track segments (Horizontal, Vertical, Corners).
+    * **Turnouts / Points**: Track switches that split into two directions (e.g., Turnout Right, Turnout Left).
+    * **Signals**: Stop signals facing either left or right.
+    * **Bracket Signals**: Complex signals with both a main arm and a diverging arm mounted on a single post.
+* **Linking to Blocks**: Below the element type, you can assign a **Linked Block** from a dropdown. When this block becomes "Occupied", the track segment on the schematic will automatically turn red to indicate a train's presence.
+* **Linking to Levers**: You can also assign a **Linked Lever**. The schematic will visually update when that lever is pulled:
+    * For a **Turnout**, pulling the linked lever will visually switch the track blades to the diverging route.
+    * For a standard **Signal**, pulling the linked lever will visually drop the signal arm to "Clear".
+    * For a **Bracket Signal**, you can assign *two* separate linked levers (one for the main arm, one for the diverging arm).
+* **Saving**: Press the Save icon in the top right to compile your grid back into the configuration file and return to the frame settings.
+
 ---
 
 ## The Block Occupancy Shelf
