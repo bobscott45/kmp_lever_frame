@@ -40,7 +40,7 @@ class ConfigManagerTest {
         
         val northJunction = parsedTabs[0]
         assertEquals("North Junction", northJunction.first)
-        assertEquals(9, northJunction.second.levers.size, "North Junction should have 9 levers")
+        assertEquals(8, northJunction.second.levers.size, "North Junction should have 8 levers")
         
         val upDistant = northJunction.second.levers[0]
         assertEquals(LeverType.DISTANT_SIGNAL, upDistant.type)

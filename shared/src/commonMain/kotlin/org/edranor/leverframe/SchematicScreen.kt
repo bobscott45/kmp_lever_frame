@@ -152,7 +152,7 @@ fun SchematicScreen(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
                             )
                         }
                         "SIGNAL_RIGHT" -> {
@@ -192,7 +192,7 @@ fun SchematicScreen(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
                             )
                         }
                         "BRACKET_SIGNAL" -> {
@@ -238,7 +238,7 @@ fun SchematicScreen(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
                                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY / 1.3f)
+                                topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY * 0.75f)
                             )
 
                             // Draw Branch Signal (linked_lever_2) above
@@ -300,7 +300,7 @@ fun SchematicScreen(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
                             x = textCenterX - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY / 4f
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.9f
                         )
                     )
                 }

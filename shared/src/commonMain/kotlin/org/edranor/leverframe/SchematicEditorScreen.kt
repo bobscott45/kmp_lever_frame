@@ -137,7 +137,7 @@ fun SchematicEditorScreen(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linked_lever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                    topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
                                 )
                             }
                         }
@@ -151,7 +151,7 @@ fun SchematicEditorScreen(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linked_lever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX / 2.5f, py + gridSizeY / 1.3f)
+                                    topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
                                 )
                             }
                         }
@@ -164,7 +164,7 @@ fun SchematicEditorScreen(
                                     textMeasurer = textMeasurer,
                                     text = "${element.linked_lever + 1}",
                                     style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY / 1.3f)
+                                    topLeft = Offset(px + gridSizeX * 0.65f - gridSizeY / 10, py + gridSizeY * 0.75f)
                                 )
                             }
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f))
