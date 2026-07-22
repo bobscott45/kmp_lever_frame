@@ -188,7 +188,7 @@ The application features a built-in visual editor for designing the track schema
     * **Straights & Corners**: Standard track segments (Horizontal, Vertical, Corners).
     * **Turnouts / Points**: Track switches that split into two directions (e.g., Turnout Right, Turnout Left).
     * **Signals**: Stop signals facing either left or right.
-    * **Bracket Signals**: Complex signals with both a main arm and a diverging arm mounted on a single post.
+    * **Bracket Signals**: Complex signals with both a main arm and a diverging arm mounted on a single post (available in Left or Right diverging variants).
 * **Linking to Blocks**: Below the element type, you can assign a **Linked Block** from a dropdown. When this block becomes "Occupied", the track segment on the schematic will automatically turn red to indicate a train's presence.
 * **Linking to Levers**: You can also assign a **Linked Lever**. The schematic will visually update when that lever is pulled:
     * For a **Turnout**, pulling the linked lever will visually switch the track blades to the diverging route.

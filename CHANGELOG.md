@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: Added specific Left and Right variants for Turnouts and Bracket Signals in the schematic editor, and corrected the Turnout Right logic to accurately diverge to the right.
 - **UI/UX**: Added directional arrows (← and →) inside signal circles on the schematic maps to clearly indicate the direction of travel they control.
 - **UI/UX**: Added real-time duplicate validation in the Configuration Editor to enforce uniqueness for Block labels, Block short codes, and Lever labels.
 - **UI/UX**: Added Move Up / Move Down buttons to reorder Blocks and Levers in the Configuration Editor. Reordering dynamically updates all interlocking rules and schematic map references.
