@@ -141,7 +141,7 @@ class AppViewModel(
                 if (tabIdx < currentState.leverStates.size) {
                     val statesForTab = currentState.leverStates[tabIdx]
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                        if (leverIdx < statesForTab.size && leverDef.lcc_enabled) {
+                        if (leverIdx < statesForTab.size && leverDef.lcc_enabled && currentState.config.lcc_enabled) {
                             val isReversed = statesForTab[leverIdx]
                             val eventId = if (isReversed) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
                             if (eventId.isNotBlank()) {
@@ -302,9 +302,10 @@ class AppViewModel(
                 } else emptyList()
 
                 val leverDef = tabDef.levers[leverIndex]
-                if (targetState && leverDef.lcc_event_reversed.isNotBlank()) {
+                val shouldSendLcc = currentState.config.lcc_enabled && leverDef.lcc_enabled
+                if (shouldSendLcc && targetState && leverDef.lcc_event_reversed.isNotBlank()) {
                     lccEventStr = leverDef.lcc_event_reversed
-                } else if (!targetState && leverDef.lcc_event_normal.isNotBlank()) {
+                } else if (shouldSendLcc && !targetState && leverDef.lcc_event_normal.isNotBlank()) {
                     lccEventStr = leverDef.lcc_event_normal
                 } else {
                     lccEventStr = null
@@ -470,8 +471,10 @@ class AppViewModel(
             
             if (!newConfig.lcc_enabled) {
                 lccClient.disconnect()
+                _uiState.update { it.copy(networkError = null) }
             } else if (!prevEnabled || prevIp != newConfig.jmri_hub_ip || prevNodeId != newConfig.node_id) {
                 lccClient.disconnect()
+                _uiState.update { it.copy(networkError = null) }
                 lccClient.initialize()
             }
             
