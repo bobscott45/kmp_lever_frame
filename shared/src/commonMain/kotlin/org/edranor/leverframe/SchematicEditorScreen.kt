@@ -242,7 +242,7 @@ fun SchematicEditorScreen(
                         textLayoutResult = textLayout,
                         topLeft = Offset(
                             x = textCenterX - textLayout.size.width / 2f,
-                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.15f
+                            y = centerPy - textLayout.size.height / 2f - gridSizeY * 0.2f
                         )
                     )
                 }
