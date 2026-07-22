@@ -87,7 +87,7 @@ This frame controls a small yard crossover, serving as the continuation of the "
 - **Lever 2 (YARD HOME)**: The main arm of the bracket signal controlling entry into the yard. *Locks Lever 4 NORMAL*.
 - **Lever 3 (SIDING HOME)**: The diverging arm of the bracket signal controlling entry into the siding. *Locks Lever 4 REVERSED*.
 - **Lever 4 (YARD CROSSOVER)**: The physical points for the crossover.
-- **Lever 5 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 4 NORMAL*.
+- **Lever 5 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 4 NORMAL* and *locks to THROAT BLOCK EMPTY*.
 - **Lever 6 (SIDING EXIT)**: A home signal controlling trains exiting the siding onto the yard approach. *Locks Lever 4 REVERSED*.
 
 ### Demonstrating the Interlocking
