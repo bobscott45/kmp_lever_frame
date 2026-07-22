@@ -151,7 +151,7 @@ fun SchematicScreen(
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
-                            val arrowColor = if (signalColor == Color.Red || signalColor == Color.Green) Color.White else Color.Black
+                            val arrowColor = if (signalColor == Color.Red) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
                             val cy = py + gridSizeY / 2
                             val arrowWidth = gridSizeY / 5 * 1.2f
@@ -200,7 +200,7 @@ fun SchematicScreen(
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
-                            val arrowColor = if (signalColor == Color.Red || signalColor == Color.Green) Color.White else Color.Black
+                            val arrowColor = if (signalColor == Color.Red) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
                             val cy = py + gridSizeY / 2
                             val arrowWidth = gridSizeY / 5 * 1.2f
@@ -255,7 +255,7 @@ fun SchematicScreen(
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2)
                             )
-                            val arrowColor1 = if (signalColor1 == Color.Red || signalColor1 == Color.Green) Color.White else Color.Black
+                            val arrowColor1 = if (signalColor1 == Color.Red) Color.White else Color.Black
                             val cx1 = px + gridSizeX * 0.65f
                             val cy1 = py + gridSizeY / 2
                             val arrowWidth1 = gridSizeY / 5 * 1.2f
@@ -277,7 +277,7 @@ fun SchematicScreen(
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f)
                             )
-                            val arrowColor2 = if (signalColor2 == Color.Red || signalColor2 == Color.Green) Color.White else Color.Black
+                            val arrowColor2 = if (signalColor2 == Color.Red) Color.White else Color.Black
                             val cx2 = px + gridSizeX * 0.35f
                             val cy2 = py + gridSizeY * 0.15f
                             val arrowWidth2 = gridSizeY / 5 * 1.2f
