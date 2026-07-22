@@ -66,7 +66,7 @@ fun SchematicEditorScreen(
                 modifier = Modifier
                     .width(canvasWidthDp)
                     .height(heightDp)
-                    .pointerInput(Unit) {
+                    .pointerInput(tabDef) {
                         detectTapGestures { offset ->
                             val gridSizeX = gridDpX.toPx()
                             val gridSizeY = tabDef.schematic_grid_size.dp.toPx()
@@ -365,7 +365,7 @@ fun SchematicEditorScreen(
                     }
 
                     // Linked Lever 2
-                    if (editType == "BRACKET_SIGNAL") {
+                    if (editType.startsWith("BRACKET_SIGNAL")) {
                         var lever2Expanded by remember { mutableStateOf(false) }
                         ExposedDropdownMenuBox(expanded = lever2Expanded, onExpandedChange = { lever2Expanded = !lever2Expanded }) {
                             OutlinedTextField(
