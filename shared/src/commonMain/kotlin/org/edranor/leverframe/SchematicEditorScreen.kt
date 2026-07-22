@@ -36,7 +36,7 @@ fun SchematicEditorScreen(
 
     var editingCell by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var editType by remember { mutableStateOf("STRAIGHT_H") }
-    var editLinkedBlock by remember { mutableStateOf("") }
+    var editLinkedBlock by remember { mutableStateOf(-1) }
     var editLinkedLever by remember { mutableStateOf(-1) }
     var editLinkedLever2 by remember { mutableStateOf(-1) }
 
@@ -79,7 +79,7 @@ fun SchematicEditorScreen(
                             if (clickedX in 0 until cellsX && clickedY in 0 until cellsY) {
                                 val existing = tabDef.schematic_elements.find { it.x == clickedX && it.y == clickedY }
                                 editType = existing?.type ?: "STRAIGHT_H"
-                                editLinkedBlock = existing?.linked_block ?: ""
+                                editLinkedBlock = existing?.linked_block ?: -1
                                 editLinkedLever = existing?.linked_lever ?: -1
                                 editLinkedLever2 = existing?.linked_lever_2 ?: -1
                                 editingCell = Pair(clickedX, clickedY)
@@ -180,10 +180,10 @@ fun SchematicEditorScreen(
 
                 // Draw block names
                 val blockElementsMap = tabDef.schematic_elements
-                    .filter { it.linked_block.isNotEmpty() }
+                    .filter { it.linked_block >= 0 }
                     .groupBy { it.linked_block }
 
-                blockElementsMap.forEach { (blockName, elements) ->
+                blockElementsMap.forEach { (blockIdx, elements) ->
                     val straightElements = elements.filter { it.type == "STRAIGHT_H" || it.type == "STRAIGHT_V" }
                     val elementsToCenter = if (straightElements.isNotEmpty()) straightElements else elements
                     val minX = elementsToCenter.minOf { it.x }
@@ -194,11 +194,12 @@ fun SchematicEditorScreen(
                     val centerPx = startX + (minX + maxX + 1) * gridSizeX / 2f
                     val centerPy = (minY + maxY + 1) * gridSizeY / 2f
                     
-                    val blockDef = tabDef.blocks.find { it.label == blockName }
+                    val blockDef = tabDef.blocks.getOrNull(blockIdx)
+                    val blockNameStr = blockDef?.label ?: "Block ${blockIdx + 1}"
                     val displayText = if (tabDef.use_short_codes && blockDef?.short_code?.isNotBlank() == true) {
                         blockDef.short_code
                     } else {
-                        blockName
+                        blockNameStr
                     }
                     
                     val textLayout = textMeasurer.measure(
@@ -296,8 +297,11 @@ fun SchematicEditorScreen(
                     // Linked Block
                     var blockExpanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = blockExpanded, onExpandedChange = { blockExpanded = !blockExpanded }) {
+                        val blockLabel = if (editLinkedBlock >= 0 && editLinkedBlock < tabDef.blocks.size) {
+                            tabDef.blocks[editLinkedBlock].label.ifBlank { "Block ${editLinkedBlock + 1}" }
+                        } else { "None" }
                         OutlinedTextField(
-                            value = if (editLinkedBlock.isNotEmpty()) editLinkedBlock else "None",
+                            value = blockLabel,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Linked Block") },
@@ -305,9 +309,10 @@ fun SchematicEditorScreen(
                             modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
                         )
                         ExposedDropdownMenu(expanded = blockExpanded, onDismissRequest = { blockExpanded = false }) {
-                            DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedBlock = ""; blockExpanded = false })
-                            tabDef.blocks.forEach { b ->
-                                DropdownMenuItem(text = { Text(b.label.replace("\\n", " ")) }, onClick = { editLinkedBlock = b.label; blockExpanded = false })
+                            DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedBlock = -1; blockExpanded = false })
+                            tabDef.blocks.forEachIndexed { index, b ->
+                                val displayLabel = b.label.ifBlank { "Block ${index + 1}" }.replace("\\n", " ")
+                                DropdownMenuItem(text = { Text(displayLabel) }, onClick = { editLinkedBlock = index; blockExpanded = false })
                             }
                         }
                     }

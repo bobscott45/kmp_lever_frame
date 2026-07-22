@@ -53,10 +53,15 @@ class AppViewModel(
         viewModelScope.launch {
             configRepo.initConfig()
             loadConfig()
-            lccClient.initialize()
+            if (configRepo.currentConfig.lcc_enabled) {
+                lccClient.initialize()
+            }
             launch {
                 lccClient.connectionStatus.collect { status ->
                     _uiState.update { it.copy(networkStatus = status) }
+                    if (status == "Connected" && configRepo.currentConfig.lcc_master) {
+                        broadcastCurrentStates()
+                    }
                 }
             }
             launch {
@@ -123,6 +128,30 @@ class AppViewModel(
     private fun persistStatesIfEnabled() {
         if (configRepo.currentConfig.restore_last_state) {
             saveStateTrigger.tryEmit(Unit)
+        }
+    }
+
+    private fun broadcastCurrentStates() {
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000) // Wait for LccNode init sequence to finish
+            val currentState = _uiState.value
+            if (currentState.tabs.isEmpty() || currentState.leverStates.isEmpty()) return@launch
+
+            currentState.tabs.forEachIndexed { tabIdx, (_, tabDef) ->
+                if (tabIdx < currentState.leverStates.size) {
+                    val statesForTab = currentState.leverStates[tabIdx]
+                    tabDef.levers.forEachIndexed { leverIdx, leverDef ->
+                        if (leverIdx < statesForTab.size && leverDef.lcc_enabled) {
+                            val isReversed = statesForTab[leverIdx]
+                            val eventId = if (isReversed) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
+                            if (eventId.isNotBlank()) {
+                                lccClient.produceEvent(eventId)
+                                kotlinx.coroutines.delay(20) // prevent flooding the bus
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -421,15 +450,21 @@ class AppViewModel(
             persistStatesIfEnabled()
         }
         
-        outgoingEvents.forEach { eventStr ->
-            lccClient.produceEvent(eventStr)
+        if (configRepo.currentConfig.lcc_enabled) {
+            outgoingEvents.forEach { eventStr ->
+                lccClient.produceEvent(eventStr)
+            }
         }
     }
 
-    fun updateSystemConfig(newConfig: JsonConfig, rulesOnly: Boolean = false) {
+    fun updateSystemConfig(newConfig: JsonConfig, rulesOnly: Boolean = false, clearStates: Boolean = false) {
         val prevIp = configRepo.currentConfig.jmri_hub_ip
+        val prevEnabled = configRepo.currentConfig.lcc_enabled
         viewModelScope.launch {
             configRepo.saveConfig(newConfig)
+            if (clearStates) {
+                configRepo.clearSavedLeverStates()
+            }
             if (rulesOnly) {
                 val configStr = configRepo.toJsonString()
                 val parsedTabs = configRepo.parseConfig(configStr)
@@ -440,7 +475,10 @@ class AppViewModel(
                     )
                 }
             } else {
-                if (prevIp != newConfig.jmri_hub_ip) {
+                if (!newConfig.lcc_enabled) {
+                    lccClient.disconnect()
+                } else if (!prevEnabled || prevIp != newConfig.jmri_hub_ip) {
+                    lccClient.disconnect() // Ensure previous connection is closed
                     lccClient.initialize()
                 }
                 loadConfig()

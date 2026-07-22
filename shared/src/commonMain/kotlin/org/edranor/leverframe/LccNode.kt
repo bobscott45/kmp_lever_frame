@@ -34,6 +34,7 @@ interface LccNetworkClient {
     val connectionStatus: kotlinx.coroutines.flow.StateFlow<String>
     val connectionErrors: SharedFlow<String>
     fun initialize()
+    fun disconnect()
     fun produceEvent(eventIdStr: String)
     fun parseEventId(eventIdStr: String): String
 }
@@ -50,11 +51,17 @@ object LccNode : LccNetworkClient {
     override val connectionStatus = GridConnectNetwork.connectionStatus
     override val connectionErrors = GridConnectNetwork.connectionErrors
 
+    override fun disconnect() {
+        lccJob?.cancel()
+        GridConnectNetwork.stop()
+    }
+
     override fun initialize() {
         val hubIp = ConfigManager.currentConfig.jmri_hub_ip.trim()
         
         // Generate pseudo-random alias to avoid JMRI collisions
         NODE_ALIAS = kotlin.random.Random.nextInt(1, 4096).toString(16).padStart(3, '0').uppercase()
+
         
         // When initialized (or a client connects), announce our presence
         GridConnectNetwork.onClientConnected = {

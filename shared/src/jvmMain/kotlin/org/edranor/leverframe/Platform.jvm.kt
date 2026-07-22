@@ -89,6 +89,17 @@ actual suspend fun loadLeverStatesFromFile(): String? = withContext(Dispatchers.
     }
 }
 
+actual suspend fun clearLeverStatesFile() = withContext(Dispatchers.IO) {
+    try {
+        val file = java.io.File("leverframe_states.json")
+        if (file.exists()) {
+            file.delete()
+        }
+    } catch (e: Exception) {
+        println("Failed to clear states: ${e.message}")
+    }
+}
+
 @Composable
 actual fun KeepScreenOn(keepOn: Boolean) {
     // Desktop power management is complex and requires OS-level native bindings 

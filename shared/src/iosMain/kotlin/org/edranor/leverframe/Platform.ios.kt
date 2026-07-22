@@ -55,6 +55,10 @@ actual suspend fun loadLeverStatesFromFile(): String? {
     return null
 }
 
+actual suspend fun clearLeverStatesFile() {
+    // Placeholder
+}
+
 @Composable
 actual fun KeepScreenOn(keepOn: Boolean) {
     DisposableEffect(keepOn) {

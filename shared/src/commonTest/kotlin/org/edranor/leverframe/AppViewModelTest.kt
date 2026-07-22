@@ -53,9 +53,16 @@ class FakeConfigRepository : AppConfigRepository {
         return ConfigManager.parseConfig(jsonString)
     }
     
-    override suspend fun loadSavedLeverStates(): List<BooleanArray>? = null
+    var savedLeverStates: List<BooleanArray>? = null
+    override suspend fun loadSavedLeverStates(): List<BooleanArray>? = savedLeverStates
     
-    override suspend fun saveCurrentLeverStates(states: List<BooleanArray>) {}
+    override suspend fun saveCurrentLeverStates(states: List<BooleanArray>) {
+        savedLeverStates = states
+    }
+
+    override suspend fun clearSavedLeverStates() {
+        savedLeverStates = null
+    }
     
     override suspend fun saveConfig(newConfig: JsonConfig) {
         currentConfig = newConfig
@@ -73,9 +80,15 @@ class FakeLccClient : LccNetworkClient {
     
     val producedEvents = mutableListOf<String>()
     var initCalled = false
+    var disconnectCalled = false
 
     override fun initialize() {
         initCalled = true
+        disconnectCalled = false
+    }
+
+    override fun disconnect() {
+        disconnectCalled = true
     }
 
     override fun produceEvent(eventIdStr: String) {

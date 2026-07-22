@@ -65,7 +65,7 @@ data class SchematicElementDef(
     val y: Int,
     val linkedLever: Int = -1,
     val linkedLever2: Int = -1,
-    val linkedBlock: String = ""
+    val linkedBlock: Int = -1
 )
 
 data class TabDef(

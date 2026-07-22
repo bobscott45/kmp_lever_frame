@@ -139,6 +139,20 @@ fun SystemStatusScreen(
                 }
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("LCC Network Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Switch(
+                        checked = config.lcc_enabled,
+                        onCheckedChange = { 
+                            onUpdateSystemConfig(config.copy(lcc_enabled = it))
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
+                        )
+                    )
+                }
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("LCC Master Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Switch(
                         checked = config.lcc_master,

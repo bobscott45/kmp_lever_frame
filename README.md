@@ -10,16 +10,17 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 
 ## Key Features
 
-* **Cross-Platform**: Run the same lever frame logic and UI on an Android tablet, an iPad, or a Desktop PC.
-* **Standalone Simulator Mode**: No physical layout, network, or hardware required! The application functions perfectly offline as a virtual signalling simulator. You can tap the digital blocks on screen to manually simulate train movements and test complex interlocking logic.
+* **Cross-Platform**: Run the same lever frame logic and UI on an Android tablet, an iPad, or a Desktop PC (Windows/MacOS/Linux).
+* **Standalone Simulator Mode**: No physical layout, network, or hardware required. The application functions perfectly offline as a virtual signalling simulator. You can tap the digital blocks on screen to manually simulate train movements and test complex interlocking logic.
 * **Native Kotlin OpenLCB / LCC Integration**: Comprehensive, 100% native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
-* **In-App Configuration**: No web server needed! Configure LCC events, network settings, and conflict policies natively within the app. Configurations can be exported and imported as JSON (via native file dialogs on Desktop, and via the system clipboard on mobile devices).
+* **In-App Configuration**: No web server needed. Configure LCC events, network settings, and conflict policies natively within the app. Configurations can be exported and imported as JSON (via native file dialogs on Desktop, and via the system clipboard on mobile devices).
 * **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
 * **Digital Block Shelf**: Define and monitor track occupancy blocks directly above the lever frame. 
 * **Live Track Schematic**: A reactive, grid-based panel diagram that dynamically renders live block occupancies and point positions, complete with a built-in visual layout editor.
 * **Cross-Interlocking & Auto-Reversers**: Interlock mechanical levers directly to digital block occupancies. Signals can be configured as "Auto-Reversers", automatically snapping back to Danger when a train enters a block, mimicking prototypical track-circuit interlocking.
 * **Touch UI**: Built with Compose Multiplatform, featuring dark modes and gesture-based lever pulling.
 * **Optional Sounds**: Configurable auditory feedback mimicking the physical clunks of mechanical levers, tappet locking, and block instrument bells.
+* **Flexible Complexity**: From a simple set of standalone switches to a rigid prototypical simulator. You can configure the app to control just a few points without any signals, blocks, or interlocking rules, or you can scale it up to a highly complex signalled layout. The app supports prototypical operation but does not enforce it.
 * **State Persistence**: Saves and restores lever states and configurations across reboots automatically.
 
 ## Prerequisites
@@ -79,7 +80,7 @@ This frame protects a junction where a branch line diverges from a main line. It
 - **Lever 8 (DOWN HOME)**: The home signal for the down direction. *Locks Lever 7 REVERSED*. Also *locks to DOWN MAIN BLOCK EMPTY*.
 
 ### South Box (Yard Frame)
-This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "YARD", and "SIDING". 
+This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "THROAT", "YARD", and "SIDING".
 
 *(Note: In a real-world prototypical setup, a small yard like this would generally use ground position light signals or shunting discs rather than full-sized semaphore Home and Distant signals. This configuration is deliberately "over-signalled" to demonstrate the application's advanced bracket signal and cascading distant signal capabilities in a compact space).*
 - **Lever 1 (SHUNT AHEAD)**: A shunting disc. *Locks Lever 2 NORMAL*.

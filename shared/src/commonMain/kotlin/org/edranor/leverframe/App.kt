@@ -127,7 +127,7 @@ fun App() {
                     initialMode = state.configMode,
                     initialSelectedFrameIndex = state.initialEditFrameIndex ?: 0,
                     initialEditingLeverIndex = state.initialEditLeverIndex,
-                    onUpdateSystemConfig = { cfg, rulesOnly -> viewModel.updateSystemConfig(cfg, rulesOnly) },
+                    onUpdateSystemConfig = { cfg, rulesOnly, clearStates -> viewModel.updateSystemConfig(cfg, rulesOnly, clearStates) },
                     onClose = viewModel::exitConfigMode
                 )
             } else {
@@ -776,20 +776,24 @@ fun RowScope.MainTabRow(
     state: LeverFrameUiState,
     onTabSelected: (Int) -> Unit
 ) {
-    PrimaryScrollableTabRow(
-        selectedTabIndex = state.selectedTabIndex,
-        containerColor = Color(0xFF1a1a1a),
-        contentColor = Color.White,
-        modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)),
-        edgePadding = 0.dp
-    ) {
-        state.tabs.forEachIndexed { index, pair ->
-            Tab(
-                selected = state.selectedTabIndex == index,
-                onClick = { onTabSelected(index) },
-                text = { Text(pair.first, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
-            )
+    if (state.tabs.isNotEmpty()) {
+        PrimaryScrollableTabRow(
+            selectedTabIndex = state.selectedTabIndex,
+            containerColor = Color(0xFF1a1a1a),
+            contentColor = Color.White,
+            modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)),
+            edgePadding = 0.dp
+        ) {
+            state.tabs.forEachIndexed { index, pair ->
+                Tab(
+                    selected = state.selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
+                    text = { Text(pair.first, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
+                )
+            }
         }
+    } else {
+        Box(modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(Color(0xFF1a1a1a)))
     }
 }
 

@@ -46,7 +46,7 @@ fun ConfigurationScreen(
     initialMode: ConfigMode,
     initialSelectedFrameIndex: Int = 0,
     initialEditingLeverIndex: Int? = null,
-    onUpdateSystemConfig: (JsonConfig, Boolean) -> Unit,
+    onUpdateSystemConfig: (JsonConfig, Boolean, Boolean) -> Unit,
     onClose: () -> Unit
 ) {
     var config by remember { mutableStateOf(initialConfig) }
@@ -107,7 +107,7 @@ fun ConfigurationScreen(
                     TextButton(
                         onClick = { 
                             if (safeToUpdateSilently) {
-                                onUpdateSystemConfig(config, true)
+                                onUpdateSystemConfig(config, true, false)
                                 onClose()
                             } else {
                                 showSaveWarning = true 
@@ -166,9 +166,7 @@ fun ConfigurationScreen(
                         },
                         onDelete = {
                             val newTabs = config.tabs.toMutableList()
-                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                            newLevers.removeAt(editingLeverIndex!!)
-                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
+                            newTabs[selectedFrameIndex] = deleteLeverSafe(newTabs[selectedFrameIndex], editingLeverIndex!!)
                             config = config.copy(tabs = newTabs)
                             editingLeverIndex = null
                         }
@@ -180,6 +178,7 @@ fun ConfigurationScreen(
                         nodeId = config.node_id,
                         blockIndex = editingBlockIndex!!,
                         block = block,
+                        allBlocks = tab.blocks,
                         onBlockChange = { newBlock ->
                             val newTabs = config.tabs.toMutableList()
                             val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
@@ -189,9 +188,7 @@ fun ConfigurationScreen(
                         },
                         onDelete = {
                             val newTabs = config.tabs.toMutableList()
-                            val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
-                            newBlocks.removeAt(editingBlockIndex!!)
-                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
+                            newTabs[selectedFrameIndex] = deleteBlockSafe(newTabs[selectedFrameIndex], editingBlockIndex!!)
                             config = config.copy(tabs = newTabs)
                             editingBlockIndex = null
                         }
@@ -495,7 +492,19 @@ fun ConfigurationScreen(
                                             }
                                         },
                                         trailingContent = {
-                                            Text("→", style = MaterialTheme.typography.titleMedium)
+                                            Row {
+                                                IconButton(onClick = {
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = swapBlocksSafe(newTabs[selectedFrameIndex], blockIndex, blockIndex - 1)
+                                                    config = config.copy(tabs = newTabs)
+                                                }, enabled = blockIndex > 0) { Text("↑", style = MaterialTheme.typography.titleLarge) }
+                                                IconButton(onClick = {
+                                                    val newTabs = config.tabs.toMutableList()
+                                                    newTabs[selectedFrameIndex] = swapBlocksSafe(newTabs[selectedFrameIndex], blockIndex, blockIndex + 1)
+                                                    config = config.copy(tabs = newTabs)
+                                                }, enabled = blockIndex < tab.blocks.size - 1) { Text("↓", style = MaterialTheme.typography.titleLarge) }
+                                                Text("→", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically))
+                                            }
                                         }
                                     )
                                 }
@@ -535,7 +544,19 @@ fun ConfigurationScreen(
                                                 }
                                             },
                                             trailingContent = {
-                                                Text("→", style = MaterialTheme.typography.titleMedium)
+                                                Row {
+                                                    IconButton(onClick = {
+                                                        val newTabs = config.tabs.toMutableList()
+                                                        newTabs[selectedFrameIndex] = swapLeversSafe(newTabs[selectedFrameIndex], leverIndex, leverIndex - 1)
+                                                        config = config.copy(tabs = newTabs)
+                                                    }, enabled = leverIndex > 0) { Text("↑", style = MaterialTheme.typography.titleLarge) }
+                                                    IconButton(onClick = {
+                                                        val newTabs = config.tabs.toMutableList()
+                                                        newTabs[selectedFrameIndex] = swapLeversSafe(newTabs[selectedFrameIndex], leverIndex, leverIndex + 1)
+                                                        config = config.copy(tabs = newTabs)
+                                                    }, enabled = leverIndex < tab.levers.size - 1) { Text("↓", style = MaterialTheme.typography.titleLarge) }
+                                                    Text("→", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically))
+                                                }
                                             }
                                         )
                                     }
@@ -585,7 +606,7 @@ fun ConfigurationScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showSaveWarning = false
-                    onUpdateSystemConfig(config, false)
+                    onUpdateSystemConfig(config, false, true)
                     onClose()
                 }) {
                     Text("Save & Reset")
@@ -609,7 +630,7 @@ fun ConfigurationScreen(
                     showSystemResetWarning = false
                     try {
                         val default = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
-                        config = config.copy(
+                        val newConfig = config.copy(
                             node_id = default.node_id,
                             node_name = default.node_name,
                             jmri_hub_ip = default.jmri_hub_ip,
@@ -622,6 +643,8 @@ fun ConfigurationScreen(
                             lcc_master = default.lcc_master,
                             enable_sound = default.enable_sound
                         )
+                        onUpdateSystemConfig(newConfig, false, false)
+                        onClose()
                     } catch (e: Exception) {
                         println("Failed to reset system settings: ${e.message}")
                     }
@@ -645,9 +668,9 @@ fun ConfigurationScreen(
                     showFramesResetWarning = false
                     try {
                         val default = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(ConfigManager.defaultPrototypicalConfigJson)
-                        config = config.copy(tabs = default.tabs)
-                        selectedFrameIndex = 0
-                        selectedFrameConfigTab = 0
+                        val newConfig = config.copy(tabs = default.tabs)
+                        onUpdateSystemConfig(newConfig, false, true)
+                        onClose()
                     } catch (e: Exception) {
                         println("Failed to reset frames: ${e.message}")
                     }
@@ -730,6 +753,21 @@ fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Un
                 Switch(
                     checked = config.restore_last_state,
                     onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
+                    )
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
+                Switch(
+                    checked = config.lcc_enabled,
+                    onCheckedChange = { onConfigChange(config.copy(lcc_enabled = it)) },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
@@ -1207,6 +1245,7 @@ fun BlockDetailScreen(
     nodeId: String,
     blockIndex: Int,
     block: JsonBlock,
+    allBlocks: List<JsonBlock>,
     onBlockChange: (JsonBlock) -> Unit,
     onDelete: () -> Unit
 ) {
@@ -1246,6 +1285,7 @@ fun BlockDetailScreen(
                             )
                         }
 
+                        val isDuplicate = allBlocks.filterIndexed { index, _ -> index != blockIndex }.any { it.label == block.label }
                         OutlinedTextField(
                             value = block.label,
                             onValueChange = { newLabel -> 
@@ -1258,13 +1298,18 @@ fun BlockDetailScreen(
                             },
                             label = { Text("Label") },
                             modifier = Modifier.fillMaxWidth(),
+                            isError = isDuplicate,
+                            supportingText = if (isDuplicate) { { Text("Duplicate block name") } } else null,
                             colors = brassTextFieldColors()
                         )
+                        val isDuplicateShortCode = block.short_code.isNotBlank() && allBlocks.filterIndexed { index, _ -> index != blockIndex }.any { it.short_code == block.short_code }
                         OutlinedTextField(
                             value = block.short_code,
                             onValueChange = { onBlockChange(block.copy(short_code = it)) },
                             label = { Text("Short Code (for Schematic)") },
                             modifier = Modifier.fillMaxWidth(),
+                            isError = isDuplicateShortCode,
+                            supportingText = if (isDuplicateShortCode) { { Text("Duplicate short code") } } else null,
                             colors = brassTextFieldColors()
                         )
                     }
@@ -1374,4 +1419,132 @@ private fun JsonConfig.withoutUiAndRules(): JsonConfig {
             }
         )
     })
+}
+
+fun swapBlocksSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
+    val newBlocks = tab.blocks.toMutableList()
+    val temp = newBlocks[indexA]
+    newBlocks[indexA] = newBlocks[indexB]
+    newBlocks[indexB] = temp
+
+    val newSchematicElements = tab.schematic_elements.map { elem ->
+        var newElem = elem
+        if (elem.linked_block == indexA) newElem = newElem.copy(linked_block = indexB)
+        else if (elem.linked_block == indexB) newElem = newElem.copy(linked_block = indexA)
+        newElem
+    }
+
+    val newLevers = tab.levers.map { lever ->
+        val newRules = lever.interlocking.map { rule ->
+            var newRule = rule
+            if (rule.target_type == "BLOCK") {
+                if (rule.target == indexA) newRule = newRule.copy(target = indexB)
+                else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
+            }
+            if (rule.alt_target_type == "BLOCK") {
+                if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
+                else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
+            }
+            newRule
+        }
+        lever.copy(interlocking = newRules)
+    }
+
+    return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
+}
+
+fun swapLeversSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
+    val newLevers = tab.levers.toMutableList()
+    val temp = newLevers[indexA]
+    newLevers[indexA] = newLevers[indexB]
+    newLevers[indexB] = temp
+
+    val newSchematicElements = tab.schematic_elements.map { elem ->
+        var newElem = elem
+        if (elem.linked_lever == indexA) newElem = newElem.copy(linked_lever = indexB)
+        else if (elem.linked_lever == indexB) newElem = newElem.copy(linked_lever = indexA)
+
+        if (elem.linked_lever_2 == indexA) newElem = newElem.copy(linked_lever_2 = indexB)
+        else if (elem.linked_lever_2 == indexB) newElem = newElem.copy(linked_lever_2 = indexA)
+        newElem
+    }
+
+    val newLeversMapped = newLevers.map { lever ->
+        val newRules = lever.interlocking.map { rule ->
+            var newRule = rule
+            if (rule.target_type == "LEVER") {
+                if (rule.target == indexA) newRule = newRule.copy(target = indexB)
+                else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
+            }
+            if (rule.alt_target_type == "LEVER") {
+                if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
+                else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
+            }
+            newRule
+        }
+        lever.copy(interlocking = newRules)
+    }
+
+    return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
+}
+
+fun deleteBlockSafe(tab: JsonTab, index: Int): JsonTab {
+    val newBlocks = tab.blocks.toMutableList()
+    newBlocks.removeAt(index)
+    
+    val newSchematicElements = tab.schematic_elements.map { elem ->
+        var newElem = elem
+        if (elem.linked_block == index) newElem = newElem.copy(linked_block = -1)
+        else if (elem.linked_block > index) newElem = newElem.copy(linked_block = elem.linked_block - 1)
+        newElem
+    }
+
+    val newLevers = tab.levers.map { lever ->
+        val newRules = lever.interlocking.mapNotNull { rule ->
+            var newRule = rule
+            if (rule.target_type == "BLOCK") {
+                if (rule.target == index) return@mapNotNull null
+                else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
+            }
+            if (rule.alt_target_type == "BLOCK") {
+                if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
+                else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
+            }
+            newRule
+        }
+        lever.copy(interlocking = newRules)
+    }
+    return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
+}
+
+fun deleteLeverSafe(tab: JsonTab, index: Int): JsonTab {
+    val newLevers = tab.levers.toMutableList()
+    newLevers.removeAt(index)
+    
+    val newSchematicElements = tab.schematic_elements.map { elem ->
+        var newElem = elem
+        if (elem.linked_lever == index) newElem = newElem.copy(linked_lever = -1)
+        else if (elem.linked_lever > index) newElem = newElem.copy(linked_lever = elem.linked_lever - 1)
+
+        if (elem.linked_lever_2 == index) newElem = newElem.copy(linked_lever_2 = -1)
+        else if (elem.linked_lever_2 > index) newElem = newElem.copy(linked_lever_2 = elem.linked_lever_2 - 1)
+        newElem
+    }
+
+    val newLeversMapped = newLevers.map { lever ->
+        val newRules = lever.interlocking.mapNotNull { rule ->
+            var newRule = rule
+            if (rule.target_type == "LEVER") {
+                if (rule.target == index) return@mapNotNull null
+                else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
+            }
+            if (rule.alt_target_type == "LEVER") {
+                if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
+                else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
+            }
+            newRule
+        }
+        lever.copy(interlocking = newRules)
+    }
+    return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
 }

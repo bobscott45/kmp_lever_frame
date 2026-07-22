@@ -60,10 +60,9 @@ fun SchematicScreen(
                 val actualDrawingWidth = cellsX * gridSizeX
                 val startX = (size.width - actualDrawingWidth) / 2f
 
-                fun getBlockColor(blockName: String): Color {
-                    if (blockName.isEmpty()) return Color.Gray
-                    val blockIndex = tabDef.blocks.indexOfFirst { it.label == blockName }
-                    val occupied = if (blockIndex in blockStates.indices) blockStates[blockIndex] else false
+                fun getBlockColor(blockIdx: Int): Color {
+                    if (blockIdx < 0 || blockIdx >= tabDef.blocks.size) return Color.Gray
+                    val occupied = if (blockIdx in blockStates.indices) blockStates[blockIdx] else false
                     return if (occupied) Color.Red else Color.White
                 }
 
@@ -260,10 +259,10 @@ fun SchematicScreen(
 
                 // Draw block names once per block, centered across all their elements
                 val blockElementsMap = tabDef.schematicElements
-                    .filter { it.linkedBlock.isNotEmpty() }
+                    .filter { it.linkedBlock >= 0 }
                     .groupBy { it.linkedBlock }
 
-                blockElementsMap.forEach { (blockName, elements) ->
+                blockElementsMap.forEach { (blockIdx, elements) ->
                     val straightElements = elements.filter { it.type == "STRAIGHT_H" || it.type == "STRAIGHT_V" }
                     val elementsToCenter = if (straightElements.isNotEmpty()) straightElements else elements
                     val minX = elementsToCenter.minOf { it.x }
@@ -274,11 +273,12 @@ fun SchematicScreen(
                     val centerPx = startX + (minX + maxX + 1) * gridSizeX / 2f
                     val centerPy = (minY + maxY + 1) * gridSizeY / 2f
                     
-                    val blockDef = tabDef.blocks.find { it.label == blockName }
+                    val blockDef = tabDef.blocks.getOrNull(blockIdx)
+                    val blockNameStr = blockDef?.label ?: "Block ${blockIdx + 1}"
                     val displayText = if (tabDef.useShortCodes && blockDef?.shortCode?.isNotBlank() == true) {
                         blockDef.shortCode
                     } else {
-                        blockName
+                        blockNameStr
                     }
                     
                     val textLayout = textMeasurer.measure(

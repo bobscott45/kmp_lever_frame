@@ -39,3 +39,5 @@ expect suspend fun loadConfigFromFile(): String?
 expect suspend fun saveLeverStatesToFile(json: String)
 
 expect suspend fun loadLeverStatesFromFile(): String?
+
+expect suspend fun clearLeverStatesFile()

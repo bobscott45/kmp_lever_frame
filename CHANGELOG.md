@@ -5,15 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changlog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 1.1.1-dev
+## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: Added real-time duplicate validation in the Configuration Editor to enforce uniqueness for Block labels, Block short codes, and Lever labels.
+- **UI/UX**: Added Move Up / Move Down buttons to reorder Blocks and Levers in the Configuration Editor. Reordering dynamically updates all interlocking rules and schematic map references.
 - **UI/UX**: Implemented an in-app Schematic Editor, allowing visual drag-and-drop creation of track layouts with immediate WYSIWYG feedback.
 - **UI/UX**: Added a collapsible 'shelf' view for the schematic display in the main operation screen.
 - **UI/UX**: The grid size for the schematic is now user-configurable in the Settings tab.
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
+- **Architecture**: Refactored the core interlocking engine and schematic editor to link components via robust integer indices rather than string names, entirely eliminating "broken link" bugs when renaming blocks.
+- **Logic**: Implemented safe-deletion handling for Blocks and Levers, which now gracefully decrement or nullify interlocking rule targets down the chain to preserve data integrity when an upstream item is removed.
 - **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **UI/UX**: Improved the visual display of the schematic by optimizing space (1/3 2/3 split in landscape mode) and refining how turnout lever numbers are displayed inside the points.
 - **UI/UX**: Block labels on the schematic now intelligently center themselves over straight track segments to avoid visual clutter on points and signals.

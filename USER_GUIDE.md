@@ -21,8 +21,16 @@ The interface is divided into several key sections:
 
 Before diving into the configuration menus, it's helpful to understand the two ways you can use this application:
 
-1. **Standalone Simulator Mode**: You do **not** need a physical model railway, a network, or any hardware to use this app. You can simply define your blocks, levers, and schematic, and then tap the digital blocks on your screen to manually simulate train movements. The app's internal mechanical interlocking engine will lock and release levers exactly as it would in real life.
+1. **Standalone Simulator Mode**: You do **not** need a physical model railway, a network, or any hardware to use this app. You can simply define your blocks, levers, and schematic, and then tap the digital blocks on your screen to manually simulate train movements. The app's internal mechanical interlocking engine will lock and release levers exactly as it would in real life. *(Note: When using the app as a standalone simulator, it is highly recommended to turn **LCC Enabled** OFF in the System Settings to prevent unnecessary network transmission attempts).*
 2. **Hardware Mode**: If you have a physical layout with LCC hardware (via a JMRI hub), the app acts as a live control panel. You configure the network settings, and the app will respond to physical trains triggering LCC sensors on your layout.
+
+### Scalable Complexity
+
+Lever Frame is designed as a sandbox. It supports highly complex prototypical operation but **does not enforce any of it**. You can scale the complexity exactly to your liking:
+
+* **Simple "Point Motor Switchboard"**: You can define a frame with just a few `POINTS` levers. You don't need to define any signals, blocks, or interlocking rules. You don't even need to draw a schematic—you can just use the app as a row of switches.
+* **Gradual Expansion**: You might start with standalone point levers, then later add a few signals and basic interlocking rules (e.g., ensuring a signal cannot be cleared if the points are set against it).
+* **Full Prototypical Operation**: You can wire up physical track occupancy sensors, add facing point locks, complex conditional "OR" logic, and cross-interlock mechanical levers to digital blocks.
 
 ### Recommended Configuration Sequence
 
@@ -68,7 +76,10 @@ This controls the top-level behavior of the application and its connection to th
 *   **Wi-Fi Settings (SSID & Passwords)**: Used by the application to manage network connectivity.
 *   **Conflict Policy**: Determines how the application resolves situations where the internal lever state differs from a received network event.
 *   **Restore Last State**: When enabled, the application saves the position of all levers when closed and restores them upon restart.
-*   **LCC Master**: Toggle whether this application acts as the master authority for the lever states on the network.
+*   **LCC Enabled**: Toggles whether the application connects to the OpenLCB/LCC network at all. When enabled, it performs normal LCC startup and broadcasts current states. When disabled, the app is completely isolated from the network.
+*   **LCC Master**: Determines if the LeverFrame acts as the authoritative brain for the interlocking. 
+    *   **ON (Checked)**: The frame listens to track occupancy events to dynamically lock levers, enforces interlocking on remote commands from other panels, and broadcasts its saved states on startup to force layout alignment.
+    *   **OFF (Unchecked)**: The frame acts as a "dumb panel". It ignores external events (block sensors or remote lever commands) and relies purely on your manual clicks and its internal static state.
 *   **Enable Sound**: Toggles auditory feedback.
 
 If changes are pending, the Save button at the top right of the panel will become active.
@@ -98,8 +109,7 @@ If changes are pending, the Save button at the top right of the panel will becom
 
 Levers can be added, edited or deleted.
 
-Existing levers are listed with their lever number and description. Levers can be added by pressing the +Add Lever
-button at the end of the list.
+Existing levers are listed with their lever number and description. You can reorder levers using the **↑** and **↓** arrows next to each lever; the application will automatically update all your schematic links and interlocking rules to track the lever to its new position. Levers can be added by pressing the **＋ Add Lever** button at the end of the list.
 
 <screenshot of the Lever configuration screen>
 
@@ -111,7 +121,7 @@ To return to the main list of levers, tap the **← Back** button in the top app
 
 To delete a lever, click on the **✕ Delete** button at the top right of the Basic Info section.
 
-* **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired.
+* **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired. Note that lever names must be unique within the frame.
 * **Lever Type**: The functional type and color of the lever (e.g., Home Signal is Red, Distant Signal is Yellow, Points are Black).
 
 #### LCC (Tab)
@@ -162,9 +172,9 @@ If you modify anything else—such as adding/deleting a lever, changing a label,
 
 ### Blocks
 
-Similar to levers, pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
+Similar to levers, existing blocks are listed on the main tab and can be reordered using the **↑** and **↓** arrows. Pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
 
-* **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf. You can delete the block by clicking the **✕ Delete** button in the top right corner.
+* **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf, and its **Short Code** for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
 * **LCC Events**: Define the LCC Event IDs that will trigger this block to show as "Occupied" or "Empty".
 
 ### Schematic Editor
