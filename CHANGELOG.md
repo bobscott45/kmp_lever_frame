@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: Added directional arrows (← and →) inside signal circles on the schematic maps to clearly indicate the direction of travel they control.
 - **UI/UX**: Added real-time duplicate validation in the Configuration Editor to enforce uniqueness for Block labels, Block short codes, and Lever labels.
 - **UI/UX**: Added Move Up / Move Down buttons to reorder Blocks and Levers in the Configuration Editor. Reordering dynamically updates all interlocking rules and schematic map references.
 - **UI/UX**: Implemented an in-app Schematic Editor, allowing visual drag-and-drop creation of track layouts with immediate WYSIWYG feedback.
@@ -21,11 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.
 - **UI/UX**: Improved the visual display of the schematic by optimizing space (1/3 2/3 split in landscape mode) and refining how turnout lever numbers are displayed inside the points.
 - **UI/UX**: Block labels on the schematic now intelligently center themselves over straight track segments to avoid visual clutter on points and signals.
+- **UI/UX**: Adjusted block legend positioning on the schematic to anchor closely above the track line rather than matching branch signal text heights.
+- **UI/UX**: Signal lever numbers on the schematic are now centered perfectly aligned with their corresponding signal circles.
 - **UI/UX**: Context-aware configuration menu now automatically opens the frame editor to the currently viewed frame tab.
+- **Logic**: Updated the default "South Box" configuration: Shunt Ahead signal (Lever 5) now enforces a block locking rule for the Throat section.
+- **Logic**: Updated the default "North Junction" configuration: Simplified the down line signalling by removing lever 8 and renaming lever 7 to "DOWN HOME".
 - **Logic**: Updated the default "South Box" and "North Junction" prototypical configurations to correctly enforce track circuit locking and resolve derailment traps.
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **Network**: Fixed a bug where toggling a lever while LCC is globally disabled via settings would incorrectly trigger a "Network disconnected" error.
 - **Logic**: Fixed default interlocking rules to prevent the 'Up Distant' signal from clearing for the branch line.
 - **Logic**: Removed the rigid sequential requirement to pull the Down Advanced before the Down Home in the default config.
 - **State**: Cosmetic UI changes in the frame editor no longer trigger a full state reload or network sync.
