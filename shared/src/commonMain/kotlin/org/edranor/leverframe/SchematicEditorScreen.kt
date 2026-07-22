@@ -94,13 +94,15 @@ fun SchematicEditorScreen(
                 val startX = (size.width - actualDrawingWidth) / 2f
 
                 // Draw Grid Lines
+                val gridStroke = 1.dp.toPx()
+                val gridColor = Color.Gray.copy(alpha = 0.5f)
                 for (i in 0..cellsX) {
                     val px = startX + i * gridSizeX
-                    drawLine(Color.DarkGray, Offset(px, 0f), Offset(px, cellsY * gridSizeY), strokeWidth = 1f)
+                    drawLine(gridColor, Offset(px, 0f), Offset(px, cellsY * gridSizeY), strokeWidth = gridStroke)
                 }
                 for (i in 0..cellsY) {
                     val py = i * gridSizeY
-                    drawLine(Color.DarkGray, Offset(startX, py), Offset(startX + actualDrawingWidth, py), strokeWidth = 1f)
+                    drawLine(gridColor, Offset(startX, py), Offset(startX + actualDrawingWidth, py), strokeWidth = gridStroke)
                 }
 
                 // Draw Elements
