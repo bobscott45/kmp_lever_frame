@@ -66,8 +66,7 @@ fun SchematicScreen(
                     return if (occupied) Color.Red else Color.White
                 }
 
-                val arrowLeftText = textMeasurer.measure("←", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
-                val arrowRightText = textMeasurer.measure("→", style = TextStyle(color = Color.Black, fontSize = 12.sp, fontWeight = FontWeight.Bold))
+
 
                 tabDef.schematicElements.forEach { element ->
                     val px = startX + element.x * gridSizeX
@@ -146,15 +145,20 @@ fun SchematicScreen(
                             )
                             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
                             val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+                            val signalColor = if (isReversed) Color.Green else normalColor
                             drawCircle(
-                                color = if (isReversed) Color.Green else normalColor,
+                                color = signalColor,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
-                            drawText(
-                                textLayoutResult = arrowLeftText,
-                                topLeft = Offset(px + gridSizeX / 2 - arrowLeftText.size.width / 2f, py + gridSizeY / 2 - arrowLeftText.size.height / 2f)
-                            )
+                            val arrowColor = if (signalColor == Color.Red) Color.White else Color.Black
+                            val cx = px + gridSizeX / 2
+                            val cy = py + gridSizeY / 2
+                            val arrowWidth = gridSizeY / 5 * 1.2f
+                            val arrowHeight = gridSizeY / 5 * 0.8f
+                            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 3f)
+                            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 3f)
+                            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 3f)
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
@@ -190,15 +194,20 @@ fun SchematicScreen(
                             )
                             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
                             val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+                            val signalColor = if (isReversed) Color.Green else normalColor
                             drawCircle(
-                                color = if (isReversed) Color.Green else normalColor,
+                                color = signalColor,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX / 2, py + gridSizeY / 2)
                             )
-                            drawText(
-                                textLayoutResult = arrowRightText,
-                                topLeft = Offset(px + gridSizeX / 2 - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
-                            )
+                            val arrowColor = if (signalColor == Color.Red) Color.White else Color.Black
+                            val cx = px + gridSizeX / 2
+                            val cy = py + gridSizeY / 2
+                            val arrowWidth = gridSizeY / 5 * 1.2f
+                            val arrowHeight = gridSizeY / 5 * 0.8f
+                            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 3f)
+                            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 3f)
+                            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 3f)
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
@@ -240,15 +249,20 @@ fun SchematicScreen(
                             )
                             
                             // Draw Main Signal (linked_lever) on the track
+                            val signalColor1 = if (isReversed1) Color.Green else Color.Red
                             drawCircle(
-                                color = if (isReversed1) Color.Green else Color.Red,
+                                color = signalColor1,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2)
                             )
-                            drawText(
-                                textLayoutResult = arrowRightText,
-                                topLeft = Offset(px + gridSizeX * 0.65f - arrowRightText.size.width / 2f, py + gridSizeY / 2 - arrowRightText.size.height / 2f)
-                            )
+                            val arrowColor1 = if (signalColor1 == Color.Red) Color.White else Color.Black
+                            val cx1 = px + gridSizeX * 0.65f
+                            val cy1 = py + gridSizeY / 2
+                            val arrowWidth1 = gridSizeY / 5 * 1.2f
+                            val arrowHeight1 = gridSizeY / 5 * 0.8f
+                            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 3f)
+                            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 3f)
+                            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 3f)
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever + 1}",
@@ -257,15 +271,20 @@ fun SchematicScreen(
                             )
 
                             // Draw Branch Signal (linked_lever_2) above
+                            val signalColor2 = if (isReversed2) Color.Green else Color.Red
                             drawCircle(
-                                color = if (isReversed2) Color.Green else Color.Red,
+                                color = signalColor2,
                                 radius = gridSizeY / 5,
                                 center = Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f)
                             )
-                            drawText(
-                                textLayoutResult = arrowRightText,
-                                topLeft = Offset(px + gridSizeX * 0.35f - arrowRightText.size.width / 2f, py + gridSizeY * 0.15f - arrowRightText.size.height / 2f)
-                            )
+                            val arrowColor2 = if (signalColor2 == Color.Red) Color.White else Color.Black
+                            val cx2 = px + gridSizeX * 0.35f
+                            val cy2 = py + gridSizeY * 0.15f
+                            val arrowWidth2 = gridSizeY / 5 * 1.2f
+                            val arrowHeight2 = gridSizeY / 5 * 0.8f
+                            drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
+                            drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
+                            drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
                             drawText(
                                 textMeasurer = textMeasurer,
                                 text = "${element.linkedLever2 + 1}",

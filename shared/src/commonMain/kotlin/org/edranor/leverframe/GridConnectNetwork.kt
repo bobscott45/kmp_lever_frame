@@ -183,7 +183,6 @@ object GridConnectNetwork {
         } else {
             val errMsg = "GridConnect Not Connected. Cannot send: $msg"
             println(errMsg)
-            _connectionErrors.tryEmit("Cannot send message. Network is disconnected.")
         }
     }
 
