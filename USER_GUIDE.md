@@ -49,7 +49,7 @@ Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown wi
 
 <screenshot of the hamburger menu dropdown>
 
-1.  **System Status**: Opens an overlay to check your network connection and adjust quick settings.
+1.  **System Status**: Opens a read-only overlay to check your network connection and current configuration values.
 2.  **System Settings**: Enters the configuration mode to edit top-level application and network settings.
 3.  **Frame Configuration**: Enters the configuration mode to edit the frames, levers, and interlocking rules.
 4.  **Import**: Loads a JSON configuration, overwriting the current setup.
@@ -60,10 +60,9 @@ Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown wi
 
 <screenshot of the System Status screen>
 
-The System Status overlay provides crucial information at a glance:
+The System Status overlay provides crucial read-only information at a glance:
 *   **Network & Connection Status**: Verify your IP address, TCP Port, and current LCC connection state.
-*   **External Event Policy**: Quickly change how the app responds to conflicting LCC events (Strict Local, Override Allowed, or Accept & Warn).
-*   **Quick Toggles**: Conveniently toggle LCC Master behavior and "Restore Last State" directly from this screen without entering full configuration mode.
+*   **Current Settings**: View the active External Event Policy, LCC network status, and Master behavior.
 
 ### System Settings
 

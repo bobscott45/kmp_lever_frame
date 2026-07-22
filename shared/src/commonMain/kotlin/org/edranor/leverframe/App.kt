@@ -289,7 +289,6 @@ fun App() {
                         SystemStatusScreen(
                             config = state.config,
                             networkStatus = state.networkStatus,
-                            onUpdateSystemConfig = viewModel::updateSystemConfig,
                             onClose = viewModel::exitStatusMode
                         )
                     } else {

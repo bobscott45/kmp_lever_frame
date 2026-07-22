@@ -460,11 +460,21 @@ class AppViewModel(
     fun updateSystemConfig(newConfig: JsonConfig, rulesOnly: Boolean = false, clearStates: Boolean = false) {
         val prevIp = configRepo.currentConfig.jmri_hub_ip
         val prevEnabled = configRepo.currentConfig.lcc_enabled
+        val prevNodeId = configRepo.currentConfig.node_id
+        
         viewModelScope.launch {
             configRepo.saveConfig(newConfig)
             if (clearStates) {
                 configRepo.clearSavedLeverStates()
             }
+            
+            if (!newConfig.lcc_enabled) {
+                lccClient.disconnect()
+            } else if (!prevEnabled || prevIp != newConfig.jmri_hub_ip || prevNodeId != newConfig.node_id) {
+                lccClient.disconnect()
+                lccClient.initialize()
+            }
+            
             if (rulesOnly) {
                 val configStr = configRepo.toJsonString()
                 val parsedTabs = configRepo.parseConfig(configStr)
@@ -475,12 +485,6 @@ class AppViewModel(
                     )
                 }
             } else {
-                if (!newConfig.lcc_enabled) {
-                    lccClient.disconnect()
-                } else if (!prevEnabled || prevIp != newConfig.jmri_hub_ip) {
-                    lccClient.disconnect() // Ensure previous connection is closed
-                    lccClient.initialize()
-                }
                 loadConfig()
             }
         }

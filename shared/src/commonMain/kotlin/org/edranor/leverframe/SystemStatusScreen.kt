@@ -46,7 +46,6 @@ import org.edranor.leverframe.shared.BuildKonfig
 fun SystemStatusScreen(
     config: JsonConfig,
     networkStatus: String,
-    onUpdateSystemConfig: (JsonConfig) -> Unit,
     onClose: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -104,82 +103,11 @@ fun SystemStatusScreen(
                 StatusItem("TCP Port", port.toString())
                 StatusItem("Network Status", networkStatus)
                 
-                var policyExpanded by remember { mutableStateOf(false) }
                 val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
-                
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("External Event\nPolicy", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    ExposedDropdownMenuBox(
-                        expanded = policyExpanded,
-                        onExpandedChange = { policyExpanded = !policyExpanded }
-                    ) {
-                        OutlinedTextField(
-                            value = policies[config.conflict_policy] ?: "Unknown",
-                            onValueChange = {},
-                            readOnly = true,
-                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 12.sp),
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).width(140.dp)
-                        )
-                        ExposedDropdownMenu(
-                            expanded = policyExpanded,
-                            onDismissRequest = { policyExpanded = false }
-                        ) {
-                            policies.forEach { (key, name) ->
-                                DropdownMenuItem(
-                                    text = { Text(name) },
-                                    onClick = {
-                                        onUpdateSystemConfig(config.copy(conflict_policy = key))
-                                        policyExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Network Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Switch(
-                        checked = config.lcc_enabled,
-                        onCheckedChange = { 
-                            onUpdateSystemConfig(config.copy(lcc_enabled = it))
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                        )
-                    )
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("LCC Master Enabled", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Switch(
-                        checked = config.lcc_master,
-                        onCheckedChange = { 
-                            onUpdateSystemConfig(config.copy(lcc_master = it))
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                        )
-                    )
-                }
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restore Last State on Startup", color = LeverFrameTheme.Colors.Brass, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Switch(
-                        checked = config.restore_last_state,
-                        onCheckedChange = { 
-                            onUpdateSystemConfig(config.copy(restore_last_state = it))
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                        )
-                    )
-                }
-                
+                StatusItem("External Event Policy", policies[config.conflict_policy] ?: "Unknown")
+                StatusItem("LCC Network", if (config.lcc_enabled) "Enabled" else "Disabled")
+                StatusItem("LCC Master", if (config.lcc_master) "Enabled" else "Disabled")
+                StatusItem("Restore Last State", if (config.restore_last_state) "Enabled" else "Disabled")
                 StatusItem("Platform", getPlatform().name)
             }
         }

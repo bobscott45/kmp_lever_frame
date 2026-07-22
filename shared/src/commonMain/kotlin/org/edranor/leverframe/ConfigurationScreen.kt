@@ -1403,17 +1403,27 @@ private fun JsonConfig.withoutRules(): JsonConfig {
 }
 
 private fun JsonConfig.withoutUiAndRules(): JsonConfig {
-    return this.copy(tabs = this.tabs.map { tab ->
-        tab.copy(
-            show_lever_numbers = true,
-            show_block_numbers = false,
-            use_short_codes = false,
-            use_short_codes_in_indicators = false,
-            schematic_grid_size = 40,
-            label_lines = 2,
-            label_line_height = 18,
-            block_layout = "HORIZONTAL",
-            block_label_size = 8,
+    return this.copy(
+        jmri_hub_ip = "",
+        node_id = "",
+        node_name = "",
+        conflict_policy = 1,
+        display_sleep_timeout_ms = 0,
+        restore_last_state = false,
+        lcc_enabled = false,
+        lcc_master = false,
+        enable_sound = false,
+        tabs = this.tabs.map { tab ->
+            tab.copy(
+                show_lever_numbers = true,
+                show_block_numbers = false,
+                use_short_codes = false,
+                use_short_codes_in_indicators = false,
+                schematic_grid_size = 40,
+                label_lines = 2,
+                label_line_height = 18,
+                block_layout = "HORIZONTAL",
+                block_label_size = 8,
             levers = tab.levers.map { lever ->
                 lever.copy(interlocking = emptyList())
             }
