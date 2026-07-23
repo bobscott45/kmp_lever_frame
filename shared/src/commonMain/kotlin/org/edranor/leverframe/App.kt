@@ -108,39 +108,41 @@ fun App() {
     MaterialTheme(colorScheme = customColorScheme, typography = customTypography) {
         Box(modifier = Modifier.fillMaxSize()) {
             val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
-            val state by viewModel.uiState.collectAsState()
+            val domainState by viewModel.domainState.collectAsState()
+            val configState by viewModel.configState.collectAsState()
+            val uiState by viewModel.uiState.collectAsState()
             val actualSoundPlayer = rememberSoundPlayer()
-            val soundPlayer = remember(actualSoundPlayer, state.config.enable_sound) {
+            val soundPlayer = remember(actualSoundPlayer, configState.config.enable_sound) {
                 object : SoundPlayer {
-                    override fun playClank() { if (state.config.enable_sound) actualSoundPlayer.playClank() }
-                    override fun playLock() { if (state.config.enable_sound) actualSoundPlayer.playLock() }
-                    override fun playThud() { if (state.config.enable_sound) actualSoundPlayer.playThud() }
-                    override fun playAlarm() { if (state.config.enable_sound) actualSoundPlayer.playAlarm() }
-                    override fun playDing() { if (state.config.enable_sound) actualSoundPlayer.playDing() }
-                    override fun playDoubleDing() { if (state.config.enable_sound) actualSoundPlayer.playDoubleDing() }
+                    override fun playClank() { if (configState.config.enable_sound) actualSoundPlayer.playClank() }
+                    override fun playLock() { if (configState.config.enable_sound) actualSoundPlayer.playLock() }
+                    override fun playThud() { if (configState.config.enable_sound) actualSoundPlayer.playThud() }
+                    override fun playAlarm() { if (configState.config.enable_sound) actualSoundPlayer.playAlarm() }
+                    override fun playDing() { if (configState.config.enable_sound) actualSoundPlayer.playDing() }
+                    override fun playDoubleDing() { if (configState.config.enable_sound) actualSoundPlayer.playDoubleDing() }
                 }
             }
 
-            if (state.configMode != ConfigMode.NONE) {
+            if (uiState.configMode != ConfigMode.NONE) {
                 ConfigurationScreen(
-                    initialConfig = state.config,
-                    initialMode = state.configMode,
-                    initialSelectedFrameIndex = state.initialEditFrameIndex ?: 0,
-                    initialEditingLeverIndex = state.initialEditLeverIndex,
+                    initialConfig = configState.config,
+                    initialMode = uiState.configMode,
+                    initialSelectedFrameIndex = uiState.initialEditFrameIndex ?: 0,
+                    initialEditingLeverIndex = uiState.initialEditLeverIndex,
                     onUpdateSystemConfig = { cfg, rulesOnly, clearStates -> viewModel.updateSystemConfig(cfg, rulesOnly, clearStates) },
                     onClose = viewModel::exitConfigMode
                 )
             } else {
-                LaunchedEffect(state.conflictingLevers) {
-                    if (state.conflictingLevers.isNotEmpty()) {
+                LaunchedEffect(domainState.conflictingLevers) {
+                    if (domainState.conflictingLevers.isNotEmpty()) {
                         delay(700)
                         soundPlayer.playAlarm()
                     }
                 }
 
                 var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
-                LaunchedEffect(state.blockStates) {
-                    val currentBlocks = state.blockStates
+                LaunchedEffect(domainState.blockStates) {
+                    val currentBlocks = domainState.blockStates
                     val prevBlocks = previousBlocks
                     if (prevBlocks != null && prevBlocks.size == currentBlocks.size) {
                         var becameOccupied = false
@@ -177,25 +179,25 @@ fun App() {
                     
                     Column(modifier = Modifier.fillMaxSize()) {
                         if (!isLandscapeCompact) {
-                            TopMenuBar(state, viewModel)
+                            TopMenuBar(configState, uiState, viewModel)
                             ErrorBanners(
-                                errorMessage = state.errorMessage,
-                                networkError = state.networkError,
+                                errorMessage = uiState.errorMessage,
+                                networkError = uiState.networkError,
                                 onDismissNetworkError = viewModel::dismissNetworkError
                             )
                         }
                         
                         if (isLandscapeCompact) {
                             Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
-                                if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-                                    val currentTabDef = state.tabs[state.selectedTabIndex].second
+                                if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+                                    val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
                                     if (currentTabDef.schematicElements.isNotEmpty()) {
                                         val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.33f else 0.0f)
                                         if (schematicWeight > 0.01f) {
                                             SchematicScreen(
                                                 tabDef = currentTabDef,
-                                                leverStates = state.leverStates[state.selectedTabIndex],
-                                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                                leverStates = domainState.leverStates[uiState.selectedTabIndex],
+                                                blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
                                                 modifier = Modifier
                                                     .fillMaxHeight()
                                                     .weight(schematicWeight)
@@ -226,26 +228,26 @@ fun App() {
                                 }
                                 val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.67f else 1.0f)
                                 Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    TopMenuBar(state, viewModel)
+                                    TopMenuBar(configState, uiState, viewModel)
                                     ErrorBanners(
-                                        errorMessage = state.errorMessage,
-                                        networkError = state.networkError,
+                                        errorMessage = uiState.errorMessage,
+                                        networkError = uiState.networkError,
                                         onDismissNetworkError = viewModel::dismissNetworkError
                                     )
-                                    BlockShelfGroup(state, viewModel)
-                                    LeverTrackGroup(state, viewModel, soundPlayer)
+                                    BlockShelfGroup(domainState, configState, uiState, viewModel)
+                                    LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
                                 }
                             }
                         } else {
-                            if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-                                val currentTabDef = state.tabs[state.selectedTabIndex].second
+                            if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+                                val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
                                 if (currentTabDef.schematicElements.isNotEmpty()) {
                                     val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.25f else 0.0f)
                                     if (schematicWeight > 0.01f) {
                                         SchematicScreen(
                                             tabDef = currentTabDef,
-                                            leverStates = state.leverStates[state.selectedTabIndex],
-                                            blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                            leverStates = domainState.leverStates[uiState.selectedTabIndex],
+                                            blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .weight(schematicWeight)
@@ -277,23 +279,23 @@ fun App() {
                             
                             val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.75f else 1.0f)
                             Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                BlockShelfGroup(state, viewModel)
-                                LeverTrackGroup(state, viewModel, soundPlayer)
+                                BlockShelfGroup(domainState, configState, uiState, viewModel)
+                                LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
                             }
                         }
                     }
                 }
 
-                if (state.isStatusMode) {
-                    if (state.statusLeverIndex == null) {
+                if (uiState.isStatusMode) {
+                    if (uiState.statusLeverIndex == null) {
                         SystemStatusScreen(
-                            config = state.config,
-                            networkStatus = state.networkStatus,
+                            config = configState.config,
+                            networkStatus = uiState.networkStatus,
                             onClose = viewModel::exitStatusMode
                         )
                     } else {
-                        val index = state.statusLeverIndex!!
-                        val tabDef = state.tabs.getOrNull(state.selectedTabIndex)?.second
+                        val index = uiState.statusLeverIndex!!
+                        val tabDef = configState.tabs.getOrNull(uiState.selectedTabIndex)?.second
                         val leverDef = tabDef?.levers?.getOrNull(index)
                         
                         if (leverDef == null) {
@@ -302,14 +304,14 @@ fun App() {
                             LeverStatusScreen(
                                 leverIndex = index,
                                 leverDef = leverDef,
-                                leverStates = state.leverStates[state.selectedTabIndex],
-                                blockStates = state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0),
+                                leverStates = domainState.leverStates[uiState.selectedTabIndex],
+                                blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
                                 onClose = viewModel::dismissStatusLever,
                                 onEditConfig = {
-                                    viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex, leverIndex = index)
+                                    viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = uiState.selectedTabIndex, leverIndex = index)
                                 },
                                 onLccEnabledChange = { checked ->
-                                    viewModel.setLeverLccEnabled(state.selectedTabIndex, index, checked)
+                                    viewModel.setLeverLccEnabled(uiState.selectedTabIndex, index, checked)
                                 }
                             )
                         }
@@ -620,7 +622,8 @@ fun LeverComponent(
 
 @Composable
 fun TopMenuBar(
-    state: LeverFrameUiState,
+    configState: ConfigState,
+    uiState: TransientUiState,
     viewModel: AppViewModel
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -633,7 +636,7 @@ fun TopMenuBar(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        MainTabRow(state = state, onTabSelected = viewModel::tabSelected)
+        MainTabRow(configState = configState, uiState = uiState, onTabSelected = viewModel::tabSelected)
         
         Box(modifier = Modifier.padding(start = 16.dp)) {
             var menuExpanded by remember { mutableStateOf(false) }
@@ -661,7 +664,7 @@ fun TopMenuBar(
                 DropdownMenuItem(
                     text = { Text("Frame Configuration", fontSize = 14.sp) },
                     onClick = { 
-                        viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = state.selectedTabIndex)
+                        viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = uiState.selectedTabIndex)
                         menuExpanded = false
                     }
                 )
@@ -691,7 +694,7 @@ fun TopMenuBar(
                     onClick = { 
                         if (isFilePickerAvailable) {
                             try {
-                                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), configState.config)
                                 exportConfigurationFile(jsonString)
                             } catch (e: Exception) {
                                 println("Failed to export: ${e.message}")
@@ -711,7 +714,7 @@ fun TopMenuBar(
             onDismissRequest = { showExportDialog = false },
             title = { Text("Export Configuration") },
             text = {
-                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), configState.config)
                 OutlinedTextField(
                     value = jsonString,
                     onValueChange = {},
@@ -721,7 +724,7 @@ fun TopMenuBar(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), state.config)
+                    val jsonString = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), configState.config)
                     clipboardManager.setText(AnnotatedString(jsonString))
                     showExportDialog = false
                 }) {
@@ -772,22 +775,23 @@ fun TopMenuBar(
 
 @Composable
 fun RowScope.MainTabRow(
-    state: LeverFrameUiState,
+    configState: ConfigState,
+    uiState: TransientUiState,
     onTabSelected: (Int) -> Unit
 ) {
-    if (state.tabs.isNotEmpty()) {
+    if (configState.tabs.isNotEmpty()) {
         PrimaryScrollableTabRow(
-            selectedTabIndex = state.selectedTabIndex,
+            selectedTabIndex = uiState.selectedTabIndex,
             containerColor = Color(0xFF1a1a1a),
             contentColor = Color.White,
             modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)),
             edgePadding = 0.dp
         ) {
-            state.tabs.forEachIndexed { index, pair ->
+            configState.tabs.forEachIndexed { index, pair ->
                 Tab(
-                    selected = state.selectedTabIndex == index,
+                    selected = uiState.selectedTabIndex == index,
                     onClick = { onTabSelected(index) },
-                    text = { Text(pair.first, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (state.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
+                    text = { Text(pair.first, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (uiState.selectedTabIndex == index) LeverFrameTheme.Colors.Brass else LeverFrameTheme.Colors.TabUnselected) }
                 )
             }
         }
@@ -845,14 +849,16 @@ fun ErrorBanners(
 
 @Composable
 fun ColumnScope.LeverTrackGroup(
-    state: LeverFrameUiState,
+    domainState: DomainState,
+    configState: ConfigState,
+    uiState: TransientUiState,
     viewModel: AppViewModel,
     soundPlayer: SoundPlayer
 ) {
-    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-        val currentTabDef = state.tabs[state.selectedTabIndex].second
-        val leverStates = state.leverStates.getOrNull(state.selectedTabIndex)
-        val manualLocks = state.manualLocks.getOrNull(state.selectedTabIndex)
+    if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+        val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
+        val leverStates = domainState.leverStates.getOrNull(uiState.selectedTabIndex)
+        val manualLocks = domainState.manualLocks.getOrNull(uiState.selectedTabIndex)
         
         if (leverStates != null && manualLocks != null) {
             BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -870,8 +876,8 @@ fun ColumnScope.LeverTrackGroup(
                     currentTabDef.levers.forEachIndexed { index, leverDef ->
                         val isReversed = leverStates[index]
                         val isManuallyLocked = manualLocks[index]
-                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, state.blockStates.getOrNull(state.selectedTabIndex) ?: BooleanArray(0), index, !isReversed)
-                        val isAlarmed = index in state.conflictingLevers
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0), index, !isReversed)
+                        val isAlarmed = index in domainState.conflictingLevers
     
                         LeverComponent(
                             leverIndex = index,
@@ -890,10 +896,10 @@ fun ColumnScope.LeverTrackGroup(
                                 viewModel.leverLabelClicked(index)
                             },
                             onToggle = {
-                                viewModel.toggleLever(state.selectedTabIndex, index)
+                                viewModel.toggleLever(uiState.selectedTabIndex, index)
                             },
                             onToggleLock = {
-                                viewModel.toggleManualLock(state.selectedTabIndex, index)
+                                viewModel.toggleManualLock(uiState.selectedTabIndex, index)
                             }
                         )
                     }
@@ -904,12 +910,14 @@ fun ColumnScope.LeverTrackGroup(
 }
 @Composable
 fun BlockShelfGroup(
-    state: LeverFrameUiState,
+    domainState: DomainState,
+    configState: ConfigState,
+    uiState: TransientUiState,
     viewModel: AppViewModel
 ) {
-    if (state.tabs.isNotEmpty() && state.selectedTabIndex < state.tabs.size) {
-        val currentTabDef = state.tabs[state.selectedTabIndex].second
-        val blockStates = state.blockStates.getOrNull(state.selectedTabIndex)
+    if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+        val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
+        val blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex)
         if (blockStates != null && currentTabDef.blocks.isNotEmpty()) {
             Row(
                 modifier = Modifier
@@ -928,7 +936,7 @@ fun BlockShelfGroup(
                         isOccupied = isOccupied,
                         layout = currentTabDef.blockLayout,
                         fontSize = currentTabDef.blockLabelSize,
-                        onToggle = { viewModel.toggleBlockState(state.selectedTabIndex, index) }
+                        onToggle = { viewModel.toggleBlockState(uiState.selectedTabIndex, index) }
                     )
                 }
             }

@@ -163,10 +163,9 @@ class AppViewModelTest {
         assertTrue(configRepo.initCalled, "Config repository should be initialized")
         assertTrue(lccClient.initCalled, "LCC client should be initialized")
         
-        val state = viewModel.uiState.value
-        assertEquals(2, state.tabs.size)
-        assertEquals("Test Box", state.tabs[0].first)
-        assertEquals(2, state.tabs[0].second.levers.size)
+                assertEquals(2, viewModel.configState.value.tabs.size)
+        assertEquals("Test Box", viewModel.configState.value.tabs[0].first)
+        assertEquals(2, viewModel.configState.value.tabs[0].second.levers.size)
     }
 
     @Test
@@ -177,8 +176,7 @@ class AppViewModelTest {
         viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.value
-        assertTrue(state.leverStates[0][0], "Signal lever should be reversed (true)")
+                assertTrue(viewModel.domainState.value.leverStates[0][0], "Signal lever should be reversed (true)")
         
         // Ensure LCC event was fired for reversed state
         assertTrue(lccClient.producedEvents.contains("11.22.33.44.00.00.00.02"))
@@ -196,9 +194,8 @@ class AppViewModelTest {
         viewModel.toggleLever(tabIndex = 0, leverIndex = 1)
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.value
-        assertFalse(state.leverStates[0][1], "Points lever should NOT be reversed due to interlocking")
-        assertTrue(state.errorMessage != null, "Error message should be set")
+                assertFalse(viewModel.domainState.value.leverStates[0][1], "Points lever should NOT be reversed due to interlocking")
+        assertTrue(viewModel.uiState.value.errorMessage != null, "Error message should be set")
     }
 
     @Test
@@ -209,8 +206,7 @@ class AppViewModelTest {
         lccClient.emitEvent("1122334400000002")
         testDispatcher.scheduler.advanceUntilIdle()
         
-        val state = viewModel.uiState.value
-        assertTrue(state.leverStates[0][0], "Signal lever should be reversed by external event")
+                assertTrue(viewModel.domainState.value.leverStates[0][0], "Signal lever should be reversed by external event")
     }
 
     @Test
@@ -229,8 +225,7 @@ class AppViewModelTest {
         assertEquals("192.168.1.100", configRepo.currentConfig.jmri_hub_ip, "Config should be updated")
         assertTrue(lccClient.initCalled, "LCC client should be re-initialized when IP changes")
         
-        val state = viewModel.uiState.value
-        assertEquals("192.168.1.100", state.config.jmri_hub_ip)
+                assertEquals("192.168.1.100", viewModel.configState.value.config.jmri_hub_ip)
     }
 
     @Test
@@ -241,15 +236,12 @@ class AppViewModelTest {
         lccClient.emitConnectionError("Connection Refused")
         testDispatcher.scheduler.advanceUntilIdle()
         
-        var state = viewModel.uiState.value
-        assertEquals("Connection Refused", state.networkError)
+                assertEquals("Connection Refused", viewModel.uiState.value.networkError)
         
         // Dismiss the error
         viewModel.dismissNetworkError()
         testDispatcher.scheduler.advanceUntilIdle()
-        
-        state = viewModel.uiState.value
-        assertEquals(null, state.networkError)
+        assertEquals(null, viewModel.uiState.value.networkError)
     }
 
     @Test
@@ -316,10 +308,10 @@ class AppViewModelTest {
     fun testToggleManualLock() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
-        assertFalse(viewModel.uiState.value.manualLocks[0][0])
+        assertFalse(viewModel.domainState.value.manualLocks[0][0])
         viewModel.toggleManualLock(0, 0)
         testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(viewModel.uiState.value.manualLocks[0][0])
+        assertTrue(viewModel.domainState.value.manualLocks[0][0])
     }
 
     @Test
@@ -339,39 +331,31 @@ class AppViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Verify initial state has no conflicts
-        var state = viewModel.uiState.value
-        assertTrue(state.conflictingLevers.isEmpty(), "Initially should have no conflicting levers")
+                assertTrue(viewModel.domainState.value.conflictingLevers.isEmpty(), "Initially should have no conflicting levers")
 
         // Toggle lever 0 to REVERSED
         viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
 
         // Since lever 0 has no conditions, no conflicts should exist
-        state = viewModel.uiState.value
-        assertTrue(state.conflictingLevers.isEmpty(), "Toggling signal should not create conflicts")
+        assertTrue(viewModel.domainState.value.conflictingLevers.isEmpty(), "Toggling signal should not create conflicts")
 
         // Now, emit an external event to force lever 1 (Points) to REVERSED.
         // The mock config uses default conflict_policy which is PERMISSIVE/ALARM (allows invalid states).
         // Since lever 1 requires lever 0 to be NORMAL, this will create a conflict.
         lccClient.emitEvent("1122334400000004") // Points reversed
         testDispatcher.scheduler.advanceUntilIdle()
-
-        state = viewModel.uiState.value
-        assertTrue(state.leverStates[0][1], "Points lever should be reversed by external event")
-        assertEquals(listOf(1, 0), state.conflictingLevers, "conflictingLevers should contain indices 1 and 0")
+        assertTrue(viewModel.domainState.value.leverStates[0][1], "Points lever should be reversed by external event")
+        assertEquals(listOf(1, 0), viewModel.domainState.value.conflictingLevers, "conflictingLevers should contain indices 1 and 0")
 
         // Now select another tab and verify conflicts clear (since tab 1 has no conflicts)
         viewModel.tabSelected(1)
         testDispatcher.scheduler.advanceUntilIdle()
-        
-        state = viewModel.uiState.value
-        assertTrue(state.conflictingLevers.isEmpty(), "conflictingLevers should be empty for tab 1")
+        assertTrue(viewModel.domainState.value.conflictingLevers.isEmpty(), "conflictingLevers should be empty for tab 1")
 
         // Switch back to tab 0 and verify conflicts return
         viewModel.tabSelected(0)
         testDispatcher.scheduler.advanceUntilIdle()
-        
-        state = viewModel.uiState.value
-        assertEquals(listOf(1, 0), state.conflictingLevers, "conflictingLevers should be populated again for tab 0")
+        assertEquals(listOf(1, 0), viewModel.domainState.value.conflictingLevers, "conflictingLevers should be populated again for tab 0")
     }
 }

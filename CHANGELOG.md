@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
+- **Architecture**: Refactored `LeverFrameUiState` into segregated state flows (`DomainState`, `ConfigState`, `TransientUiState`) to improve Compose rendering performance and eliminate deep copying of massive state trees on every UI interaction.
 - **Architecture**: Refactored the core interlocking engine and schematic editor to link components via robust integer indices rather than string names, entirely eliminating "broken link" bugs when renaming blocks.
 - **Logic**: Implemented safe-deletion handling for Blocks and Levers, which now gracefully decrement or nullify interlocking rule targets down the chain to preserve data integrity when an upstream item is removed.
 - **UI/UX**: Enhanced visibility of unmanaged decorative track (now drawn in Gray) and managed track (now drawn in bright White) to improve contrast against dark backgrounds.

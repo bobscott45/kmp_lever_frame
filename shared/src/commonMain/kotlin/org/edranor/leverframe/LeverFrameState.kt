@@ -23,45 +23,20 @@ package org.edranor.leverframe
 
 enum class ConfigMode { NONE, SYSTEM, FRAMES }
 
-data class LeverFrameUiState(
-    val tabs: List<Pair<String, TabDef>> = emptyList(),
-    val selectedTabIndex: Int = 0,
+data class DomainState(
     val leverStates: List<BooleanArray> = emptyList(),
     val manualLocks: List<BooleanArray> = emptyList(),
     val blockStates: List<BooleanArray> = emptyList(),
-    val configMode: ConfigMode = ConfigMode.NONE,
-    val isStatusMode: Boolean = false,
-    val statusLeverIndex: Int? = null,
-    val initialEditFrameIndex: Int? = null,
-    val initialEditLeverIndex: Int? = null,
-    val errorMessage: String? = null,
-    val networkError: String? = null,
-    val conflictingLevers: List<Int> = emptyList(),
-    val configVersion: Int = 0,
-    val config: JsonConfig = JsonConfig(),
-    val networkStatus: String = "Disconnected"
+    val conflictingLevers: List<Int> = emptyList()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as LeverFrameUiState
+        other as DomainState
 
-        if (tabs != other.tabs) return false
-        if (selectedTabIndex != other.selectedTabIndex) return false
-        if (configMode != other.configMode) return false
-        if (isStatusMode != other.isStatusMode) return false
-        if (statusLeverIndex != other.statusLeverIndex) return false
-        if (initialEditFrameIndex != other.initialEditFrameIndex) return false
-        if (initialEditLeverIndex != other.initialEditLeverIndex) return false
-        if (errorMessage != other.errorMessage) return false
-        if (networkError != other.networkError) return false
         if (conflictingLevers != other.conflictingLevers) return false
-        if (configVersion != other.configVersion) return false
-        if (config != other.config) return false
-        if (networkStatus != other.networkStatus) return false
 
-        // Custom equality for List<BooleanArray>
         if (leverStates.size != other.leverStates.size) return false
         for (i in leverStates.indices) {
             if (!leverStates[i].contentEquals(other.leverStates[i])) return false
@@ -81,22 +56,28 @@ data class LeverFrameUiState(
     }
 
     override fun hashCode(): Int {
-        var result = tabs.hashCode()
-        result = 31 * result + selectedTabIndex
-        result = 31 * result + leverStates.sumOf { it.contentHashCode() }
+        var result = leverStates.sumOf { it.contentHashCode() }
         result = 31 * result + manualLocks.sumOf { it.contentHashCode() }
         result = 31 * result + blockStates.sumOf { it.contentHashCode() }
-        result = 31 * result + configMode.hashCode()
-        result = 31 * result + isStatusMode.hashCode()
-        result = 31 * result + (statusLeverIndex ?: 0)
-        result = 31 * result + (errorMessage?.hashCode() ?: 0)
-        result = 31 * result + (networkError?.hashCode() ?: 0)
         result = 31 * result + conflictingLevers.hashCode()
-        result = 31 * result + configVersion
-        result = 31 * result + config.hashCode()
-        result = 31 * result + networkStatus.hashCode()
         return result
     }
 }
 
+data class ConfigState(
+    val tabs: List<Pair<String, TabDef>> = emptyList(),
+    val configVersion: Int = 0,
+    val config: JsonConfig = JsonConfig()
+)
 
+data class TransientUiState(
+    val selectedTabIndex: Int = 0,
+    val configMode: ConfigMode = ConfigMode.NONE,
+    val isStatusMode: Boolean = false,
+    val statusLeverIndex: Int? = null,
+    val initialEditFrameIndex: Int? = null,
+    val initialEditLeverIndex: Int? = null,
+    val errorMessage: String? = null,
+    val networkError: String? = null,
+    val networkStatus: String = "Disconnected"
+)

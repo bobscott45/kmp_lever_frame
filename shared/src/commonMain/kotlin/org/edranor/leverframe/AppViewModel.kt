@@ -37,11 +37,25 @@ class AppViewModel(
     private val lccClient: LccNetworkClient = LccNode
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LeverFrameUiState())
-    val uiState: StateFlow<LeverFrameUiState> = _uiState.stateIn(
+    private val _domainState = MutableStateFlow(DomainState())
+    val domainState: StateFlow<DomainState> = _domainState.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = LeverFrameUiState()
+        initialValue = DomainState()
+    )
+
+    private val _configState = MutableStateFlow(ConfigState())
+    val configState: StateFlow<ConfigState> = _configState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ConfigState()
+    )
+
+    private val _uiState = MutableStateFlow(TransientUiState())
+    val uiState: StateFlow<TransientUiState> = _uiState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = TransientUiState()
     )
 
     private val saveStateTrigger = MutableSharedFlow<Unit>(
@@ -78,7 +92,7 @@ class AppViewModel(
         viewModelScope.launch {
             saveStateTrigger.debounce(500).collect {
                 if (configRepo.currentConfig.restore_last_state) {
-                    val statesToSave = _uiState.value.leverStates.map { it.copyOf() }
+                    val statesToSave = _domainState.value.leverStates.map { it.copyOf() }
                     configRepo.saveCurrentLeverStates(statesToSave)
                 }
             }
@@ -88,7 +102,7 @@ class AppViewModel(
     private suspend fun loadConfig() {
         val configStr = configRepo.toJsonString()
         val parsedTabs = configRepo.parseConfig(configStr)
-        val initialVersion = _uiState.value.configVersion
+        val initialVersion = _configState.value.configVersion
         
         // Build initial states
         val leverStates = parsedTabs.map { (tabName, tabDef) ->
@@ -113,14 +127,18 @@ class AppViewModel(
             }
         }
 
-        _uiState.update {
+        _configState.update {
             it.copy(
                 tabs = parsedTabs,
-                leverStates = leverStates,
-                manualLocks = manualLocks,
-                blockStates = blockStates,
                 configVersion = initialVersion + 1,
                 config = configRepo.currentConfig
+            )
+        }
+        _domainState.update {
+            it.copy(
+                leverStates = leverStates,
+                manualLocks = manualLocks,
+                blockStates = blockStates
             )
         }
     }
@@ -134,14 +152,15 @@ class AppViewModel(
     private fun broadcastCurrentStates() {
         viewModelScope.launch {
             kotlinx.coroutines.delay(1000) // Wait for LccNode init sequence to finish
-            val currentState = _uiState.value
-            if (currentState.tabs.isEmpty() || currentState.leverStates.isEmpty()) return@launch
+            val domain = _domainState.value
+            val config = _configState.value
+            if (config.tabs.isEmpty() || domain.leverStates.isEmpty()) return@launch
 
-            currentState.tabs.forEachIndexed { tabIdx, (_, tabDef) ->
-                if (tabIdx < currentState.leverStates.size) {
-                    val statesForTab = currentState.leverStates[tabIdx]
+            config.tabs.forEachIndexed { tabIdx, (_, tabDef) ->
+                if (tabIdx < domain.leverStates.size) {
+                    val statesForTab = domain.leverStates[tabIdx]
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                        if (leverIdx < statesForTab.size && leverDef.lcc_enabled && currentState.config.lcc_enabled) {
+                        if (leverIdx < statesForTab.size && leverDef.lcc_enabled && config.config.lcc_enabled) {
                             val isReversed = statesForTab[leverIdx]
                             val eventId = if (isReversed) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
                             if (eventId.isNotBlank()) {
@@ -161,15 +180,17 @@ class AppViewModel(
         var didChange = false
         val outgoingEvents = mutableListOf<String>()
         
-        _uiState.update { currentState ->
+        _domainState.update { currentDomain ->
+            val configState = _configState.value
+            val uiState = _uiState.value
             var stateChanged = false
-            var stateToReturn = currentState
-            val newLeverStates = currentState.leverStates.map { it.copyOf() }
-            val policy = ConflictPolicy.of(configRepo.currentConfig.conflict_policy)
+            var stateToReturn = currentDomain
+            val newLeverStates = currentDomain.leverStates.map { it.copyOf() }
+            val policy = ConflictPolicy.of(configState.config.conflict_policy)
 
-            val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
+            val newBlockStates = currentDomain.blockStates.map { it.copyOf() }.toMutableList()
 
-            currentState.tabs.forEachIndexed { tabIdx, tabPair ->
+            configState.tabs.forEachIndexed { tabIdx, tabPair ->
                 val tabDef = tabPair.second
                 tabDef.levers.forEachIndexed { leverIdx, leverDef ->
                     if (!leverDef.lcc_enabled) return@forEachIndexed
@@ -187,7 +208,7 @@ class AppViewModel(
                     if (attemptState != null) {
                         val currState = newLeverStates[tabIdx][leverIdx]
                         if (currState != attemptState) {
-                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], currentState.blockStates[tabIdx], leverIdx, attemptState)
+                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], currentDomain.blockStates[tabIdx], leverIdx, attemptState)
                             if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
                                 newLeverStates[tabIdx][leverIdx] = attemptState
                                 stateChanged = true
@@ -234,18 +255,18 @@ class AppViewModel(
                     }
                 } while(reverserChanged)
                 
-                if (stateChanged && newBlockStates !== currentState.blockStates) {
+                if (stateChanged && newBlockStates !== currentDomain.blockStates) {
                     stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
                 }
             }
             
             if (stateChanged) {
                 didChange = true
-                val conflicts = if (stateToReturn.tabs.isNotEmpty()) {
+                val conflicts = if (configState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
-                        stateToReturn.tabs[stateToReturn.selectedTabIndex].second,
-                        newLeverStates[stateToReturn.selectedTabIndex],
-                        stateToReturn.blockStates[stateToReturn.selectedTabIndex]
+                        configState.tabs[uiState.selectedTabIndex].second,
+                        newLeverStates[uiState.selectedTabIndex],
+                        newBlockStates[uiState.selectedTabIndex]
                     )
                 } else emptyList()
                 stateToReturn.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
@@ -265,15 +286,17 @@ class AppViewModel(
     }
 
     fun tabSelected(index: Int) {
-        _uiState.update { currentState ->
-            val conflicts = if (currentState.tabs.isNotEmpty()) {
+        _uiState.update { it.copy(selectedTabIndex = index) }
+        _domainState.update { currentDomain ->
+            val configState = _configState.value
+            val conflicts = if (configState.tabs.isNotEmpty()) {
                 Interlocking.getConflictingLevers(
-                    currentState.tabs[index].second,
-                    currentState.leverStates[index],
-                    currentState.blockStates[index]
+                    configState.tabs[index].second,
+                    currentDomain.leverStates[index],
+                    currentDomain.blockStates[index]
                 )
             } else emptyList()
-            currentState.copy(selectedTabIndex = index, conflictingLevers = conflicts)
+            currentDomain.copy(conflictingLevers = conflicts)
         }
     }
 
@@ -281,28 +304,30 @@ class AppViewModel(
         var lccEventStr: String? = null
         var didChange = false
         
-        _uiState.update { currentState ->
-            val tabDef = currentState.tabs[tabIndex].second
-            val currentStates = currentState.leverStates[tabIndex]
+        _domainState.update { currentDomain ->
+            val configState = _configState.value
+            val uiState = _uiState.value
+            val tabDef = configState.tabs[tabIndex].second
+            val currentStates = currentDomain.leverStates[tabIndex]
             val leverState = currentStates[leverIndex]
             val targetState = !leverState
             
-            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, currentState.blockStates[tabIndex], leverIndex, targetState)
+            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, currentDomain.blockStates[tabIndex], leverIndex, targetState)
             if (newStates != null) {
                 didChange = true
-                val updatedAllStates = currentState.leverStates.toMutableList()
+                val updatedAllStates = currentDomain.leverStates.toMutableList()
                 updatedAllStates[tabIndex] = newStates
                 
-                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                val conflicts = if (configState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
-                        currentState.tabs[currentState.selectedTabIndex].second,
-                        updatedAllStates[currentState.selectedTabIndex],
-                        currentState.blockStates[currentState.selectedTabIndex]
+                        configState.tabs[uiState.selectedTabIndex].second,
+                        updatedAllStates[uiState.selectedTabIndex],
+                        currentDomain.blockStates[uiState.selectedTabIndex]
                     )
                 } else emptyList()
 
                 val leverDef = tabDef.levers[leverIndex]
-                val shouldSendLcc = currentState.config.lcc_enabled && leverDef.lcc_enabled
+                val shouldSendLcc = configState.config.lcc_enabled && leverDef.lcc_enabled
                 if (shouldSendLcc && targetState && leverDef.lcc_event_reversed.isNotBlank()) {
                     lccEventStr = leverDef.lcc_event_reversed
                 } else if (shouldSendLcc && !targetState && leverDef.lcc_event_normal.isNotBlank()) {
@@ -311,11 +336,13 @@ class AppViewModel(
                     lccEventStr = null
                 }
 
-                currentState.copy(leverStates = updatedAllStates, conflictingLevers = conflicts, errorMessage = null)
+                _uiState.update { it.copy(errorMessage = null) }
+                currentDomain.copy(leverStates = updatedAllStates, conflictingLevers = conflicts)
             } else {
                 didChange = false
                 lccEventStr = null
-                currentState.copy(errorMessage = "Interlocking conflict: Cannot move lever")
+                _uiState.update { it.copy(errorMessage = "Interlocking conflict: Cannot move lever") }
+                currentDomain
             }
         }
         
@@ -327,12 +354,12 @@ class AppViewModel(
     }
 
     fun toggleManualLock(tabIndex: Int, leverIndex: Int) {
-        _uiState.update { currentState ->
-            val updatedLocks = currentState.manualLocks.toMutableList()
+        _domainState.update { currentDomain ->
+            val updatedLocks = currentDomain.manualLocks.toMutableList()
             val tabLocks = updatedLocks[tabIndex].copyOf()
             tabLocks[leverIndex] = !tabLocks[leverIndex]
             updatedLocks[tabIndex] = tabLocks
-            currentState.copy(manualLocks = updatedLocks)
+            currentDomain.copy(manualLocks = updatedLocks)
         }
         persistStatesIfEnabled()
     }
@@ -401,13 +428,15 @@ class AppViewModel(
         val outgoingEvents = mutableListOf<String>()
         var didChange = false
         
-        _uiState.update { currentState ->
-            if (tabIndex in currentState.blockStates.indices && blockIndex in currentState.blockStates[tabIndex].indices) {
-                val newBlockStates = currentState.blockStates.map { it.copyOf() }.toMutableList()
+        _domainState.update { currentDomain ->
+            val configState = _configState.value
+            val uiState = _uiState.value
+            if (tabIndex in currentDomain.blockStates.indices && blockIndex in currentDomain.blockStates[tabIndex].indices) {
+                val newBlockStates = currentDomain.blockStates.map { it.copyOf() }.toMutableList()
                 newBlockStates[tabIndex][blockIndex] = !newBlockStates[tabIndex][blockIndex]
                 
-                val newLeverStates = currentState.leverStates.map { it.copyOf() }.toMutableList()
-                val tabDef = currentState.tabs[tabIndex].second
+                val newLeverStates = currentDomain.leverStates.map { it.copyOf() }.toMutableList()
+                val tabDef = configState.tabs[tabIndex].second
                 
                 // Evaluate auto-reversers (cascade until steady state)
                 var reverserChanged: Boolean
@@ -428,22 +457,22 @@ class AppViewModel(
                     }
                 } while(reverserChanged)
                 
-                val conflicts = if (currentState.tabs.isNotEmpty()) {
+                val conflicts = if (configState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
-                        currentState.tabs[currentState.selectedTabIndex].second,
-                        newLeverStates[currentState.selectedTabIndex],
-                        newBlockStates[currentState.selectedTabIndex]
+                        configState.tabs[uiState.selectedTabIndex].second,
+                        newLeverStates[uiState.selectedTabIndex],
+                        newBlockStates[uiState.selectedTabIndex]
                     )
                 } else emptyList()
                 
                 didChange = true
-                currentState.copy(
+                currentDomain.copy(
                     blockStates = newBlockStates,
                     leverStates = newLeverStates,
                     conflictingLevers = conflicts
                 )
             } else {
-                currentState
+                currentDomain
             }
         }
         
@@ -481,7 +510,7 @@ class AppViewModel(
             if (rulesOnly) {
                 val configStr = configRepo.toJsonString()
                 val parsedTabs = configRepo.parseConfig(configStr)
-                _uiState.update { 
+                _configState.update { 
                     it.copy(
                         tabs = parsedTabs,
                         config = configRepo.currentConfig

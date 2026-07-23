@@ -17,9 +17,11 @@ The project is built using the standard Kotlin Multiplatform structure with Comp
 The application is built around an Unidirectional Data Flow (UDF) pattern, primarily managed by the `AppViewModel`.
 
 ### 2.1 State Management (`AppViewModel.kt`)
-The `AppViewModel` acts as the single source of truth for the application's state (`AppUiState`). 
-*   It exposes a `StateFlow` to the Compose UI, ensuring that UI updates are reactive and smooth.
-*   It tracks the state of both Levers (`leverStates`) and Digital Blocks (`blockStates`).
+The `AppViewModel` acts as the single source of truth for the application's state, which is segregated into distinct flows to optimize UI recomposition:
+*   **`DomainState`**: Tracks high-frequency data like lever positions (`leverStates`) and digital blocks (`blockStates`).
+*   **`ConfigState`**: Holds the static JSON configuration and track layout definitions.
+*   **`TransientUiState`**: Manages view modalities (e.g., active tab, open dialogs, networking status).
+*   It exposes these via separate `StateFlow` streams to the Compose UI, ensuring that UI updates are highly reactive and minimize unnecessary recomposition.
 *   It handles all user intents (e.g., pulling a lever, toggling a block occupancy) and dispatches them to the appropriate subsystem (Network, Interlocking, or Config).
 *   It manages **Auto-Reverser Cascading**: When a block occupancy changes, it checks if any interlocked home signals need to snap back to NORMAL (Danger), and cascades that lock to any dependent distant signals.
 *   It uses Coroutines to handle asynchronous operations like debounced saving of lever/block states to disk.
@@ -54,7 +56,7 @@ Built entirely in Compose Multiplatform.
 1.  **User Action**: The user swipes a lever in `LeverFrameScreen.kt`.
 2.  **Intent**: The UI calls `viewModel.toggleLever(frameIndex, leverIndex)`.
 3.  **Validation**: `AppViewModel` checks the `InterlockingEngine` to see if the lever is locked. If locked, the action is rejected.
-4.  **State Update**: If unlocked, the internal `AppUiState` is updated (lever state changes from `NORMAL` to `REVERSED`).
+4.  **State Update**: If unlocked, the internal `DomainState` is updated (lever state changes from `NORMAL` to `REVERSED`).
 5.  **Network Broadcast**: The `LccNode` is notified, formats an LCC Event ID string, and passes it to `GridConnectNetwork` to transmit over Wi-Fi.
 6.  **Persistence**: A debounced coroutine in `AppViewModel` detects the state change and writes the new state to disk via `ConfigManager` so it survives a reboot.
-7.  **UI Recomposition**: The Compose UI automatically observes the updated `AppUiState` and animates the lever to its new position.
+7.  **UI Recomposition**: The Compose UI automatically observes the updated `DomainState` and animates the lever to its new position.
