@@ -37,6 +37,7 @@ interface LccNetworkClient {
     fun disconnect()
     fun produceEvent(eventIdStr: String)
     fun parseEventId(eventIdStr: String): String
+    fun identifyProducer(eventIdStr: String)
 }
 
 object LccNode : LccNetworkClient {
@@ -237,6 +238,21 @@ object LccNode : LccNetworkClient {
             }
         } catch (e: Exception) {
             println("Failed to send Producer Identified for $eventIdStr: ${e.message}")
+        }
+    }
+
+    override fun identifyProducer(eventIdStr: String) {
+        if (eventIdStr.isBlank()) return
+        try {
+            val cleanHex = parseEventId(eventIdStr)
+            if (cleanHex.length == 16) {
+                // Identify Producer CAN MTI is 0x0914 -> 19914 prefix
+                val msg = ":X19914${NODE_ALIAS}N$cleanHex;"
+                GridConnectNetwork.sendMessage(msg)
+                println("Sent Identify Producer: $msg")
+            }
+        } catch (e: Exception) {
+            println("Failed to send Identify Producer for $eventIdStr: ${e.message}")
         }
     }
 

@@ -32,9 +32,9 @@ interface AppConfigRepository {
     suspend fun initConfig()
     fun toJsonString(): String
     fun parseConfig(jsonString: String): List<Pair<String, TabDef>>
-    suspend fun loadSavedLeverStates(): List<BooleanArray>?
-    suspend fun saveCurrentLeverStates(states: List<BooleanArray>)
-    suspend fun clearSavedLeverStates()
+    suspend fun loadSavedStates(): SavedStatesData?
+    suspend fun saveCurrentStates(states: SavedStatesData)
+    suspend fun clearSavedStates()
     suspend fun saveConfig(newConfig: JsonConfig)
 }
 
@@ -112,8 +112,9 @@ data class JsonInterlocking(
 )
 
 @Serializable
-data class LeverStatesData(
-    val tabs: List<List<Boolean>>
+data class SavedStatesData(
+    val tabs: List<List<Boolean>> = emptyList(),
+    val blocks: List<List<Boolean>> = emptyList()
 )
 
 object ConfigManager : AppConfigRepository {
@@ -233,28 +234,26 @@ object ConfigManager : AppConfigRepository {
         return eventId
     }
 
-    override suspend fun loadSavedLeverStates(): List<BooleanArray>? {
+    override suspend fun loadSavedStates(): SavedStatesData? {
         val jsonString = loadLeverStatesFromFile() ?: return null
         return try {
-            val data = jsonFormat.decodeFromString<LeverStatesData>(jsonString)
-            data.tabs.map { it.toBooleanArray() }
+            jsonFormat.decodeFromString<SavedStatesData>(jsonString)
         } catch (e: Exception) {
-            println("Failed to load saved lever states: ${e.message}")
+            println("Failed to load saved states: ${e.message}")
             null
         }
     }
 
-    override suspend fun saveCurrentLeverStates(states: List<BooleanArray>) {
+    override suspend fun saveCurrentStates(states: SavedStatesData) {
         try {
-            val data = LeverStatesData(states.map { it.toList() })
-            val jsonString = jsonFormat.encodeToString(LeverStatesData.serializer(), data)
+            val jsonString = jsonFormat.encodeToString(SavedStatesData.serializer(), states)
             saveLeverStatesToFile(jsonString)
         } catch (e: Exception) {
-            println("Failed to save lever states: ${e.message}")
+            println("Failed to save states: ${e.message}")
         }
     }
 
-    override suspend fun clearSavedLeverStates() {
+    override suspend fun clearSavedStates() {
         try {
             clearLeverStatesFile()
         } catch (e: Exception) {

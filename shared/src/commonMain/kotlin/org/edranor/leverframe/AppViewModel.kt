@@ -104,16 +104,24 @@ class AppViewModel(
         }.toMutableList()
 
         // Restore from disk if configured
-        val storedStates = configRepo.loadSavedLeverStates()
-        if (configRepo.currentConfig.restore_last_state && storedStates != null && storedStates.isNotEmpty()) {
+        val storedData = configRepo.loadSavedStates()
+        if (configRepo.currentConfig.restore_last_state && storedData != null) {
             frames.forEachIndexed { tabIdx, frame ->
-                if (tabIdx < storedStates.size) {
-                    val states = storedStates[tabIdx]
-                    val updatedLevers = frame.levers.mapIndexed { i, l -> 
-                        if (i < states.size) l.copy(isReversed = states[i]) else l 
+                var updatedLevers = frame.levers
+                if (tabIdx < storedData.tabs.size) {
+                    val leverStates = storedData.tabs[tabIdx]
+                    updatedLevers = frame.levers.mapIndexed { i, l -> 
+                        if (i < leverStates.size) l.copy(isReversed = leverStates[i]) else l 
                     }
-                    frames[tabIdx] = frame.copy(levers = updatedLevers)
                 }
+                var updatedBlocks = frame.blocks
+                if (tabIdx < storedData.blocks.size) {
+                    val blockStates = storedData.blocks[tabIdx]
+                    updatedBlocks = frame.blocks.mapIndexed { i, b -> 
+                        if (i < blockStates.size) b.copy(isOccupied = blockStates[i]) else b 
+                    }
+                }
+                frames[tabIdx] = frame.copy(levers = updatedLevers, blocks = updatedBlocks)
             }
         }
 
@@ -150,6 +158,20 @@ class AppViewModel(
                             if (eventId.isNotBlank()) {
                                 lccClient.produceEvent(eventId)
                                 kotlinx.coroutines.delay(20) // prevent flooding the bus
+                            }
+                        }
+                    }
+                    
+                    // Also identify block states from the network
+                    tabDef.blocks.forEach { blockDef ->
+                        if (config.config.lcc_enabled) {
+                            if (blockDef.lcc_event_occupied.isNotBlank()) {
+                                lccClient.identifyProducer(blockDef.lcc_event_occupied)
+                                kotlinx.coroutines.delay(20)
+                            }
+                            if (blockDef.lcc_event_empty.isNotBlank()) {
+                                lccClient.identifyProducer(blockDef.lcc_event_empty)
+                                kotlinx.coroutines.delay(20)
                             }
                         }
                     }
@@ -392,7 +414,7 @@ class AppViewModel(
         viewModelScope.launch {
             configRepo.saveConfig(newConfig)
             if (clearStates) {
-                configRepo.clearSavedLeverStates()
+                configRepo.clearSavedStates()
             }
             
             if (!newConfig.lcc_enabled) {
