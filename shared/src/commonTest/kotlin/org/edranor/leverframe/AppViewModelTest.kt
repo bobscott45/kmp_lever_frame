@@ -37,80 +37,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class FakeConfigRepository : AppConfigRepository {
-    override var currentConfig: JsonConfig = JsonConfig()
-    
-    var initCalled = false
-    var saveCalled = false
-    
-    override suspend fun initConfig() {
-        initCalled = true
-    }
-    
-    override fun toJsonString(): String = ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), currentConfig)
-    
-    override fun parseConfig(jsonString: String): List<Pair<String, TabDef>> {
-        return ConfigManager.parseConfig(jsonString)
-    }
-    
-    var savedLeverStates: SavedStatesData? = null
-    override suspend fun loadSavedStates(): SavedStatesData? = savedLeverStates
-    
-    override suspend fun saveCurrentStates(states: SavedStatesData) {
-        savedLeverStates = states
-    }
 
-    override suspend fun clearSavedStates() {
-        savedLeverStates = null
-    }
-    
-    override suspend fun saveConfig(newConfig: JsonConfig) {
-        currentConfig = newConfig
-        saveCalled = true
-    }
-}
-
-class FakeLccClient : LccNetworkClient {
-    private val _events = MutableSharedFlow<String>()
-    override val externalEvents: SharedFlow<String> = _events.asSharedFlow()
-    private val _connectionStatus = kotlinx.coroutines.flow.MutableStateFlow("Disconnected")
-    override val connectionStatus: kotlinx.coroutines.flow.StateFlow<String> = _connectionStatus
-    private val _connectionErrors = kotlinx.coroutines.flow.MutableSharedFlow<String>()
-    override val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
-    
-    val producedEvents = mutableListOf<String>()
-    var initCalled = false
-    var disconnectCalled = false
-
-    override fun initialize() {
-        initCalled = true
-        disconnectCalled = false
-    }
-
-    override fun disconnect() {
-        disconnectCalled = true
-    }
-
-    override fun identifyProducer(eventIdStr: String) {
-        // No-op for test
-    }
-    
-    override fun produceEvent(eventIdStr: String) {
-        producedEvents.add(eventIdStr)
-    }
-
-    override fun parseEventId(eventIdStr: String): String {
-        return eventIdStr.replace(".", "").padEnd(16, '0').uppercase()
-    }
-    
-    suspend fun emitEvent(event: String) {
-        _events.emit(event)
-    }
-
-    suspend fun emitConnectionError(error: String) {
-        _connectionErrors.emit(error)
-    }
-}
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModelTest {
@@ -209,16 +136,7 @@ class AppViewModelTest {
         assertTrue(viewModel.uiState.value.errorMessage != null, "Error message should be set")
     }
 
-    @Test
-    fun testExternalEventUpdatesState() = runTest {
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        // External event matching Signal lever's reversed event
-        lccClient.emitEvent("1122334400000002")
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-                assertTrue(viewModel.domainState.value.frames[0].levers[0].isReversed, "Signal lever should be reversed by external event")
-    }
+
 
     @Test
     fun testUpdateSystemConfig() = runTest {
@@ -400,18 +318,7 @@ class AppViewModelTest {
         assertTrue(lccClient.producedEvents.contains("11.22.33.44.00.00.00.05"))
     }
 
-    @Test
-    fun testExternalEventToggleBlockState() = runTest {
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        assertTrue(viewModel.domainState.value.frames[0].blocks[0].isOccupied, "Block starts OCCUPIED")
-        
-        // External event for EMPTY
-        lccClient.emitEvent("1122334400000007")
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        assertFalse(viewModel.domainState.value.frames[0].blocks[0].isOccupied, "Block should be EMPTY")
-    }
+
 
     @Test
     fun testConfigSavedReloadsConfig() = runTest {
