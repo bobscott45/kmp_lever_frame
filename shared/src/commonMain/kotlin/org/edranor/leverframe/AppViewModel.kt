@@ -58,10 +58,8 @@ class AppViewModel(
         initialValue = TransientUiState()
     )
 
-    private val saveStateTrigger = MutableSharedFlow<Unit>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
-    )
+    private val persistenceService = PersistenceService(configRepo, viewModelScope, domainState)
+    private val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
 
     init {
         viewModelScope.launch {
@@ -88,15 +86,7 @@ class AppViewModel(
             }
         }
         
-        @OptIn(kotlinx.coroutines.FlowPreview::class)
-        viewModelScope.launch {
-            saveStateTrigger.debounce(500).collect {
-                if (configRepo.currentConfig.restore_last_state) {
-                    val statesToSave = _domainState.value.leverStates.map { it.copyOf() }
-                    configRepo.saveCurrentLeverStates(statesToSave)
-                }
-            }
-        }
+        
     }
 
     private suspend fun loadConfig() {
@@ -144,9 +134,7 @@ class AppViewModel(
     }
 
     private fun persistStatesIfEnabled() {
-        if (configRepo.currentConfig.restore_last_state) {
-            saveStateTrigger.tryEmit(Unit)
-        }
+        persistenceService.triggerSave()
     }
 
     private fun broadcastCurrentStates() {
@@ -175,112 +163,19 @@ class AppViewModel(
     }
 
     private fun handleExternalEvent(hexEventId: String) {
-        if (!configRepo.currentConfig.lcc_master) return
-        
-        var didChange = false
-        val outgoingEvents = mutableListOf<String>()
+        var result: EventProcessorResult? = null
         
         _domainState.update { currentDomain ->
-            val configState = _configState.value
-            val uiState = _uiState.value
-            var stateChanged = false
-            var stateToReturn = currentDomain
-            val newLeverStates = currentDomain.leverStates.map { it.copyOf() }
-            val policy = ConflictPolicy.of(configState.config.conflict_policy)
-
-            val newBlockStates = currentDomain.blockStates.map { it.copyOf() }.toMutableList()
-
-            configState.tabs.forEachIndexed { tabIdx, tabPair ->
-                val tabDef = tabPair.second
-                tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                    if (!leverDef.lcc_enabled) return@forEachIndexed
-                    var attemptState: Boolean? = null
-                    
-                    if (leverDef.lcc_event_normal.isNotBlank()) {
-                        val normalHex = lccClient.parseEventId(leverDef.lcc_event_normal)
-                        if (normalHex == hexEventId) attemptState = false
-                    }
-                    if (leverDef.lcc_event_reversed.isNotBlank()) {
-                        val reversedHex = lccClient.parseEventId(leverDef.lcc_event_reversed)
-                        if (reversedHex == hexEventId) attemptState = true
-                    }
-                    
-                    if (attemptState != null) {
-                        val currState = newLeverStates[tabIdx][leverIdx]
-                        if (currState != attemptState) {
-                            val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], currentDomain.blockStates[tabIdx], leverIdx, attemptState)
-                            if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
-                                newLeverStates[tabIdx][leverIdx] = attemptState
-                                stateChanged = true
-                            }
-                        }
-                    }
-                }
-                // Handle Block states
-                tabDef.blocks.forEachIndexed { blockIdx, blockDef ->
-                    var attemptBlockState: Boolean? = null
-                    if (blockDef.lcc_event_occupied.isNotBlank()) {
-                        val occupiedHex = lccClient.parseEventId(blockDef.lcc_event_occupied)
-                        if (occupiedHex == hexEventId) attemptBlockState = true
-                    }
-                    if (blockDef.lcc_event_empty.isNotBlank()) {
-                        val emptyHex = lccClient.parseEventId(blockDef.lcc_event_empty)
-                        if (emptyHex == hexEventId) attemptBlockState = false
-                    }
-                    if (attemptBlockState != null) {
-                        if (newBlockStates[tabIdx][blockIdx] != attemptBlockState) {
-                            newBlockStates[tabIdx][blockIdx] = attemptBlockState
-                            stateChanged = true
-                        }
-                    }
-                }
-                
-                // Evaluate auto-reversers (cascade until steady state)
-                var reverserChanged: Boolean
-                do {
-                    reverserChanged = false
-                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx])
-                    
-                    tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                        if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
-                            if (leverIdx in currentConflicts) {
-                                newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
-                                stateChanged = true
-                                reverserChanged = true
-                                if (leverDef.lcc_event_normal.isNotBlank()) {
-                                    outgoingEvents.add(leverDef.lcc_event_normal)
-                                }
-                            }
-                        }
-                    }
-                } while(reverserChanged)
-                
-                if (stateChanged && newBlockStates !== currentDomain.blockStates) {
-                    stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
-                }
-            }
-            
-            if (stateChanged) {
-                didChange = true
-                val conflicts = if (configState.tabs.isNotEmpty()) {
-                    Interlocking.getConflictingLevers(
-                        configState.tabs[uiState.selectedTabIndex].second,
-                        newLeverStates[uiState.selectedTabIndex],
-                        newBlockStates[uiState.selectedTabIndex]
-                    )
-                } else emptyList()
-                stateToReturn.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
-            } else {
-                didChange = false
-                stateToReturn
-            }
+            val r = eventProcessor.processEvent(hexEventId, currentDomain, _configState.value, _uiState.value)
+            result = r
+            r.newState
         }
         
-        if (didChange) {
+        if (result?.didChange == true) {
             persistStatesIfEnabled()
         }
         
-        outgoingEvents.forEach { eventStr ->
+        result?.outgoingEvents?.forEach { eventStr ->
             lccClient.produceEvent(eventStr)
         }
     }
