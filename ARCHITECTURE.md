@@ -22,9 +22,9 @@ The `AppViewModel` acts as the single source of truth for the application's stat
 *   **`ConfigState`**: Holds the static JSON configuration and track layout definitions.
 *   **`TransientUiState`**: Manages view modalities (e.g., active tab, open dialogs, networking status).
 *   It exposes these via separate `StateFlow` streams to the Compose UI, ensuring that UI updates are highly reactive and minimize unnecessary recomposition.
-*   It handles all user intents (e.g., pulling a lever, toggling a block occupancy) and dispatches them to the appropriate subsystem (Network, Interlocking, or Config).
-*   It manages **Auto-Reverser Cascading**: When a block occupancy changes, it checks if any interlocked home signals need to snap back to NORMAL (Danger), and cascades that lock to any dependent distant signals.
-*   It uses Coroutines to handle asynchronous operations like debounced saving of lever/block states to disk.
+*   It handles all user intents (e.g., pulling a lever, toggling a block occupancy) and dispatches them to the appropriate subsystem (`NetworkEventProcessor`, `Interlocking`, or `ConfigManager`).
+*   **`NetworkEventProcessor`**: A decoupled service that translates raw incoming LCC events into domain state modifications (calculating lock rules and triggering cascading auto-reversers).
+*   **`PersistenceService`**: A dedicated coroutine service that observes `DomainStateFlow` and debounces high-frequency lever toggles before writing changes to disk, removing I/O blocks from the ViewModel.
 
 ### 2.2 Configuration & Persistence (`ConfigManager.kt`)
 *   **`AppConfigRepository`**: An interface abstracting the persistence layer.
