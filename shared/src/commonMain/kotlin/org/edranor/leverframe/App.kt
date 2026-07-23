@@ -141,8 +141,8 @@ fun App() {
                 }
 
                 var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
-                LaunchedEffect(domainState.blockStates) {
-                    val currentBlocks = domainState.blockStates
+                LaunchedEffect(domainState.frames) {
+                    val currentBlocks = domainState.frames.map { it.blocks.map { b -> b.isOccupied }.toBooleanArray() }
                     val prevBlocks = previousBlocks
                     if (prevBlocks != null && prevBlocks.size == currentBlocks.size) {
                         var becameOccupied = false
@@ -196,8 +196,8 @@ fun App() {
                                         if (schematicWeight > 0.01f) {
                                             SchematicScreen(
                                                 tabDef = currentTabDef,
-                                                leverStates = domainState.leverStates[uiState.selectedTabIndex],
-                                                blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
+                                                levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                                                blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
                                                 modifier = Modifier
                                                     .fillMaxHeight()
                                                     .weight(schematicWeight)
@@ -246,8 +246,8 @@ fun App() {
                                     if (schematicWeight > 0.01f) {
                                         SchematicScreen(
                                             tabDef = currentTabDef,
-                                            leverStates = domainState.leverStates[uiState.selectedTabIndex],
-                                            blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
+                                            levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                                            blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .weight(schematicWeight)
@@ -304,8 +304,8 @@ fun App() {
                             LeverStatusScreen(
                                 leverIndex = index,
                                 leverDef = leverDef,
-                                leverStates = domainState.leverStates[uiState.selectedTabIndex],
-                                blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0),
+                                levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                                blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
                                 onClose = viewModel::dismissStatusLever,
                                 onEditConfig = {
                                     viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = uiState.selectedTabIndex, leverIndex = index)
@@ -857,10 +857,9 @@ fun ColumnScope.LeverTrackGroup(
 ) {
     if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
         val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
-        val leverStates = domainState.leverStates.getOrNull(uiState.selectedTabIndex)
-        val manualLocks = domainState.manualLocks.getOrNull(uiState.selectedTabIndex)
+        val levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers
         
-        if (leverStates != null && manualLocks != null) {
+        if (levers != null) {
             BoxWithConstraints(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val heightScale = (maxHeight.value / 600f).coerceIn(0.5f, 1.2f)
                 val baseWidthScale = (maxWidth.value / 450f).coerceIn(0.6f, 1.2f)
@@ -874,9 +873,10 @@ fun ColumnScope.LeverTrackGroup(
                         .horizontalScroll(rememberScrollState())
                 ) {
                     currentTabDef.levers.forEachIndexed { index, leverDef ->
-                        val isReversed = leverStates[index]
-                        val isManuallyLocked = manualLocks[index]
-                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, leverStates, domainState.blockStates.getOrNull(uiState.selectedTabIndex) ?: BooleanArray(0), index, !isReversed)
+                        val isReversed = levers[index].isReversed
+                        val isManuallyLocked = levers[index].isManuallyLocked
+                        val blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList()
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, levers, blocks, index, !isReversed)
                         val isAlarmed = index in domainState.conflictingLevers
     
                         LeverComponent(
@@ -917,8 +917,8 @@ fun BlockShelfGroup(
 ) {
     if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
         val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
-        val blockStates = domainState.blockStates.getOrNull(uiState.selectedTabIndex)
-        if (blockStates != null && currentTabDef.blocks.isNotEmpty()) {
+        val blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks
+        if (blocks != null && currentTabDef.blocks.isNotEmpty()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -928,7 +928,7 @@ fun BlockShelfGroup(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 currentTabDef.blocks.forEachIndexed { index, blockDef ->
-                    val isOccupied = blockStates[index]
+                    val isOccupied = if (index < blocks.size) blocks[index].isOccupied else true
                     val baseLabel = if (currentTabDef.useShortCodesInIndicators && blockDef.shortCode.isNotBlank()) blockDef.shortCode else blockDef.label
                     val labelText = if (currentTabDef.showBlockNumbers) "${index + 1} $baseLabel" else baseLabel
                     BlockIndicator(

@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 @Composable
 fun SchematicScreen(
     tabDef: TabDef,
-    leverStates: BooleanArray,
-    blockStates: BooleanArray,
+    levers: List<DomainLever>,
+    blocks: List<DomainBlock>,
     modifier: Modifier = Modifier
 ) {
     val maxX = tabDef.schematicElements.maxOfOrNull { it.x } ?: 0
@@ -63,7 +63,7 @@ fun SchematicScreen(
 
                 fun getBlockColor(blockIdx: Int): Color {
                     if (blockIdx < 0 || blockIdx >= tabDef.blocks.size) return Color.Gray
-                    val occupied = if (blockIdx in blockStates.indices) blockStates[blockIdx] else false
+                    val occupied = if (blockIdx in blocks.indices) blocks[blockIdx].isOccupied else false
                     return if (occupied) Color.Red else Color.White
                 }
 
@@ -91,7 +91,7 @@ fun SchematicScreen(
                             strokeWidth = 4f
                         )
                         "TURNOUT_LEFT" -> {
-                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
                             // Draw main line
                             drawLine(
                                 color = trackColor,
@@ -119,7 +119,7 @@ fun SchematicScreen(
                             }
                         }
                         "TURNOUT_RIGHT" -> {
-                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
                             // Draw main line
                             drawLine(
                                 color = trackColor,
@@ -147,7 +147,7 @@ fun SchematicScreen(
                             }
                         }
                         "SIGNAL_LEFT" -> {
-                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
                             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             if (leftElement == null) {
                                 // Check if a turnout from the row below points up to this cell
@@ -200,7 +200,7 @@ fun SchematicScreen(
                             )
                         }
                         "SIGNAL_RIGHT" -> {
-                            val isReversed = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
+                            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
                             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             if (leftElement == null) {
                                 // Check if a turnout from the row below points up to this cell
@@ -253,8 +253,8 @@ fun SchematicScreen(
                             )
                         }
                         "BRACKET_SIGNAL", "BRACKET_SIGNAL_LEFT" -> {
-                            val isReversed1 = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                            val isReversed2 = if (element.linkedLever2 in leverStates.indices) leverStates[element.linkedLever2] else false
+                            val isReversed1 = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
+                            val isReversed2 = if (element.linkedLever2 in levers.indices) levers[element.linkedLever2].isReversed else false
                             
                             val leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
@@ -332,8 +332,8 @@ fun SchematicScreen(
                             )
                         }
                         "BRACKET_SIGNAL_RIGHT" -> {
-                            val isReversed1 = if (element.linkedLever in leverStates.indices) leverStates[element.linkedLever] else false
-                            val isReversed2 = if (element.linkedLever2 in leverStates.indices) leverStates[element.linkedLever2] else false
+                            val isReversed1 = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
+                            val isReversed2 = if (element.linkedLever2 in levers.indices) levers[element.linkedLever2].isReversed else false
                             
                             val leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
                             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }

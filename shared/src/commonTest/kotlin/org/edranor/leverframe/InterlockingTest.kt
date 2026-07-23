@@ -26,30 +26,33 @@ import kotlin.test.assertTrue
 import kotlin.test.assertFalse
 
 class InterlockingTest {
+    private fun createLevers(vararg reversed: Boolean): List<DomainLever> = reversed.mapIndexed { i, b -> DomainLever(i, b) }
+    private fun createBlocks(vararg occupied: Boolean): List<DomainBlock> = occupied.mapIndexed { i, b -> DomainBlock(i, b) }
+
 
     @Test
     fun testSimpleLock() {
         // Lever 0 locks Lever 1 Normal
-        val levers = listOf(
+        val leverDefs = listOf(
             LeverDef(listOf(InterlockingCondition(targetIndex = 1, requiredState = false))),
             LeverDef()
         )
-        val tab = TabDef(levers)
-        val states = booleanArrayOf(false, false)
+        val tab = TabDef(leverDefs)
+        val levers = createLevers(false, false)
 
-        assertTrue(Interlocking.evaluate(tab, states, booleanArrayOf(), 0, true))
+        assertTrue(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
 
-        states[0] = true
+        val leversMod = createLevers(true, false)
 
-        assertFalse(Interlocking.evaluate(tab, states, booleanArrayOf(), 1, true))
+        assertFalse(Interlocking.evaluate(tab, leversMod, emptyList(), 1, true))
 
-        assertTrue(Interlocking.evaluate(tab, states, booleanArrayOf(), 0, false))
+        assertTrue(Interlocking.evaluate(tab, leversMod, emptyList(), 0, false))
     }
 
     @Test
     fun testOtherwiseLogic() {
         // Lever 0 locks Lever 1 Normal o/w Lever 2 is Reversed
-        val levers = listOf(
+        val leverDefs = listOf(
             LeverDef(listOf(InterlockingCondition(
                 targetIndex = 1, requiredState = false,
                 altTargetIndex = 2, altRequiredState = true
@@ -57,49 +60,49 @@ class InterlockingTest {
             LeverDef(),
             LeverDef()
         )
-        val tab = TabDef(levers)
+        val tab = TabDef(leverDefs)
         
-        val states1 = booleanArrayOf(false, false, false)
-        assertTrue(Interlocking.evaluate(tab, states1, booleanArrayOf(), 0, true))
+        val levers1 = createLevers(false, false, false)
+        assertTrue(Interlocking.evaluate(tab, levers1, emptyList(), 0, true))
         
-        val states2 = booleanArrayOf(false, true, false)
-        assertFalse(Interlocking.evaluate(tab, states2, booleanArrayOf(), 0, true))
+        val levers2 = createLevers(false, true, false)
+        assertFalse(Interlocking.evaluate(tab, levers2, emptyList(), 0, true))
     }
 
     @Test
     fun testReverseLocking() {
         // Lever 1 locks Lever 0 Normal
-        val levers = listOf(
+        val leverDefs = listOf(
             LeverDef(),
             LeverDef(listOf(InterlockingCondition(targetIndex = 0, requiredState = false)))
         )
-        val tab = TabDef(levers)
-        val states = booleanArrayOf(false, true)
+        val tab = TabDef(leverDefs)
+        val levers = createLevers(false, true)
 
-        assertFalse(Interlocking.evaluate(tab, states, booleanArrayOf(), 0, true))
+        assertFalse(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
     }
 
     @Test
     fun testMutualLocking() {
         // Lever 0 locks Lever 1 Normal, Lever 1 locks Lever 0 Normal
-        val levers = listOf(
+        val leverDefs = listOf(
             LeverDef(listOf(InterlockingCondition(targetIndex = 1, requiredState = false))),
             LeverDef(listOf(InterlockingCondition(targetIndex = 0, requiredState = false)))
         )
-        val tab = TabDef(levers)
-        val states = booleanArrayOf(false, false)
+        val tab = TabDef(leverDefs)
+        val levers = createLevers(false, false)
 
-        assertTrue(Interlocking.evaluate(tab, states, booleanArrayOf(), 0, true))
+        assertTrue(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
         
-        states[0] = true
+        val leversMod = createLevers(true, false)
         
-        assertFalse(Interlocking.evaluate(tab, states, booleanArrayOf(), 1, true))
+        assertFalse(Interlocking.evaluate(tab, leversMod, emptyList(), 1, true))
     }
 
     @Test
     fun testMultipleConditions() {
         // Lever 0 locks Lever 1 Normal AND Lever 2 Reversed
-        val levers = listOf(
+        val leverDefs = listOf(
             LeverDef(listOf(
                 InterlockingCondition(targetIndex = 1, requiredState = false),
                 InterlockingCondition(targetIndex = 2, requiredState = true)
@@ -107,15 +110,34 @@ class InterlockingTest {
             LeverDef(),
             LeverDef()
         )
-        val tab = TabDef(levers)
+        val tab = TabDef(leverDefs)
         
-        val states1 = booleanArrayOf(false, false, false)
-        assertFalse(Interlocking.evaluate(tab, states1, booleanArrayOf(), 0, true))
+        val levers1 = createLevers(false, false, false)
+        assertFalse(Interlocking.evaluate(tab, levers1, emptyList(), 0, true))
 
-        val states2 = booleanArrayOf(false, true, true)
-        assertFalse(Interlocking.evaluate(tab, states2, booleanArrayOf(), 0, true))
+        val levers2 = createLevers(false, true, true)
+        assertFalse(Interlocking.evaluate(tab, levers2, emptyList(), 0, true))
 
-        val states3 = booleanArrayOf(false, false, true)
-        assertTrue(Interlocking.evaluate(tab, states3, booleanArrayOf(), 0, true))
+        val levers3 = createLevers(false, false, true)
+        assertTrue(Interlocking.evaluate(tab, levers3, emptyList(), 0, true))
+    }
+
+    @Test
+    fun testBlockCondition() {
+        // Lever 0 requires Block 0 to be EMPTY (false)
+        val leverDefs = listOf(
+            LeverDef(listOf(
+                InterlockingCondition(targetType = TargetType.BLOCK, targetIndex = 0, requiredState = false)
+            ))
+        )
+        val tab = TabDef(leverDefs, blocks = listOf(BlockDef()))
+        
+        // blockStates: false means EMPTY, true means OCCUPIED
+        val levers = createLevers(false)
+        val blocksEmpty = createBlocks(false)
+        val blocksOccupied = createBlocks(true)
+
+        assertTrue(Interlocking.evaluate(tab, levers, blocksEmpty, 0, true))
+        assertFalse(Interlocking.evaluate(tab, levers, blocksOccupied, 0, true))
     }
 }

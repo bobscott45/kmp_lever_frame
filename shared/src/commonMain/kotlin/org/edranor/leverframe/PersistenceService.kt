@@ -21,7 +21,7 @@ class PersistenceService(
         scope.launch {
             saveStateTrigger.debounce(500).collect {
                 if (configRepo.currentConfig.restore_last_state) {
-                    val statesToSave = domainStateFlow.value.leverStates.map { it.copyOf() }
+                    val statesToSave = domainStateFlow.value.frames.map { f -> f.levers.map { it.isReversed }.toBooleanArray() }
                     configRepo.saveCurrentLeverStates(statesToSave)
                 }
             }

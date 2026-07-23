@@ -44,8 +44,8 @@ import androidx.compose.ui.graphics.Brush
 fun LeverStatusScreen(
     leverIndex: Int,
     leverDef: LeverDef,
-    leverStates: BooleanArray,
-    blockStates: BooleanArray,
+    levers: List<DomainLever>,
+    blocks: List<DomainBlock>,
     onClose: () -> Unit,
     onEditConfig: () -> Unit,
     onLccEnabledChange: (Boolean) -> Unit
@@ -96,6 +96,7 @@ fun LeverStatusScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 StatusItem("Label", leverDef.label.replace("\n", " "))
+                StatusItem("State", if (levers.getOrNull(leverIndex)?.isReversed == true) "Reversed" else "Normal")
                 StatusItem("Type", leverDef.type.name)
                 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -136,10 +137,10 @@ fun LeverStatusScreen(
                                 " OR $altTargetLabel ${rule.altTargetIndex + 1} is $altStateStr"
                             } else ""
                             
-                            val mainState = if (rule.targetType == TargetType.BLOCK) blockStates.getOrNull(rule.targetIndex) ?: false else leverStates.getOrNull(rule.targetIndex) ?: false
+                            val mainState = if (rule.targetType == TargetType.BLOCK) blocks.getOrNull(rule.targetIndex) ?: false else levers.getOrNull(rule.targetIndex) ?: false
                             val mainSatisfied = mainState == rule.requiredState
                             
-                            val altState = if (rule.altTargetType == TargetType.BLOCK) blockStates.getOrNull(rule.altTargetIndex) ?: false else leverStates.getOrNull(rule.altTargetIndex) ?: false
+                            val altState = if (rule.altTargetType == TargetType.BLOCK) blocks.getOrNull(rule.altTargetIndex) ?: false else levers.getOrNull(rule.altTargetIndex) ?: false
                             val altSatisfied = rule.altTargetIndex != -1 && altState == rule.altRequiredState
                             
                             val isSatisfied = mainSatisfied || altSatisfied

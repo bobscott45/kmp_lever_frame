@@ -46,12 +46,12 @@ object LeverFramePolicy {
      * Helper to attempt toggling a lever state. Returns a new array if the toggle
      * is valid according to Interlocking rules, or null if it violates the rules.
      */
-    fun attemptToggle(tabDef: TabDef, states: BooleanArray, blockStates: BooleanArray, leverIndex: Int, target: Boolean): BooleanArray? {
-        val isValid = Interlocking.evaluate(tabDef, states, blockStates, leverIndex, target)
+    fun attemptToggle(tabDef: TabDef, levers: List<DomainLever>, blocks: List<DomainBlock>, leverIndex: Int, target: Boolean): List<DomainLever>? {
+        val isValid = Interlocking.evaluate(tabDef, levers, blocks, leverIndex, target)
         if (isValid) {
-            val newStates = states.copyOf()
-            newStates[leverIndex] = target
-            return newStates
+            val newLevers = levers.toMutableList()
+            newLevers[leverIndex] = newLevers[leverIndex].copy(isReversed = target)
+            return newLevers
         }
         return null
     }

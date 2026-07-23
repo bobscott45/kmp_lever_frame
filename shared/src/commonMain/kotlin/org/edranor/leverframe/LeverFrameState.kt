@@ -24,45 +24,26 @@ package org.edranor.leverframe
 enum class ConfigMode { NONE, SYSTEM, FRAMES }
 
 data class DomainState(
-    val leverStates: List<BooleanArray> = emptyList(),
-    val manualLocks: List<BooleanArray> = emptyList(),
-    val blockStates: List<BooleanArray> = emptyList(),
+    val frames: List<DomainFrame> = emptyList(),
     val conflictingLevers: List<Int> = emptyList()
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+)
 
-        other as DomainState
+data class DomainFrame(
+    val id: Int,
+    val levers: List<DomainLever>,
+    val blocks: List<DomainBlock>
+)
 
-        if (conflictingLevers != other.conflictingLevers) return false
+data class DomainLever(
+    val id: Int,
+    val isReversed: Boolean,
+    val isManuallyLocked: Boolean = false
+)
 
-        if (leverStates.size != other.leverStates.size) return false
-        for (i in leverStates.indices) {
-            if (!leverStates[i].contentEquals(other.leverStates[i])) return false
-        }
-
-        if (manualLocks.size != other.manualLocks.size) return false
-        for (i in manualLocks.indices) {
-            if (!manualLocks[i].contentEquals(other.manualLocks[i])) return false
-        }
-
-        if (blockStates.size != other.blockStates.size) return false
-        for (i in blockStates.indices) {
-            if (!blockStates[i].contentEquals(other.blockStates[i])) return false
-        }
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = leverStates.sumOf { it.contentHashCode() }
-        result = 31 * result + manualLocks.sumOf { it.contentHashCode() }
-        result = 31 * result + blockStates.sumOf { it.contentHashCode() }
-        result = 31 * result + conflictingLevers.hashCode()
-        return result
-    }
-}
+data class DomainBlock(
+    val id: Int,
+    val isOccupied: Boolean
+)
 
 data class ConfigState(
     val tabs: List<Pair<String, TabDef>> = emptyList(),

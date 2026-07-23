@@ -1,0 +1,24 @@
+Reusing configuration cache.
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:generateComposeResClass UP-TO-DATE
+> Task :shared:generateBuildKonfig UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:checkJvmMainComposeLibrariesCompatibility
+> Task :shared:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :shared:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForJvmMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :shared:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :shared:generateActualResourceCollectorsForJvmMain UP-TO-DATE
+
+> Task :shared:compileKotlinJvm
+
+> Task :shared:compileKotlinJvm FAILED
+
+[Incubating] Problems report is available at: file:///home/robert/IdeaProjects/LeverFrame/build/reports/problems/problems-report.html
+10 actionable tasks: 3 executed, 7 up-to-date
+Configuration cache entry reused.

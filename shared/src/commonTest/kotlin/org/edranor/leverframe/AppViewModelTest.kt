@@ -182,7 +182,7 @@ class AppViewModelTest {
         viewModel.toggleLever(tabIndex = 0, leverIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
         
-                assertTrue(viewModel.domainState.value.leverStates[0][0], "Signal lever should be reversed (true)")
+                assertTrue(viewModel.domainState.value.frames[0].levers[0].isReversed, "Signal lever should be reversed (true)")
         
         // Ensure LCC event was fired for reversed state
         assertTrue(lccClient.producedEvents.contains("11.22.33.44.00.00.00.02"))
@@ -200,7 +200,7 @@ class AppViewModelTest {
         viewModel.toggleLever(tabIndex = 0, leverIndex = 1)
         testDispatcher.scheduler.advanceUntilIdle()
         
-                assertFalse(viewModel.domainState.value.leverStates[0][1], "Points lever should NOT be reversed due to interlocking")
+                assertFalse(viewModel.domainState.value.frames[0].levers[1].isReversed, "Points lever should NOT be reversed due to interlocking")
         assertTrue(viewModel.uiState.value.errorMessage != null, "Error message should be set")
     }
 
@@ -212,7 +212,7 @@ class AppViewModelTest {
         lccClient.emitEvent("1122334400000002")
         testDispatcher.scheduler.advanceUntilIdle()
         
-                assertTrue(viewModel.domainState.value.leverStates[0][0], "Signal lever should be reversed by external event")
+                assertTrue(viewModel.domainState.value.frames[0].levers[0].isReversed, "Signal lever should be reversed by external event")
     }
 
     @Test
@@ -314,10 +314,10 @@ class AppViewModelTest {
     fun testToggleManualLock() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
-        assertFalse(viewModel.domainState.value.manualLocks[0][0])
+        assertFalse(viewModel.domainState.value.frames[0].levers[0].isManuallyLocked)
         viewModel.toggleManualLock(0, 0)
         testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(viewModel.domainState.value.manualLocks[0][0])
+        assertTrue(viewModel.domainState.value.frames[0].levers[0].isManuallyLocked)
     }
 
     @Test
@@ -351,7 +351,7 @@ class AppViewModelTest {
         // Since lever 1 requires lever 0 to be NORMAL, this will create a conflict.
         lccClient.emitEvent("1122334400000004") // Points reversed
         testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(viewModel.domainState.value.leverStates[0][1], "Points lever should be reversed by external event")
+        assertTrue(viewModel.domainState.value.frames[0].levers[1].isReversed, "Points lever should be reversed by external event")
         assertEquals(listOf(1, 0), viewModel.domainState.value.conflictingLevers, "conflictingLevers should contain indices 1 and 0")
 
         // Now select another tab and verify conflicts clear (since tab 1 has no conflicts)
@@ -373,23 +373,23 @@ class AppViewModelTest {
         // Toggle Block 0 state to EMPTY (false)
         viewModel.toggleBlockState(tabIndex = 0, blockIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
-        assertFalse(viewModel.domainState.value.blockStates[0][0], "Block should be EMPTY")
+        assertFalse(viewModel.domainState.value.frames[0].blocks[0].isOccupied, "Block should be EMPTY")
 
         // Lever 2 requires Block 0 to be EMPTY. Now we can reverse Lever 2 (Auto Signal).
         val toggled = viewModel.toggleLever(tabIndex = 0, leverIndex = 2)
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(toggled, "Auto Signal should be reversed")
-        assertTrue(viewModel.domainState.value.leverStates[0][2])
+        assertTrue(viewModel.domainState.value.frames[0].levers[2].isReversed)
         
         // Now toggle Block 0 state back to OCCUPIED (true)
         viewModel.toggleBlockState(tabIndex = 0, blockIndex = 0)
         testDispatcher.scheduler.advanceUntilIdle()
         
         // Block should be OCCUPIED
-        assertTrue(viewModel.domainState.value.blockStates[0][0])
+        assertTrue(viewModel.domainState.value.frames[0].blocks[0].isOccupied)
         
         // Auto Reverser should have forced Lever 2 back to NORMAL (false)
-        assertFalse(viewModel.domainState.value.leverStates[0][2], "Auto Signal should snap back to normal")
+        assertFalse(viewModel.domainState.value.frames[0].levers[2].isReversed, "Auto Signal should snap back to normal")
         
         // LCC event for normal state should have been emitted
         assertTrue(lccClient.producedEvents.contains("11.22.33.44.00.00.00.05"))
@@ -399,13 +399,13 @@ class AppViewModelTest {
     fun testExternalEventToggleBlockState() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
         
-        assertTrue(viewModel.domainState.value.blockStates[0][0], "Block starts OCCUPIED")
+        assertTrue(viewModel.domainState.value.frames[0].blocks[0].isOccupied, "Block starts OCCUPIED")
         
         // External event for EMPTY
         lccClient.emitEvent("1122334400000007")
         testDispatcher.scheduler.advanceUntilIdle()
         
-        assertFalse(viewModel.domainState.value.blockStates[0][0], "Block should be EMPTY")
+        assertFalse(viewModel.domainState.value.frames[0].blocks[0].isOccupied, "Block should be EMPTY")
     }
 
     @Test

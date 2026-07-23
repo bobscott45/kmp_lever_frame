@@ -89,17 +89,16 @@ object Interlocking {
      */
     fun evaluate(
         tab: TabDef,
-        states: BooleanArray,
-        blockStates: BooleanArray,
+        levers: List<DomainLever>,
+        blocks: List<DomainBlock>,
         leverIndex: Int,
         attemptingState: Boolean
     ): Boolean {
         // Create the new hypothetical state
-        val newStates = states.copyOf()
-        newStates[leverIndex] = attemptingState
+        val newLevers = levers.map { if (it.id == leverIndex) it.copy(isReversed = attemptingState) else it }
 
-        val currentConflicts = getConflictingLevers(tab, states, blockStates).toSet()
-        val newConflicts = getConflictingLevers(tab, newStates, blockStates).toSet()
+        val currentConflicts = getConflictingLevers(tab, levers, blocks).toSet()
+        val newConflicts = getConflictingLevers(tab, newLevers, blocks).toSet()
 
         // The move is valid if it doesn't introduce any new conflicts.
         // i.e., newConflicts must be a subset of currentConflicts.
@@ -109,24 +108,24 @@ object Interlocking {
     /**
      * Returns a list of lever indices that are involved in an interlocking conflict.
      */
-    fun getConflictingLevers(tab: TabDef, states: BooleanArray, blockStates: BooleanArray): List<Int> {
+    fun getConflictingLevers(tab: TabDef, levers: List<DomainLever>, blocks: List<DomainBlock>): List<Int> {
         val conflicts = mutableSetOf<Int>()
         for (i in tab.levers.indices) {
-            if (states[i]) {
+            if (levers[i].isReversed) {
                 for (condition in tab.levers[i].conditions) {
                     if (condition.targetIndex != -1) {
                         val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
-                            blockStates.getOrNull(condition.targetIndex) ?: false
+                            blocks.getOrNull(condition.targetIndex)?.isOccupied ?: false
                         } else {
-                            states.getOrNull(condition.targetIndex) ?: false
+                            levers.getOrNull(condition.targetIndex)?.isReversed ?: false
                         }
                         val primaryMatch = primaryTargetState == condition.requiredState
                         
                         val altMatch = if (condition.altTargetIndex != -1) {
                             val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
-                                blockStates.getOrNull(condition.altTargetIndex) ?: false
+                                blocks.getOrNull(condition.altTargetIndex)?.isOccupied ?: false
                             } else {
-                                states.getOrNull(condition.altTargetIndex) ?: false
+                                levers.getOrNull(condition.altTargetIndex)?.isReversed ?: false
                             }
                             altTargetState == condition.altRequiredState
                         } else false

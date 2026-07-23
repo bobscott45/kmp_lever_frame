@@ -71,18 +71,18 @@ class LeverFramePolicyTest {
             )
         )
         
-        val initialStates = booleanArrayOf(false, false)
+        val levers = listOf(DomainLever(0, false), DomainLever(1, false))
+        val blocks = emptyList<DomainBlock>()
 
         // Attempting to reverse Lever 1 should fail because Lever 0 is false.
-        val invalidAttempt = LeverFramePolicy.attemptToggle(tabDef, initialStates, booleanArrayOf(), 1, true)
-        assertNull(invalidAttempt, "Attempting to reverse lever 1 should fail interlocking rules.")
+        assertNull(LeverFramePolicy.attemptToggle(tabDef, levers, blocks, 1, true), "Attempting to reverse lever 1 should fail interlocking rules.")
 
         // Reverse Lever 0
-        val statesWithLever0Reversed = booleanArrayOf(true, false)
+        val leversWithLever0Reversed = listOf(DomainLever(0, true), DomainLever(1, false))
         
         // Attempting to reverse Lever 1 should now succeed.
-        val validAttempt = LeverFramePolicy.attemptToggle(tabDef, statesWithLever0Reversed, booleanArrayOf(), 1, true)
+        val validAttempt = LeverFramePolicy.attemptToggle(tabDef, leversWithLever0Reversed, blocks, 1, true)
         assertNotNull(validAttempt, "Attempting to reverse lever 1 should succeed when lever 0 is reversed.")
-        assertTrue(validAttempt[1], "Lever 1 should be reversed in the resulting state.")
+        assertTrue(validAttempt[1].isReversed, "Lever 1 should be reversed in the resulting state.")
     }
 }

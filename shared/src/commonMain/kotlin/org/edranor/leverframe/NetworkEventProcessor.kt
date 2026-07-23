@@ -18,9 +18,8 @@ class NetworkEventProcessor(
         var stateChanged = false
         var stateToReturn = currentDomain
         val outgoingEvents = mutableListOf<String>()
-        val newLeverStates = currentDomain.leverStates.map { it.copyOf() }
+        val newFrames = currentDomain.frames.toMutableList()
         val policy = ConflictPolicy.of(configState.config.conflict_policy)
-        val newBlockStates = currentDomain.blockStates.map { it.copyOf() }.toMutableList()
 
         configState.tabs.forEachIndexed { tabIdx, tabPair ->
             val tabDef = tabPair.second
@@ -38,11 +37,14 @@ class NetworkEventProcessor(
                 }
 
                 if (attemptState != null) {
-                    val currState = newLeverStates[tabIdx][leverIdx]
+                    val frame = newFrames[tabIdx]
+                    val currState = frame.levers[leverIdx].isReversed
                     if (currState != attemptState) {
-                        val isValid = Interlocking.evaluate(tabDef, newLeverStates[tabIdx], currentDomain.blockStates[tabIdx], leverIdx, attemptState)
+                        val isValid = Interlocking.evaluate(tabDef, frame.levers, frame.blocks, leverIdx, attemptState)
                         if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
-                            newLeverStates[tabIdx][leverIdx] = attemptState
+                            val newLevers = frame.levers.toMutableList()
+                            newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = attemptState)
+                            newFrames[tabIdx] = frame.copy(levers = newLevers)
                             stateChanged = true
                         }
                     }
@@ -61,8 +63,11 @@ class NetworkEventProcessor(
                     if (emptyHex == hexEventId) attemptBlockState = false
                 }
                 if (attemptBlockState != null) {
-                    if (newBlockStates[tabIdx][blockIdx] != attemptBlockState) {
-                        newBlockStates[tabIdx][blockIdx] = attemptBlockState
+                    val frame = newFrames[tabIdx]
+                    if (frame.blocks[blockIdx].isOccupied != attemptBlockState) {
+                        val newBlocks = frame.blocks.toMutableList()
+                        newBlocks[blockIdx] = newBlocks[blockIdx].copy(isOccupied = attemptBlockState)
+                        newFrames[tabIdx] = frame.copy(blocks = newBlocks)
                         stateChanged = true
                     }
                 }
@@ -71,13 +76,16 @@ class NetworkEventProcessor(
             // Evaluate auto-reversers (cascade until steady state)
             var reverserChanged: Boolean
             do {
+                val frame = newFrames[tabIdx]
                 reverserChanged = false
-                val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLeverStates[tabIdx], newBlockStates[tabIdx])
+                val currentConflicts = Interlocking.getConflictingLevers(tabDef, frame.levers, frame.blocks)
 
                 tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                    if (leverDef.autoReverser && newLeverStates[tabIdx][leverIdx]) {
+                    if (leverDef.autoReverser && frame.levers[leverIdx].isReversed) {
                         if (leverIdx in currentConflicts) {
-                            newLeverStates[tabIdx][leverIdx] = false // Force to NORMAL
+                            val newLevers = newFrames[tabIdx].levers.toMutableList()
+                            newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = false) // Force to NORMAL
+                            newFrames[tabIdx] = newFrames[tabIdx].copy(levers = newLevers)
                             stateChanged = true
                             reverserChanged = true
                             if (leverDef.lcc_event_normal.isNotBlank()) {
@@ -87,21 +95,17 @@ class NetworkEventProcessor(
                     }
                 }
             } while (reverserChanged)
-
-            if (stateChanged && newBlockStates !== currentDomain.blockStates) {
-                stateToReturn = stateToReturn.copy(blockStates = newBlockStates)
-            }
-        }
+        } // end forEachIndexed
 
         if (stateChanged) {
-            val conflicts = if (configState.tabs.isNotEmpty()) {
+            val conflicts = if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex in newFrames.indices) {
                 Interlocking.getConflictingLevers(
                     configState.tabs[uiState.selectedTabIndex].second,
-                    newLeverStates[uiState.selectedTabIndex],
-                    newBlockStates[uiState.selectedTabIndex]
+                    newFrames[uiState.selectedTabIndex].levers,
+                    newFrames[uiState.selectedTabIndex].blocks
                 )
             } else emptyList()
-            stateToReturn = stateToReturn.copy(leverStates = newLeverStates, conflictingLevers = conflicts)
+            stateToReturn = stateToReturn.copy(frames = newFrames, conflictingLevers = conflicts)
         }
 
         return EventProcessorResult(

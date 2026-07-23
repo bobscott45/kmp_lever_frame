@@ -95,24 +95,24 @@ class AppViewModel(
         val initialVersion = _configState.value.configVersion
         
         // Build initial states
-        val frames = parsedTabs.mapIndexed { tabIdx, (_, tabDef) ->
-            DomainFrame(
-                id = tabIdx,
-                levers = tabDef.levers.mapIndexed { i, _ -> DomainLever(i, false, false) },
-                blocks = tabDef.blocks.mapIndexed { i, _ -> DomainBlock(i, true) }
-            )
-        }.toMutableList()
-
+        val leverStates = parsedTabs.map { (tabName, tabDef) ->
+            BooleanArray(tabDef.levers.size) { false }
+        }
+        val manualLocks = parsedTabs.map { (tabName, tabDef) ->
+            BooleanArray(tabDef.levers.size) { false }
+        }
+        val blockStates = parsedTabs.map { (tabName, tabDef) ->
+            BooleanArray(tabDef.blocks.size) { true }
+        }
+        
         // Restore from disk if configured
         val storedStates = configRepo.loadSavedLeverStates()
         if (configRepo.currentConfig.restore_last_state && storedStates != null && storedStates.isNotEmpty()) {
-            frames.forEachIndexed { tabIdx, frame ->
-                if (tabIdx < storedStates.size) {
-                    val states = storedStates[tabIdx]
-                    val updatedLevers = frame.levers.mapIndexed { i, l -> 
-                        if (i < states.size) l.copy(isReversed = states[i]) else l 
-                    }
-                    frames[tabIdx] = frame.copy(levers = updatedLevers)
+            storedStates.forEachIndexed { tabIdx, states ->
+                if (tabIdx < leverStates.size) {
+                    val tabLeversCount = leverStates[tabIdx].size
+                    val copyCount = minOf(tabLeversCount, states.size)
+                    states.copyInto(leverStates[tabIdx], 0, 0, copyCount)
                 }
             }
         }
@@ -125,7 +125,11 @@ class AppViewModel(
             )
         }
         _domainState.update {
-            it.copy(frames = frames.toList())
+            it.copy(
+                leverStates = leverStates,
+                manualLocks = manualLocks,
+                blockStates = blockStates
+            )
         }
     }
 
@@ -138,14 +142,14 @@ class AppViewModel(
             kotlinx.coroutines.delay(1000) // Wait for LccNode init sequence to finish
             val domain = _domainState.value
             val config = _configState.value
-            if (config.tabs.isEmpty() || domain.frames.isEmpty()) return@launch
+            if (config.tabs.isEmpty() || domain.leverStates.isEmpty()) return@launch
 
             config.tabs.forEachIndexed { tabIdx, (_, tabDef) ->
-                if (tabIdx < domain.frames.size) {
-                    val statesForTab = domain.frames[tabIdx].levers
+                if (tabIdx < domain.leverStates.size) {
+                    val statesForTab = domain.leverStates[tabIdx]
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
                         if (leverIdx < statesForTab.size && leverDef.lcc_enabled && config.config.lcc_enabled) {
-                            val isReversed = statesForTab[leverIdx].isReversed
+                            val isReversed = statesForTab[leverIdx]
                             val eventId = if (isReversed) leverDef.lcc_event_reversed else leverDef.lcc_event_normal
                             if (eventId.isNotBlank()) {
                                 lccClient.produceEvent(eventId)
@@ -180,11 +184,11 @@ class AppViewModel(
         _uiState.update { it.copy(selectedTabIndex = index) }
         _domainState.update { currentDomain ->
             val configState = _configState.value
-            val conflicts = if (configState.tabs.isNotEmpty() && index in currentDomain.frames.indices) {
+            val conflicts = if (configState.tabs.isNotEmpty()) {
                 Interlocking.getConflictingLevers(
                     configState.tabs[index].second,
-                    currentDomain.frames[index].levers,
-                    currentDomain.frames[index].blocks
+                    currentDomain.leverStates[index],
+                    currentDomain.blockStates[index]
                 )
             } else emptyList()
             currentDomain.copy(conflictingLevers = conflicts)
@@ -199,22 +203,21 @@ class AppViewModel(
             val configState = _configState.value
             val uiState = _uiState.value
             val tabDef = configState.tabs[tabIndex].second
-            val frame = currentDomain.frames[tabIndex]
-            val currentStates = frame.levers
-            val leverState = currentStates[leverIndex].isReversed
+            val currentStates = currentDomain.leverStates[tabIndex]
+            val leverState = currentStates[leverIndex]
             val targetState = !leverState
             
-            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, frame.blocks, leverIndex, targetState)
+            val newStates = LeverFramePolicy.attemptToggle(tabDef, currentStates, currentDomain.blockStates[tabIndex], leverIndex, targetState)
             if (newStates != null) {
                 didChange = true
-                val updatedFrames = currentDomain.frames.toMutableList()
-                updatedFrames[tabIndex] = frame.copy(levers = newStates)
+                val updatedAllStates = currentDomain.leverStates.toMutableList()
+                updatedAllStates[tabIndex] = newStates
                 
-                val conflicts = if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex in updatedFrames.indices) {
+                val conflicts = if (configState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
                         configState.tabs[uiState.selectedTabIndex].second,
-                        updatedFrames[uiState.selectedTabIndex].levers,
-                        updatedFrames[uiState.selectedTabIndex].blocks
+                        updatedAllStates[uiState.selectedTabIndex],
+                        currentDomain.blockStates[uiState.selectedTabIndex]
                     )
                 } else emptyList()
 
@@ -229,7 +232,7 @@ class AppViewModel(
                 }
 
                 _uiState.update { it.copy(errorMessage = null) }
-                currentDomain.copy(frames = updatedFrames, conflictingLevers = conflicts)
+                currentDomain.copy(leverStates = updatedAllStates, conflictingLevers = conflicts)
             } else {
                 didChange = false
                 lccEventStr = null
@@ -247,12 +250,11 @@ class AppViewModel(
 
     fun toggleManualLock(tabIndex: Int, leverIndex: Int) {
         _domainState.update { currentDomain ->
-            val updatedFrames = currentDomain.frames.toMutableList()
-            val frame = updatedFrames[tabIndex]
-            val updatedLevers = frame.levers.toMutableList()
-            updatedLevers[leverIndex] = updatedLevers[leverIndex].copy(isManuallyLocked = !updatedLevers[leverIndex].isManuallyLocked)
-            updatedFrames[tabIndex] = frame.copy(levers = updatedLevers)
-            currentDomain.copy(frames = updatedFrames)
+            val updatedLocks = currentDomain.manualLocks.toMutableList()
+            val tabLocks = updatedLocks[tabIndex].copyOf()
+            tabLocks[leverIndex] = !tabLocks[leverIndex]
+            updatedLocks[tabIndex] = tabLocks
+            currentDomain.copy(manualLocks = updatedLocks)
         }
         persistStatesIfEnabled()
     }
@@ -324,26 +326,23 @@ class AppViewModel(
         _domainState.update { currentDomain ->
             val configState = _configState.value
             val uiState = _uiState.value
-            if (tabIndex in currentDomain.frames.indices && blockIndex in currentDomain.frames[tabIndex].blocks.indices) {
-                val updatedFrames = currentDomain.frames.toMutableList()
-                val frame = updatedFrames[tabIndex]
+            if (tabIndex in currentDomain.blockStates.indices && blockIndex in currentDomain.blockStates[tabIndex].indices) {
+                val newBlockStates = currentDomain.blockStates.map { it.copyOf() }.toMutableList()
+                newBlockStates[tabIndex][blockIndex] = !newBlockStates[tabIndex][blockIndex]
                 
-                val newBlocks = frame.blocks.toMutableList()
-                newBlocks[blockIndex] = newBlocks[blockIndex].copy(isOccupied = !newBlocks[blockIndex].isOccupied)
-                
-                val newLevers = frame.levers.toMutableList()
+                val newLeverStates = currentDomain.leverStates.map { it.copyOf() }.toMutableList()
                 val tabDef = configState.tabs[tabIndex].second
                 
                 // Evaluate auto-reversers (cascade until steady state)
                 var reverserChanged: Boolean
                 do {
                     reverserChanged = false
-                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLevers, newBlocks)
+                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLeverStates[tabIndex], newBlockStates[tabIndex])
                     
                     tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                        if (leverDef.autoReverser && newLevers[leverIdx].isReversed) {
+                        if (leverDef.autoReverser && newLeverStates[tabIndex][leverIdx]) {
                             if (leverIdx in currentConflicts) {
-                                newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = false) // Force to NORMAL
+                                newLeverStates[tabIndex][leverIdx] = false // Force to NORMAL
                                 reverserChanged = true
                                 if (leverDef.lcc_event_normal.isNotBlank()) {
                                     outgoingEvents.add(leverDef.lcc_event_normal)
@@ -353,19 +352,18 @@ class AppViewModel(
                     }
                 } while(reverserChanged)
                 
-                updatedFrames[tabIndex] = frame.copy(blocks = newBlocks, levers = newLevers)
-                
-                val conflicts = if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex in updatedFrames.indices) {
+                val conflicts = if (configState.tabs.isNotEmpty()) {
                     Interlocking.getConflictingLevers(
                         configState.tabs[uiState.selectedTabIndex].second,
-                        updatedFrames[uiState.selectedTabIndex].levers,
-                        updatedFrames[uiState.selectedTabIndex].blocks
+                        newLeverStates[uiState.selectedTabIndex],
+                        newBlockStates[uiState.selectedTabIndex]
                     )
                 } else emptyList()
                 
                 didChange = true
                 currentDomain.copy(
-                    frames = updatedFrames,
+                    blockStates = newBlockStates,
+                    leverStates = newLeverStates,
                     conflictingLevers = conflicts
                 )
             } else {

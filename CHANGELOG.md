@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Architecture**: Decoupled `AppViewModel` by applying the Single Responsibility Principle, extracting LCC and interlocking logic into `NetworkEventProcessor` and disk I/O into `PersistenceService`.
+- **Architecture**: Replaced array-based primitive state representations (`BooleanArray`, `List<BooleanArray>`) with structured domain models (`DomainFrame`, `DomainLever`, `DomainBlock`) for enhanced type safety and simplified UI bindings.
 - **Architecture**: Refactored `LeverFrameUiState` into segregated state flows (`DomainState`, `ConfigState`, `TransientUiState`) to improve Compose rendering performance and eliminate deep copying of massive state trees on every UI interaction.
 - **Architecture**: Refactored the core interlocking engine and schematic editor to link components via robust integer indices rather than string names, entirely eliminating "broken link" bugs when renaming blocks.
 - **Logic**: Implemented safe-deletion handling for Blocks and Levers, which now gracefully decrement or nullify interlocking rule targets down the chain to preserve data integrity when an upstream item is removed.
