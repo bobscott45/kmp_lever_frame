@@ -153,7 +153,8 @@ class AppViewModelTest {
             tabs = listOf(jsonTab, jsonTab2)
         )
         
-        viewModel = AppViewModel(configRepo, lccClient)
+        val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
+        viewModel = AppViewModel(configRepo, lccClient, eventProcessor)
     }
 
     @AfterTest

@@ -33,8 +33,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 
 class AppViewModel(
-    private val configRepo: AppConfigRepository = ConfigManager,
-    private val lccClient: LccNetworkClient = LccNode
+    private val configRepo: AppConfigRepository,
+    private val lccClient: LccNetworkClient,
+    private val eventProcessor: NetworkEventProcessor
 ) : ViewModel() {
 
     private val _domainState = MutableStateFlow(DomainState())
@@ -59,7 +60,6 @@ class AppViewModel(
     )
 
     private val persistenceService = PersistenceService(configRepo, viewModelScope, domainState)
-    private val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
 
     init {
         viewModelScope.launch {

@@ -61,9 +61,29 @@ import androidx.compose.ui.input.pointer.pointerInput
 import kotlinx.coroutines.delay
 
 
+import org.koin.compose.KoinContext
+import org.koin.compose.viewmodel.koinViewModel
+import org.edranor.leverframe.di.appModule
+import org.koin.core.context.startKoin
+
+var koinStarted = false
+
 @Composable
 @Preview
 fun App() {
+    if (!koinStarted) {
+        startKoin {
+            modules(appModule)
+        }
+        koinStarted = true
+    }
+    KoinContext {
+        AppContent()
+    }
+}
+
+@Composable
+fun AppContent() {
     KeepScreenOn(keepOn = true)
     
     var isInputBlocked by remember { mutableStateOf(false) }
@@ -107,7 +127,7 @@ fun App() {
 
     MaterialTheme(colorScheme = customColorScheme, typography = customTypography) {
         Box(modifier = Modifier.fillMaxSize()) {
-            val viewModel = androidx.lifecycle.viewmodel.compose.viewModel { AppViewModel() }
+            val viewModel = koinViewModel<AppViewModel>()
             val domainState by viewModel.domainState.collectAsState()
             val configState by viewModel.configState.collectAsState()
             val uiState by viewModel.uiState.collectAsState()
