@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
 
 ### Changed
+- **Architecture**: Implemented Dependency Injection using Koin, fully decoupling `AppViewModel` from its underlying network and disk persistence implementations.
+- **Persistence**: Enhanced `PersistenceService` to save and restore both Lever and Block Occupancy states across sessions (previously only Lever states were persisted).
+- **Network**: Upon connecting to an LCC network, LeverFrame now explicitly interrogates the physical hardware for block occupancy states using `Identify Producer` requests to ensure perfect UI synchronization.
 - **Architecture**: Decoupled `AppViewModel` by applying the Single Responsibility Principle, extracting LCC and interlocking logic into `NetworkEventProcessor` and disk I/O into `PersistenceService`.
 - **Architecture**: Replaced array-based primitive state representations (`BooleanArray`, `List<BooleanArray>`) with structured domain models (`DomainFrame`, `DomainLever`, `DomainBlock`) for enhanced type safety and simplified UI bindings.
 - **Architecture**: Refactored `LeverFrameUiState` into segregated state flows (`DomainState`, `ConfigState`, `TransientUiState`) to improve Compose rendering performance and eliminate deep copying of massive state trees on every UI interaction.
