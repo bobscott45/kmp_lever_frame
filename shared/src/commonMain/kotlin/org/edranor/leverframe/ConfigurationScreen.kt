@@ -1425,7 +1425,7 @@ private fun JsonConfig.withoutUiAndRules(): JsonConfig {
                 block_layout = "HORIZONTAL",
                 block_label_size = 8,
             levers = tab.levers.map { lever ->
-                lever.copy(interlocking = emptyList())
+                lever.copy(interlocking = emptyList(), auto_reverser = false)
             }
         )
     })

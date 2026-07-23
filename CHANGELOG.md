@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **UI/UX**: Fixed schematic turnout rendering where the main line track color incorrectly extended past the divergence point (V). The track now accurately splits to show the approaching block color on the left half and the departing block color on the right half.
+- **State**: Toggling the "Auto-Reverser" property in the Configuration screen now saves silently without triggering a full app reload warning, as it is dynamically evaluated like an interlocking rule.
 - **UI/UX**: Fixed a bug where tapping a cell in the Schematic Editor would default it to a straight track, rather than retaining its existing type, due to stale gesture capturing.
 - **UI/UX**: Fixed a bug where the 'Linked Lever (Branch)' dropdown was hidden when editing Left or Right Bracket Signals in the Schematic Editor.
 - **Network**: Fixed a bug where toggling a lever while LCC is globally disabled via settings would incorrectly trigger a "Network disconnected" error.

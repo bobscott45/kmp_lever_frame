@@ -92,10 +92,20 @@ fun SchematicScreen(
                         )
                         "TURNOUT_LEFT" -> {
                             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
-                            // Draw main line
+                            val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
+                            val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+
+                            // Draw left half of main line
                             drawLine(
                                 color = trackColor,
                                 start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw right half of main line
+                            drawLine(
+                                color = mainRightColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
                                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
                                 strokeWidth = 4f
                             )
@@ -120,10 +130,20 @@ fun SchematicScreen(
                         }
                         "TURNOUT_RIGHT" -> {
                             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
-                            // Draw main line
+                            val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
+                            val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
+
+                            // Draw left half of main line
                             drawLine(
                                 color = trackColor,
                                 start = Offset(px, py + gridSizeY / 2),
+                                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
+                                strokeWidth = 4f
+                            )
+                            // Draw right half of main line
+                            drawLine(
+                                color = mainRightColor,
+                                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
                                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
                                 strokeWidth = 4f
                             )
