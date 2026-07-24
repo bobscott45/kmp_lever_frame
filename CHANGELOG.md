@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Implemented a resizable, draggable layout divider between the schematic and lever views, with persistent layout weights.
 
 ### Changed
+- **Architecture**: Refactored the massive UI files (`ConfigurationScreen.kt`, `App.kt`) into smaller, highly cohesive, single-responsibility composables (`ConfigurationFrameViews`, `ClauseBuilderView`, `LeverComponent`, etc.).
+- **UI/UX**: Improved the Interlocking Rules UI flow by offering three distinct Display Modes (Locking Table, Clause Builder, Text Formula) with seamless switching to the user's preferred visual editor.
 - **Architecture**: Refactored `AppConfigRepository` according to the Interface Segregation Principle (ISP), separating it into distinct `ConfigurationRepository` and `StatePersistenceRepository` interfaces.
 - **Architecture**: Refactored `AstNode` evaluation and stringification according to the Open/Closed Principle (OCP) using polymorphic dispatch instead of massive `when` blocks in `Interlocking.kt`.
 - **Architecture**: Extracted redundant auto-reverser cascade logic from `AppViewModel` and `NetworkEventProcessor` into a centralized `Interlocking` method, adhering to the Single Responsibility Principle.
