@@ -27,6 +27,14 @@ import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+
+object AndroidAppContext {
+    var applicationContext: Context? = null
+}
 
 class AndroidPlatform : Platform {
     override val name: String = "Android ${android.os.Build.VERSION.SDK_INT}"
@@ -54,25 +62,46 @@ actual fun getLocalIpAddress(): String {
 }
 
 actual suspend fun saveConfigToFile(json: String) {
-    // For Android, ideally use Context to get filesDir, but context is not available here.
-    // Placeholder implementation or require initialization with context.
+    AndroidAppContext.applicationContext?.let { context ->
+        withContext(Dispatchers.IO) {
+            File(context.filesDir, "leverframe_config.json").writeText(json)
+        }
+    }
 }
 
 actual suspend fun loadConfigFromFile(): String? {
-    // Placeholder for Android
-    return null
+    return AndroidAppContext.applicationContext?.let { context ->
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, "leverframe_config.json")
+            if (file.exists()) file.readText() else null
+        }
+    }
 }
 
 actual suspend fun saveLeverStatesToFile(json: String) {
-    // Placeholder
+    AndroidAppContext.applicationContext?.let { context ->
+        withContext(Dispatchers.IO) {
+            File(context.filesDir, "leverframe_states.json").writeText(json)
+        }
+    }
 }
 
 actual suspend fun loadLeverStatesFromFile(): String? {
-    return null
+    return AndroidAppContext.applicationContext?.let { context ->
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, "leverframe_states.json")
+            if (file.exists()) file.readText() else null
+        }
+    }
 }
 
 actual suspend fun clearLeverStatesFile() {
-    // Placeholder
+    AndroidAppContext.applicationContext?.let { context ->
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, "leverframe_states.json")
+            if (file.exists()) file.delete()
+        }
+    }
 }
 
 @Composable

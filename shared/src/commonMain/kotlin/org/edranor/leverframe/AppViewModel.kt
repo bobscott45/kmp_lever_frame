@@ -424,5 +424,16 @@ class AppViewModel(
             }
         }
     }
+
+    fun saveLayoutWeights(landscapeWeight: Float, portraitWeight: Float) {
+        val newConfig = configRepo.currentConfig.copy(
+            schematic_weight_landscape = landscapeWeight,
+            schematic_weight_portrait = portraitWeight
+        )
+        viewModelScope.launch {
+            configRepo.saveConfig(newConfig)
+            _configState.update { it.copy(config = newConfig) }
+        }
+    }
     
 }

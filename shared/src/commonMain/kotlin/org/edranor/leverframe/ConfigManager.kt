@@ -52,6 +52,8 @@ data class JsonConfig(
     val lcc_enabled: Boolean = true,
     val lcc_master: Boolean = true,
     val enable_sound: Boolean = true,
+    val schematic_weight_landscape: Float = 0.33f,
+    val schematic_weight_portrait: Float = 0.25f,
     val tabs: List<JsonTab> = emptyList()
 )
 

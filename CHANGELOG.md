@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Added a collapsible 'shelf' view for the schematic display in the main operation screen.
 - **UI/UX**: The grid size for the schematic is now user-configurable in the Settings tab.
 - **Build System**: Added `TargetFormat.Rpm` to the Compose Desktop packaging configuration, enabling native RPM installer builds for openSUSE/Fedora users.
+- **UI/UX**: Implemented a resizable, draggable layout divider between the schematic and lever views, with persistent layout weights.
 
 ### Changed
 - **Architecture**: Extracted redundant auto-reverser cascade logic from `AppViewModel` and `NetworkEventProcessor` into a centralized `Interlocking` method, adhering to the Single Responsibility Principle.
@@ -39,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **Persistence**: Fixed Android state persistence by implementing `AndroidAppContext` and `Platform.android.kt` file operations, ensuring configuration and layout weights persist across sessions.
 - **UI/UX**: Fixed schematic turnout rendering where the main line track color incorrectly extended past the divergence point (V). The track now accurately splits to show the approaching block color on the left half and the departing block color on the right half.
 - **State**: Toggling the "Auto-Reverser" property in the Configuration screen now saves silently without triggering a full app reload warning, as it is dynamically evaluated like an interlocking rule.
 - **UI/UX**: Fixed a bug where tapping a cell in the Schematic Editor would default it to a straight track, rather than retaining its existing type, due to stale gesture capturing.

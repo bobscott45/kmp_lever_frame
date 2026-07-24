@@ -58,6 +58,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
 import kotlinx.coroutines.delay
 
 
@@ -188,6 +189,8 @@ fun AppContent() {
 
                 var isSchematicVisiblePortrait by rememberSaveable { mutableStateOf(true) }
                 var isSchematicVisibleLandscape by rememberSaveable { mutableStateOf(true) }
+                var dragLandscapeWeight by remember(configState.config.schematic_weight_landscape) { mutableStateOf(configState.config.schematic_weight_landscape) }
+                var dragPortraitWeight by remember(configState.config.schematic_weight_portrait) { mutableStateOf(configState.config.schematic_weight_portrait) }
 
                 BoxWithConstraints(
                     modifier = Modifier
@@ -195,8 +198,9 @@ fun AppContent() {
                         .background(LeverFrameTheme.Colors.DarkSurface)
                         .padding(16.dp)
                 ) {
+                    val parentMaxWidth = maxWidth
+                    val parentMaxHeight = maxHeight
                     val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
-                    
                     Column(modifier = Modifier.fillMaxSize()) {
                         if (!isLandscapeCompact) {
                             TopMenuBar(configState, uiState, viewModel)
@@ -212,7 +216,7 @@ fun AppContent() {
                                 if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
                                     val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
                                     if (currentTabDef.schematicElements.isNotEmpty()) {
-                                        val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.33f else 0.0f)
+                                        val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) dragLandscapeWeight else 0.0f)
                                         if (schematicWeight > 0.01f) {
                                             SchematicScreen(
                                                 tabDef = currentTabDef,
@@ -229,6 +233,17 @@ fun AppContent() {
                                             modifier = Modifier
                                                 .fillMaxHeight()
                                                 .width(24.dp)
+                                                .pointerInput(parentMaxWidth) {
+                                                    detectDragGestures(
+                                                        onDragEnd = {
+                                                            viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
+                                                        }
+                                                    ) { change, dragAmount ->
+                                                        change.consume()
+                                                        val dragFraction = dragAmount.x / parentMaxWidth.toPx()
+                                                        dragLandscapeWeight = (dragLandscapeWeight + dragFraction).coerceIn(0.1f, 0.9f)
+                                                    }
+                                                }
                                                 .clickable { isSchematicVisibleLandscape = !isSchematicVisibleLandscape },
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -246,7 +261,7 @@ fun AppContent() {
                                         }
                                     }
                                 }
-                                val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) 0.67f else 1.0f)
+                                val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) (1f - dragLandscapeWeight) else 1.0f)
                                 Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                                     TopMenuBar(configState, uiState, viewModel)
                                     ErrorBanners(
@@ -262,7 +277,7 @@ fun AppContent() {
                             if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
                                 val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
                                 if (currentTabDef.schematicElements.isNotEmpty()) {
-                                    val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.25f else 0.0f)
+                                    val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) dragPortraitWeight else 0.0f)
                                     if (schematicWeight > 0.01f) {
                                         SchematicScreen(
                                             tabDef = currentTabDef,
@@ -279,6 +294,17 @@ fun AppContent() {
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(24.dp)
+                                            .pointerInput(parentMaxHeight) {
+                                                detectDragGestures(
+                                                    onDragEnd = {
+                                                        viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
+                                                    }
+                                                ) { change, dragAmount ->
+                                                    change.consume()
+                                                    val dragFraction = dragAmount.y / parentMaxHeight.toPx()
+                                                    dragPortraitWeight = (dragPortraitWeight + dragFraction).coerceIn(0.1f, 0.9f)
+                                                }
+                                            }
                                             .clickable { isSchematicVisiblePortrait = !isSchematicVisiblePortrait },
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -297,7 +323,7 @@ fun AppContent() {
                                 }
                             }
                             
-                            val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) 0.75f else 1.0f)
+                            val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) (1f - dragPortraitWeight) else 1.0f)
                             Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                                 BlockShelfGroup(domainState, configState, uiState, viewModel)
                                 LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
