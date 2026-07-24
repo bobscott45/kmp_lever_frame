@@ -154,183 +154,16 @@ fun AppContent() {
                     onClose = viewModel::exitConfigMode
                 )
             } else {
-                LaunchedEffect(domainState.conflictingLevers) {
-                    if (domainState.conflictingLevers.isNotEmpty()) {
-                        delay(700)
-                        soundPlayer.playAlarm()
-                    }
-                }
+                ConflictSoundEffectHandler(domainState, soundPlayer)
+                BlockSoundEffectHandler(domainState, soundPlayer)
 
-                var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
-                LaunchedEffect(domainState.frames) {
-                    val currentBlocks = domainState.frames.map { it.blocks.map { b -> b.isOccupied }.toBooleanArray() }
-                    val prevBlocks = previousBlocks
-                    if (prevBlocks != null && prevBlocks.size == currentBlocks.size) {
-                        var becameOccupied = false
-                        var becameFree = false
-                        for (i in currentBlocks.indices) {
-                            val currArr = currentBlocks[i]
-                            val prevArr = prevBlocks[i]
-                            if (currArr.size == prevArr.size) {
-                                for (j in currArr.indices) {
-                                    if (currArr[j] && !prevArr[j]) becameOccupied = true
-                                    if (!currArr[j] && prevArr[j]) becameFree = true
-                                }
-                            }
-                        }
-                        if (becameOccupied) {
-                            soundPlayer.playDoubleDing()
-                        } else if (becameFree) {
-                            soundPlayer.playDing()
-                        }
-                    }
-                    previousBlocks = currentBlocks.map { it.copyOf() }
-                }
-
-                var isSchematicVisiblePortrait by rememberSaveable { mutableStateOf(true) }
-                var isSchematicVisibleLandscape by rememberSaveable { mutableStateOf(true) }
-                var dragLandscapeWeight by remember(configState.config.schematic_weight_landscape) { mutableStateOf(configState.config.schematic_weight_landscape) }
-                var dragPortraitWeight by remember(configState.config.schematic_weight_portrait) { mutableStateOf(configState.config.schematic_weight_portrait) }
-
-                BoxWithConstraints(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(LeverFrameTheme.Colors.DarkSurface)
-                        .padding(16.dp)
-                ) {
-                    val parentMaxWidth = maxWidth
-                    val parentMaxHeight = maxHeight
-                    val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        if (!isLandscapeCompact) {
-                            TopMenuBar(configState, uiState, viewModel)
-                            ErrorBanners(
-                                errorMessage = uiState.errorMessage,
-                                networkError = uiState.networkError,
-                                onDismissNetworkError = viewModel::dismissNetworkError
-                            )
-                        }
-                        
-                        if (isLandscapeCompact) {
-                            Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
-                                if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
-                                    val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
-                                    if (currentTabDef.schematicElements.isNotEmpty()) {
-                                        val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) dragLandscapeWeight else 0.0f)
-                                        if (schematicWeight > 0.01f) {
-                                            SchematicScreen(
-                                                tabDef = currentTabDef,
-                                                levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
-                                                blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
-                                                modifier = Modifier
-                                                    .fillMaxHeight()
-                                                    .weight(schematicWeight)
-                                                    .padding(end = 4.dp)
-                                                    .clip(RoundedCornerShape(8.dp))
-                                            )
-                                        }
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxHeight()
-                                                .width(24.dp)
-                                                .pointerInput(parentMaxWidth) {
-                                                    detectDragGestures(
-                                                        onDragEnd = {
-                                                            viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
-                                                        }
-                                                    ) { change, dragAmount ->
-                                                        change.consume()
-                                                        val dragFraction = dragAmount.x / parentMaxWidth.toPx()
-                                                        dragLandscapeWeight = (dragLandscapeWeight + dragFraction).coerceIn(0.1f, 0.9f)
-                                                    }
-                                                }
-                                                .clickable { isSchematicVisibleLandscape = !isSchematicVisibleLandscape },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Box(modifier = Modifier.fillMaxHeight().width(2.dp).background(Color.Gray.copy(alpha=0.5f)))
-                                            androidx.compose.material3.Surface(
-                                                shape = androidx.compose.foundation.shape.CircleShape,
-                                                color = LeverFrameTheme.Colors.DarkSurface,
-                                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
-                                                modifier = Modifier.size(24.dp)
-                                            ) {
-                                                Box(contentAlignment = Alignment.Center) {
-                                                    Text(if (isSchematicVisibleLandscape) "◀" else "▶", color = Color.LightGray, fontSize = 10.sp)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) (1f - dragLandscapeWeight) else 1.0f)
-                                Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                    TopMenuBar(configState, uiState, viewModel)
-                                    ErrorBanners(
-                                        errorMessage = uiState.errorMessage,
-                                        networkError = uiState.networkError,
-                                        onDismissNetworkError = viewModel::dismissNetworkError
-                                    )
-                                    BlockShelfGroup(domainState, configState, uiState, viewModel)
-                                    LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
-                                }
-                            }
-                        } else {
-                            if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
-                                val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
-                                if (currentTabDef.schematicElements.isNotEmpty()) {
-                                    val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) dragPortraitWeight else 0.0f)
-                                    if (schematicWeight > 0.01f) {
-                                        SchematicScreen(
-                                            tabDef = currentTabDef,
-                                            levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
-                                            blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .weight(schematicWeight)
-                                                .padding(top = 8.dp, bottom = 4.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                        )
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(24.dp)
-                                            .pointerInput(parentMaxHeight) {
-                                                detectDragGestures(
-                                                    onDragEnd = {
-                                                        viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
-                                                    }
-                                                ) { change, dragAmount ->
-                                                    change.consume()
-                                                    val dragFraction = dragAmount.y / parentMaxHeight.toPx()
-                                                    dragPortraitWeight = (dragPortraitWeight + dragFraction).coerceIn(0.1f, 0.9f)
-                                                }
-                                            }
-                                            .clickable { isSchematicVisiblePortrait = !isSchematicVisiblePortrait },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.Gray.copy(alpha=0.5f)))
-                                        androidx.compose.material3.Surface(
-                                            shape = androidx.compose.foundation.shape.CircleShape,
-                                            color = LeverFrameTheme.Colors.DarkSurface,
-                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
-                                            modifier = Modifier.size(24.dp)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Text(if (isSchematicVisiblePortrait) "▲" else "▼", color = Color.LightGray, fontSize = 10.sp)
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) (1f - dragPortraitWeight) else 1.0f)
-                            Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                BlockShelfGroup(domainState, configState, uiState, viewModel)
-                                LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
-                            }
-                        }
-                    }
-                }
+                NavContent(
+                    domainState = domainState,
+                    configState = configState,
+                    uiState = uiState,
+                    viewModel = viewModel,
+                    soundPlayer = soundPlayer
+                )
 
                 if (uiState.isStatusMode) {
                     if (uiState.statusLeverIndex == null) {
@@ -380,288 +213,6 @@ fun AppContent() {
                         }
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun LeverComponent(
-    leverIndex: Int,
-    showLeverNumber: Boolean,
-    leverDef: LeverDef,
-    labelLines: Int,
-    labelLineHeight: Int,
-    isReversed: Boolean,
-    isManuallyLocked: Boolean,
-    isSystemLocked: Boolean,
-    isAlarmed: Boolean,
-    scale: Float = 1f,
-    widthScale: Float = scale,
-    soundPlayer: SoundPlayer,
-    onLabelClick: () -> Unit,
-    onToggle: () -> Unit,
-    onToggleLock: () -> Unit
-) {
-    val typeColor = when (leverDef.type) {
-        LeverType.HOME_SIGNAL -> LeverFrameTheme.Colors.HomeSignal
-        LeverType.DISTANT_SIGNAL -> LeverFrameTheme.Colors.DistantSignal
-        LeverType.POINTS -> LeverFrameTheme.Colors.Points
-        LeverType.FACING_POINTS -> LeverFrameTheme.Colors.FacingPoints
-        LeverType.BROWN -> LeverFrameTheme.Colors.Brown
-        LeverType.GREEN -> LeverFrameTheme.Colors.Green
-        LeverType.SPARE -> LeverFrameTheme.Colors.Spare
-    }
-
-    val (upText, downText) = when (leverDef.type) {
-        LeverType.HOME_SIGNAL, LeverType.DISTANT_SIGNAL -> "ON" to "OFF"
-        else -> "NORMAL" to "THROWN"
-    }
-
-    val scope = rememberCoroutineScope()
-    val shakeOffset = remember { Animatable(0f) }
-    var pinFlash by remember { mutableStateOf(false) }
-    val pinColor by androidx.compose.animation.animateColorAsState(
-        targetValue = if (pinFlash) Color(0xFFFFFFFF) else Color(0xFFcc3333),
-        animationSpec = tween(durationMillis = 150),
-        label = "pinColor"
-    )
-
-    // Plate Background
-    Column(
-        modifier = Modifier
-            .width(96.dp * widthScale)
-            .fillMaxHeight()
-            .background(Color(0xFF1a1a1a))
-            .border(
-                width = 2.dp,
-                color = Color(0xFF333333),
-                shape = RoundedCornerShape(topStart = 4.dp)
-            )
-            .padding(vertical = 10.dp * scale, horizontal = 4.dp * scale),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Header (Brass Plate + Color bar)
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(((labelLines * labelLineHeight).dp * widthScale) + (12.dp * widthScale))
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                Color(0xFFB59410),
-                                Color(0xFFFBE473),
-                                Color(0xFFD4AF37),
-                                Color(0xFF8A6B0A)
-                            )
-                        )
-                    )
-                    .border(2.dp, Color(0xFF5c421a))
-                    .clickable { onLabelClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = leverDef.label,
-                    color = Color(0xFF1A1500),
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 9.sp,
-                    lineHeight = 10.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp * scale))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(16.dp * scale)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(typeColor)
-                    .then(if (typeColor == Color(0xFF000000)) Modifier.border(1.dp, Color(0xFFAAAAAA), RoundedCornerShape(2.dp)) else Modifier)
-            )
-        }
-
-        // Switch Container
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.weight(1f).padding(vertical = 4.dp * scale)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Text(
-                    text = upText,
-                    color = if (!isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                if (leverDef.type == LeverType.HOME_SIGNAL || leverDef.type == LeverType.DISTANT_SIGNAL) {
-                    Spacer(modifier = Modifier.width(4.dp * scale))
-                    val color = if (!isReversed) {
-                        if (leverDef.type == LeverType.HOME_SIGNAL) Color(0xFFFF4444) else Color(0xFFFFCC00)
-                    } else Color(0xFF333333)
-                    Box(modifier = Modifier.size(8.dp * scale).clip(androidx.compose.foundation.shape.CircleShape).background(color).border(0.5.dp, Color.Black, androidx.compose.foundation.shape.CircleShape))
-                }
-            }
-            Spacer(modifier = Modifier.height(2.dp * scale))
-            
-            // Switch Track
-            Box(
-                modifier = Modifier
-                    .width(60.dp * widthScale)
-                    .weight(1f)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color(0xFF000000), Color(0xFF1a1a1a), Color(0xFF000000))
-                        )
-                    )
-                    .border(2.dp, Color(0xFF2b2b2b), RoundedCornerShape(6.dp))
-                    .clickable { 
-                        if (isSystemLocked || isManuallyLocked) {
-                            soundPlayer.playThud()
-                            scope.launch {
-                                launch {
-                                    shakeOffset.animateTo(
-                                        targetValue = LeverFrameTheme.Animation.ShakeOffsetTarget,
-                                        animationSpec = repeatable(
-                                            iterations = 6,
-                                            animation = tween(durationMillis = LeverFrameTheme.Animation.ShakeDurationMs, easing = LinearEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        )
-                                    )
-                                    shakeOffset.snapTo(0f)
-                                }
-                                launch {
-                                    repeat(3) {
-                                        pinFlash = true
-                                        delay(150)
-                                        pinFlash = false
-                                        delay(150)
-                                    }
-                                }
-                            }
-                        }
-                        if (!isSystemLocked && !isManuallyLocked) {
-                            soundPlayer.playClank()
-                            onToggle() 
-                        } 
-                    }
-            ) {
-                // Knob
-                val positionRatio by animateFloatAsState(
-                    targetValue = if (isReversed) 1f else 0f,
-                    animationSpec = spring(dampingRatio = LeverFrameTheme.Animation.LeverSpringDamping, stiffness = LeverFrameTheme.Animation.LeverSpringStiffness),
-                    label = "positionRatio"
-                )
-                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    val trackHeight = maxHeight
-                    val knobSize = 52.dp * scale
-                    val padding = 4.dp * scale
-                    
-                    val pinCenterY = trackHeight / 2
-                    val thrownKnobTopY = trackHeight - knobSize - padding
-                    
-                    // Track Number
-                    if (showLeverNumber) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(thrownKnobTopY - pinCenterY)
-                                .align(Alignment.TopCenter)
-                                .offset(y = pinCenterY),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "${leverIndex + 1}",
-                                color = Color.White.copy(alpha = 0.3f),
-                                fontSize = (18 * scale).sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    val physicalRatio = when {
-                        positionRatio > 1f -> 1f - (positionRatio - 1f)
-                        positionRatio < 0f -> -positionRatio
-                        else -> positionRatio
-                    }
-                    
-                    val offset = padding + (trackHeight - knobSize - padding * 2) * physicalRatio
-
-                    Box(
-                        modifier = Modifier
-                            .size(knobSize)
-                            .align(Alignment.TopCenter)
-                            .offset(y = offset, x = shakeOffset.value.dp)
-                            .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(typeColor)
-                            .then(if (typeColor == Color(0xFF000000)) Modifier.border(2.dp, Color(0xFFAAAAAA), androidx.compose.foundation.shape.CircleShape) else Modifier),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (leverDef.autoReverser) {
-                            val textColor = if (typeColor == LeverFrameTheme.Colors.DistantSignal || typeColor == LeverFrameTheme.Colors.Spare) Color.Black else Color.White.copy(alpha = 0.8f)
-                            Text(
-                                text = "A",
-                                color = textColor,
-                                fontSize = (16 * scale).sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-
-                    // Locking Pin
-                    if (isSystemLocked || isManuallyLocked) {
-                        val pinHeight = 8.dp * scale
-                        val pinOffsetY = (trackHeight - pinHeight) / 2
-                        
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .offset(y = pinOffsetY)
-                                .width(24.dp * scale)
-                                .height(pinHeight)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(pinColor)
-                                .border(1.dp, Color(0xFFdddddd), RoundedCornerShape(2.dp))
-                        )
-                    }
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(2.dp * scale))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Text(
-                    text = downText,
-                    color = if (isReversed) Color(0xFFFFFFFF) else Color(0xFF888888),
-                    fontSize = 8.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                if (leverDef.type == LeverType.HOME_SIGNAL || leverDef.type == LeverType.DISTANT_SIGNAL) {
-                    Spacer(modifier = Modifier.width(4.dp * scale))
-                    val color = if (isReversed) Color(0xFF44FF44) else Color(0xFF333333)
-                    Box(modifier = Modifier.size(8.dp * scale).clip(androidx.compose.foundation.shape.CircleShape).background(color).border(0.5.dp, Color.Black, androidx.compose.foundation.shape.CircleShape))
-                }
-            }
-        }
-
-        // Collar Button
-        val (collarText, collarBg, collarFg) = when {
-            isAlarmed -> Triple("ALARM", Color(0xFFFFA500), Color.Black)
-            isManuallyLocked -> Triple("LOCKED", Color(0xFFcc3333), Color.White)
-            isSystemLocked -> Triple("INTERLOCK", Color(0xFF252525), Color(0xFFaaaaaa))
-            else -> Triple("UNLOCKED", Color(0xFF252525), Color.White)
-        }
-
-        Button(
-            onClick = {
-                soundPlayer.playLock()
-                onToggleLock()
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = collarBg),
-            shape = RoundedCornerShape(4.dp),
-            modifier = Modifier.fillMaxWidth().height(36.dp * scale),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Text(collarText, color = collarFg, fontSize = 8.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -1044,4 +595,198 @@ fun BlockIndicator(
             content()
         }
     }
+}
+
+@Composable
+fun ConflictSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlayer) {
+    LaunchedEffect(domainState.conflictingLevers) {
+        if (domainState.conflictingLevers.isNotEmpty()) {
+            delay(700)
+            soundPlayer.playAlarm()
+        }
+    }
+}
+
+@Composable
+fun BlockSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlayer) {
+    var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
+    LaunchedEffect(domainState.frames) {
+        val currentBlocks = domainState.frames.map { it.blocks.map { b -> b.isOccupied }.toBooleanArray() }
+        val prevBlocks = previousBlocks
+        if (prevBlocks != null && prevBlocks.size == currentBlocks.size) {
+            var becameOccupied = false
+            var becameFree = false
+            for (i in currentBlocks.indices) {
+                val currArr = currentBlocks[i]
+                val prevArr = prevBlocks[i]
+                if (currArr.size == prevArr.size) {
+                    for (j in currArr.indices) {
+                        if (currArr[j] && !prevArr[j]) becameOccupied = true
+                        if (!currArr[j] && prevArr[j]) becameFree = true
+                    }
+                }
+            }
+            if (becameOccupied) {
+                soundPlayer.playDoubleDing()
+            } else if (becameFree) {
+                soundPlayer.playDing()
+            }
+        }
+        previousBlocks = currentBlocks.map { it.copyOf() }
+    }
+}
+
+
+@Composable
+private fun NavContent(
+    domainState: DomainState,
+    configState: ConfigState,
+    uiState: TransientUiState,
+    viewModel: AppViewModel,
+    soundPlayer: SoundPlayer
+) {
+    var isSchematicVisiblePortrait by rememberSaveable { mutableStateOf(true) }
+                var isSchematicVisibleLandscape by rememberSaveable { mutableStateOf(true) }
+                var dragLandscapeWeight by remember(configState.config.schematic_weight_landscape) { mutableStateOf(configState.config.schematic_weight_landscape) }
+                var dragPortraitWeight by remember(configState.config.schematic_weight_portrait) { mutableStateOf(configState.config.schematic_weight_portrait) }
+
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(LeverFrameTheme.Colors.DarkSurface)
+                        .padding(16.dp)
+                ) {
+                    val parentMaxWidth = maxWidth
+                    val parentMaxHeight = maxHeight
+                    val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (!isLandscapeCompact) {
+                            TopMenuBar(configState, uiState, viewModel)
+                            ErrorBanners(
+                                errorMessage = uiState.errorMessage,
+                                networkError = uiState.networkError,
+                                onDismissNetworkError = viewModel::dismissNetworkError
+                            )
+                        }
+                        
+                        if (isLandscapeCompact) {
+                            Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
+                                if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+                                    val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
+                                    if (currentTabDef.schematicElements.isNotEmpty()) {
+                                        val schematicWeight by animateFloatAsState(if (isSchematicVisibleLandscape) dragLandscapeWeight else 0.0f)
+                                        if (schematicWeight > 0.01f) {
+                                            SchematicScreen(
+                                                tabDef = currentTabDef,
+                                                levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                                                blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .weight(schematicWeight)
+                                                    .padding(end = 4.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .width(24.dp)
+                                                .pointerInput(parentMaxWidth) {
+                                                    detectDragGestures(
+                                                        onDragEnd = {
+                                                            viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
+                                                        }
+                                                    ) { change, dragAmount ->
+                                                        change.consume()
+                                                        val dragFraction = dragAmount.x / parentMaxWidth.toPx()
+                                                        dragLandscapeWeight = (dragLandscapeWeight + dragFraction).coerceIn(0.1f, 0.9f)
+                                                    }
+                                                }
+                                                .clickable { isSchematicVisibleLandscape = !isSchematicVisibleLandscape },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Box(modifier = Modifier.fillMaxHeight().width(2.dp).background(Color.Gray.copy(alpha=0.5f)))
+                                            androidx.compose.material3.Surface(
+                                                shape = androidx.compose.foundation.shape.CircleShape,
+                                                color = LeverFrameTheme.Colors.DarkSurface,
+                                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
+                                                modifier = Modifier.size(24.dp)
+                                            ) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    Text(if (isSchematicVisibleLandscape) "◀" else "▶", color = Color.LightGray, fontSize = 10.sp)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) (1f - dragLandscapeWeight) else 1.0f)
+                                Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    TopMenuBar(configState, uiState, viewModel)
+                                    ErrorBanners(
+                                        errorMessage = uiState.errorMessage,
+                                        networkError = uiState.networkError,
+                                        onDismissNetworkError = viewModel::dismissNetworkError
+                                    )
+                                    BlockShelfGroup(domainState, configState, uiState, viewModel)
+                                    LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
+                                }
+                            }
+                        } else {
+                            if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
+                                val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
+                                if (currentTabDef.schematicElements.isNotEmpty()) {
+                                    val schematicWeight by animateFloatAsState(if (isSchematicVisiblePortrait) dragPortraitWeight else 0.0f)
+                                    if (schematicWeight > 0.01f) {
+                                        SchematicScreen(
+                                            tabDef = currentTabDef,
+                                            levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                                            blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(schematicWeight)
+                                                .padding(top = 8.dp, bottom = 4.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(24.dp)
+                                            .pointerInput(parentMaxHeight) {
+                                                detectDragGestures(
+                                                    onDragEnd = {
+                                                        viewModel.saveLayoutWeights(dragLandscapeWeight, dragPortraitWeight)
+                                                    }
+                                                ) { change, dragAmount ->
+                                                    change.consume()
+                                                    val dragFraction = dragAmount.y / parentMaxHeight.toPx()
+                                                    dragPortraitWeight = (dragPortraitWeight + dragFraction).coerceIn(0.1f, 0.9f)
+                                                }
+                                            }
+                                            .clickable { isSchematicVisiblePortrait = !isSchematicVisiblePortrait },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Box(modifier = Modifier.fillMaxWidth().height(2.dp).background(Color.Gray.copy(alpha=0.5f)))
+                                        androidx.compose.material3.Surface(
+                                            shape = androidx.compose.foundation.shape.CircleShape,
+                                            color = LeverFrameTheme.Colors.DarkSurface,
+                                            border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha=0.5f)),
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(if (isSchematicVisiblePortrait) "▲" else "▼", color = Color.LightGray, fontSize = 10.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            val leversWeight by animateFloatAsState(if (isSchematicVisiblePortrait) (1f - dragPortraitWeight) else 1.0f)
+                            Column(modifier = Modifier.weight(leversWeight).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                BlockShelfGroup(domainState, configState, uiState, viewModel)
+                                LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
+                            }
+                        }
+                    }
+                }
 }

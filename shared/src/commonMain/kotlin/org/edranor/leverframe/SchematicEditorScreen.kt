@@ -322,114 +322,148 @@ fun SchematicEditorScreen(
 
     if (editingCell != null) {
         val (cx, cy) = editingCell!!
-        AlertDialog(
-            onDismissRequest = { editingCell = null },
-            title = { Text("Edit Cell ($cx, $cy)") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val types = listOf("STRAIGHT_H", "STRAIGHT_V", "TURNOUT_LEFT", "TURNOUT_RIGHT", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT")
-                    var typeExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }) {
-                        OutlinedTextField(
-                            value = editType,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Component Type") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
-                            types.forEach { t ->
-                                DropdownMenuItem(text = { Text(t) }, onClick = { editType = t; typeExpanded = false })
-                            }
-                        }
-                    }
-
-                    // Linked Lever
-                    var leverExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(expanded = leverExpanded, onExpandedChange = { leverExpanded = !leverExpanded }) {
-                        OutlinedTextField(
-                            value = if (editLinkedLever >= 0) "${editLinkedLever + 1}" else "None",
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Linked Lever (Main)") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = leverExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(expanded = leverExpanded, onDismissRequest = { leverExpanded = false }) {
-                            DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedLever = -1; leverExpanded = false })
-                            tabDef.levers.forEachIndexed { i, l ->
-                                DropdownMenuItem(text = { Text("${i + 1}: ${l.label.replace("\\n", " ")}") }, onClick = { editLinkedLever = i; leverExpanded = false })
-                            }
-                        }
-                    }
-
-                    // Linked Lever 2
-                    if (editType.startsWith("BRACKET_SIGNAL")) {
-                        var lever2Expanded by remember { mutableStateOf(false) }
-                        ExposedDropdownMenuBox(expanded = lever2Expanded, onExpandedChange = { lever2Expanded = !lever2Expanded }) {
-                            OutlinedTextField(
-                                value = if (editLinkedLever2 >= 0) "${editLinkedLever2 + 1}" else "None",
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Linked Lever (Branch)") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = lever2Expanded) },
-                                modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-                            )
-                            ExposedDropdownMenu(expanded = lever2Expanded, onDismissRequest = { lever2Expanded = false }) {
-                                DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedLever2 = -1; lever2Expanded = false })
-                                tabDef.levers.forEachIndexed { i, l ->
-                                    DropdownMenuItem(text = { Text("${i + 1}: ${l.label.replace("\\n", " ")}") }, onClick = { editLinkedLever2 = i; lever2Expanded = false })
-                                }
-                            }
-                        }
-                    }
-
-                    // Linked Block
-                    var blockExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(expanded = blockExpanded, onExpandedChange = { blockExpanded = !blockExpanded }) {
-                        val blockLabel = if (editLinkedBlock >= 0 && editLinkedBlock < tabDef.blocks.size) {
-                            tabDef.blocks[editLinkedBlock].label.ifBlank { "Block ${editLinkedBlock + 1}" }
-                        } else { "None" }
-                        OutlinedTextField(
-                            value = blockLabel,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Linked Block") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = blockExpanded) },
-                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(expanded = blockExpanded, onDismissRequest = { blockExpanded = false }) {
-                            DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedBlock = -1; blockExpanded = false })
-                            tabDef.blocks.forEachIndexed { index, b ->
-                                val displayLabel = b.label.ifBlank { "Block ${index + 1}" }.replace("\\n", " ")
-                                DropdownMenuItem(text = { Text(displayLabel) }, onClick = { editLinkedBlock = index; blockExpanded = false })
-                            }
-                        }
-                    }
-                }
+        SchematicElementEditorDialog(
+            tabDef = tabDef,
+            cx = cx,
+            cy = cy,
+            initialEditType = editType,
+            initialLinkedLever = editLinkedLever,
+            initialLinkedLever2 = editLinkedLever2,
+            initialLinkedBlock = editLinkedBlock,
+            onDismiss = { editingCell = null },
+            onSave = { newType, newLever, newLever2, newBlock ->
+                val elements = tabDef.schematic_elements.toMutableList()
+                elements.removeAll { it.x == cx && it.y == cy }
+                elements.add(JsonSchematicElement(type = newType, x = cx, y = cy, linked_lever = newLever, linked_lever_2 = newLever2, linked_block = newBlock))
+                onTabDefChange(tabDef.copy(schematic_elements = elements))
+                editingCell = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    val elements = tabDef.schematic_elements.toMutableList()
-                    elements.removeAll { it.x == cx && it.y == cy }
-                    elements.add(JsonSchematicElement(type = editType, x = cx, y = cy, linked_lever = editLinkedLever, linked_lever_2 = editLinkedLever2, linked_block = editLinkedBlock))
-                    onTabDefChange(tabDef.copy(schematic_elements = elements))
-                    editingCell = null
-                }) { Text("Save") }
-            },
-            dismissButton = {
-                Row {
-                    TextButton(onClick = {
-                        val elements = tabDef.schematic_elements.toMutableList()
-                        elements.removeAll { it.x == cx && it.y == cy }
-                        onTabDefChange(tabDef.copy(schematic_elements = elements))
-                        editingCell = null
-                    }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = { editingCell = null }) { Text("Cancel") }
-                }
+            onDelete = {
+                val elements = tabDef.schematic_elements.toMutableList()
+                elements.removeAll { it.x == cx && it.y == cy }
+                onTabDefChange(tabDef.copy(schematic_elements = elements))
+                editingCell = null
             }
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SchematicElementEditorDialog(
+    tabDef: JsonTab,
+    cx: Int,
+    cy: Int,
+    initialEditType: String,
+    initialLinkedLever: Int,
+    initialLinkedLever2: Int,
+    initialLinkedBlock: Int,
+    onDismiss: () -> Unit,
+    onSave: (String, Int, Int, Int) -> Unit,
+    onDelete: () -> Unit
+) {
+    var editType by remember { mutableStateOf(initialEditType) }
+    var editLinkedLever by remember { mutableStateOf(initialLinkedLever) }
+    var editLinkedLever2 by remember { mutableStateOf(initialLinkedLever2) }
+    var editLinkedBlock by remember { mutableStateOf(initialLinkedBlock) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Cell ($cx, $cy)") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val types = listOf("STRAIGHT_H", "STRAIGHT_V", "TURNOUT_LEFT", "TURNOUT_RIGHT", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT")
+                var typeExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }) {
+                    OutlinedTextField(
+                        value = editType,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Component Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
+                        types.forEach { t ->
+                            DropdownMenuItem(text = { Text(t) }, onClick = { editType = t; typeExpanded = false })
+                        }
+                    }
+                }
+
+                // Linked Lever
+                var leverExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = leverExpanded, onExpandedChange = { leverExpanded = !leverExpanded }) {
+                    OutlinedTextField(
+                        value = if (editLinkedLever >= 0) "${editLinkedLever + 1}" else "None",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Linked Lever (Main)") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = leverExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = leverExpanded, onDismissRequest = { leverExpanded = false }) {
+                        DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedLever = -1; leverExpanded = false })
+                        tabDef.levers.forEachIndexed { i, l ->
+                            DropdownMenuItem(text = { Text("${i + 1}: ${l.label.replace("\n", " ")}") }, onClick = { editLinkedLever = i; leverExpanded = false })
+                        }
+                    }
+                }
+
+                // Linked Lever 2
+                if (editType.startsWith("BRACKET_SIGNAL")) {
+                    var lever2Expanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(expanded = lever2Expanded, onExpandedChange = { lever2Expanded = !lever2Expanded }) {
+                        OutlinedTextField(
+                            value = if (editLinkedLever2 >= 0) "${editLinkedLever2 + 1}" else "None",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Linked Lever (Branch)") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = lever2Expanded) },
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(expanded = lever2Expanded, onDismissRequest = { lever2Expanded = false }) {
+                            DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedLever2 = -1; lever2Expanded = false })
+                            tabDef.levers.forEachIndexed { i, l ->
+                                DropdownMenuItem(text = { Text("${i + 1}: ${l.label.replace("\n", " ")}") }, onClick = { editLinkedLever2 = i; lever2Expanded = false })
+                            }
+                        }
+                    }
+                }
+
+                // Linked Block
+                var blockExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = blockExpanded, onExpandedChange = { blockExpanded = !blockExpanded }) {
+                    val blockLabel = if (editLinkedBlock >= 0 && editLinkedBlock < tabDef.blocks.size) {
+                        tabDef.blocks[editLinkedBlock].label.ifBlank { "Block ${editLinkedBlock + 1}" }
+                    } else { "None" }
+                    OutlinedTextField(
+                        value = blockLabel,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Linked Block") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = blockExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = blockExpanded, onDismissRequest = { blockExpanded = false }) {
+                        DropdownMenuItem(text = { Text("None") }, onClick = { editLinkedBlock = -1; blockExpanded = false })
+                        tabDef.blocks.forEachIndexed { index, b ->
+                            val displayLabel = b.label.ifBlank { "Block ${index + 1}" }.replace("\n", " ")
+                            DropdownMenuItem(text = { Text(displayLabel) }, onClick = { editLinkedBlock = index; blockExpanded = false })
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(editType, editLinkedLever, editLinkedLever2, editLinkedBlock) }) { Text("Save") }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDelete) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+            }
+        }
+    )
+}
+

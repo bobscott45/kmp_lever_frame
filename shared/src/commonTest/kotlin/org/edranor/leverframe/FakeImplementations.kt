@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-class FakeConfigRepository : AppConfigRepository {
+class FakeConfigRepository : ConfigurationRepository, StatePersistenceRepository {
     override var currentConfig: JsonConfig = JsonConfig()
     
     var initCalled = false

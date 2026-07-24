@@ -27,7 +27,7 @@ The `AppViewModel` acts as the single source of truth for the application's stat
 *   **`PersistenceService`**: A dedicated coroutine service that observes `DomainStateFlow` and debounces high-frequency lever toggles before writing changes to disk, removing I/O blocks from the ViewModel.
 
 ### 2.2 Configuration & Persistence (`ConfigManager.kt`)
-*   **`AppConfigRepository`**: An interface abstracting the persistence layer.
+*   **`ConfigurationRepository` & `StatePersistenceRepository`**: Interfaces segregating the configuration loading/saving layer from the transient UI state saving layer, adhering to the Interface Segregation Principle (ISP).
 *   **`ConfigManager`**: Implements the repository to serialize and deserialize the core configuration state using `kotlinx.serialization`. 
 *   It dynamically converts the user's `JsonConfig` definitions into parsed `LeverDef` structures (used by the interlocking engine) and `SchematicElementDef` structures (representing grid coordinates for track components). 
 *   **Platform Specifics**: It relies on `expect/actual` functions (e.g., `saveConfigToFile`) to handle file I/O safely on Android, iOS, and JVM.

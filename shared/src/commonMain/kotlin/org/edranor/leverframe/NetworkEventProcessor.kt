@@ -2,7 +2,7 @@ package org.edranor.leverframe
 
 class NetworkEventProcessor(
     private val lccClient: LccNetworkClient,
-    private val configRepo: AppConfigRepository
+    private val configRepo: ConfigurationRepository
 ) {
 
     fun processEvent(

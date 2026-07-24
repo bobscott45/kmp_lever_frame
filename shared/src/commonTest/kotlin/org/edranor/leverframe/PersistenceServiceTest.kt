@@ -41,7 +41,7 @@ class PersistenceServiceTest {
         )
         val domainState = MutableStateFlow(DomainState(frames = initialFrames))
         
-        val persistenceService = PersistenceService(configRepo, backgroundScope, domainState)
+        val persistenceService = PersistenceService(configRepo, configRepo, backgroundScope, domainState)
         
         testDispatcher.scheduler.runCurrent()
         persistenceService.triggerSave()

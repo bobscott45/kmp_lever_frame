@@ -80,6 +80,8 @@ This controls the top-level behavior of the application and its connection to th
     *   **ON (Checked)**: The frame listens to track occupancy events to dynamically lock levers, enforces interlocking on remote commands from other panels, and broadcasts its saved states on startup to force layout alignment.
     *   **OFF (Unchecked)**: The frame acts as a "dumb panel". It ignores external events (block sensors or remote lever commands) and relies purely on your manual clicks and its internal static state.
 *   **Enable Sound**: Toggles auditory feedback.
+*   **Default Rule Display Mode**: Controls what view is shown immediately when opening the Rules tab for a lever. Options are `Locking Table` (a read-only standard interlocking table), `Clause Builder` (a visual UI for interlocking clauses), or `Text Formula` (raw text syntax).
+*   **Default Rule Editor**: When the Display Mode is set to `Locking Table`, this determines which editor mode opens when you click the "Edit Rules" button (`Clause Builder` or `Text Formula`). If the Display Mode is already set to an editor mode, this setting is ignored as you will edit directly in that view.
 
 If changes are pending, the Save button at the top right of the panel will become active.
 
@@ -133,35 +135,18 @@ To delete a lever, click on the **✕ Delete** button at the top right of the Ba
 
 * **Auto-Reverser**: When enabled, the lever will automatically snap back to its Normal position if any of its interlocking rules fail (e.g., when a train enters an interlocked block).
 
-Click **+ Add Rule** to create a new interlocking rule. For each rule, a settings panel is displayed. Click on the **✕ Delete** button at the top right of a rule settings panel to delete the rule.
+A lever **cannot be pulled** unless **all** of its interlocking conditions are met. You can require another lever to be in a specific position, lock levers based on the live state of your Digital Block Shelf, or use conditional 'OR' logic.
 
-Each rule is divided into a **Primary Condition** and an optional **Alternate Condition**.
+The Rules tab displays the interlocking rules based on your **Default Rule Display Mode** preference set in the System Settings:
 
-##### Primary Condition
-
-* **Type**: Choose whether to interlock against another **LEVER** or a track **BLOCK**.
-* **Target**: Select the specific target lever or block from the dropdown menu (e.g., choose `[4] UP BRANCH HOME` to lock against Lever 4).
-* **Required State**: The state the target must be in for this lever to be pulled (e.g., `NORMAL` or `REVERSED` for levers, `EMPTY` or `OCCUPIED` for blocks).
-
-##### Alternate Condition (Optional)
-
-This acts as a logical 'OR' condition. If the Primary Condition fails, the lever can still be pulled if this Alternate Condition is met.
-
-* **Alt Type**: Choose between **LEVER** or **BLOCK** for the alternate condition.
-* **Alt Target**: Select the alternate target from the dropdown menu.
-* **Alt Required State**: The required state for the alternate target.
-* **To Delete**: To remove an alternate condition entirely, simply select `None` from the **Alt Target** dropdown menu. When saved, the condition will be disabled.
-
-When configuring a lever, you set its **Label**, **Type** (color/purpose), and **LCC Events** (the IDs broadcast when pulled or pushed).
-
-**Mechanical Interlocking Engine**
-Scroll down in the Lever Configuration screen to find the **Interlocking** section. A lever **cannot be pulled** unless **all** of its interlocking conditions are met.
+1. **Locking Table Mode**: Displays a traditional, read-only mechanical interlocking table layout showing required lever numbers, required block states, and alternate 'OR' conditions. To make changes, click the **Edit Rules** button at the top of the tab, which will flip the view into your preferred Editor Mode. When finished, click **Done** to return to the Locking Table.
+2. **Clause Builder Mode**: A visual, card-based interface for building rules. If this is your default display mode, the tab opens directly into the editor and you can edit immediately. 
+   * Click **+ Add Rule** to create a new interlocking rule.
+   * For each rule, select a **Primary Condition** (the target Lever or Block and its required state).
+   * Check the **OR Alternate Condition** box to add a secondary target. If the Primary Condition fails, the lever can still be pulled if this Alternate Condition is met.
+3. **Text Formula Mode**: An advanced, raw text-based syntax editor for writing complex boolean logic (e.g., `(L4_R | B1_O) & L2_N & !(L3_R)`). Like the Clause Builder, if set as your default display mode, it opens directly ready for editing.
 
 <screenshot of adding/editing an interlocking condition dialog>
-
-*   **Basic Lever Locking**: Require another lever to be in a specific position (e.g., Lever 4 locks Lever 3 NORMAL).
-*   **Cross-Interlocking (Blocks)**: Lock levers based on the live state of your Digital Block Shelf (e.g., Lever 2 locks the "UP MAIN" block EMPTY).
-*   **Conditional 'OR' Logic**: Set an **Alt Target** to allow a lever to be pulled if *either* of two conditions is true (e.g., Lever 1 requires Lever 2 OR Lever 5 to be REVERSED).
 
 ### Hot-Reloading Interlocking Rules
 

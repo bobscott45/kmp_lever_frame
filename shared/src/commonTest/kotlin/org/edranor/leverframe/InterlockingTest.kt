@@ -140,4 +140,40 @@ class InterlockingTest {
         assertTrue(Interlocking.evaluate(tab, levers, blocksEmpty, 0, true))
         assertFalse(Interlocking.evaluate(tab, levers, blocksOccupied, 0, true))
     }
+
+    @Test
+    fun testAstLogic() {
+        val logicTree = AndNode(listOf(
+            OrNode(listOf(
+                LeverStateNode(leverIndex = 1, requiredReversed = false),
+                BlockStateNode(blockIndex = 0, requiredOccupied = true)
+            )),
+            NotNode(LeverStateNode(leverIndex = 2, requiredReversed = true))
+        ))
+
+        val leverDefs = listOf(
+            LeverDef(logic = logicTree),
+            LeverDef(),
+            LeverDef()
+        )
+        val tab = TabDef(leverDefs, blocks = listOf(BlockDef()))
+
+        // Condition: (L1:Normal OR Block0:Occupied) AND (NOT L2:Reversed)
+        
+        // Both conditions met: L1 is Normal, L2 is Normal
+        val levers1 = createLevers(false, false, false)
+        assertTrue(Interlocking.evaluate(tab, levers1, createBlocks(false), 0, true))
+
+        // Fails AND condition: L2 is Reversed
+        val levers2 = createLevers(false, false, true)
+        assertFalse(Interlocking.evaluate(tab, levers2, createBlocks(false), 0, true))
+        
+        // Fails OR condition: L1 is Reversed, Block0 is Empty
+        val levers3 = createLevers(false, true, false)
+        assertFalse(Interlocking.evaluate(tab, levers3, createBlocks(false), 0, true))
+
+        // Passes OR condition (Block0 is Occupied, despite L1 Reversed), AND passes (L2 Normal)
+        val levers4 = createLevers(false, true, false)
+        assertTrue(Interlocking.evaluate(tab, levers4, createBlocks(true), 0, true))
+    }
 }

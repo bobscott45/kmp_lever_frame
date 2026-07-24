@@ -67,30 +67,54 @@ fun LeverStatusScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Lever ${leverIndex + 1} Status",
-                color = LeverFrameTheme.Colors.Brass,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
-            IconButton(onClick = onClose) {
-                Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp)
+            LeverStatusHeader(leverIndex, onClose)
+            Spacer(modifier = Modifier.height(12.dp))
+            LeverStatusBody(leverIndex, leverDef, levers, blocks, onLccEnabledChange)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = onEditConfig,
+                colors = ButtonDefaults.buttonColors(containerColor = LeverFrameTheme.Colors.Brass, contentColor = Color.Black),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Edit Lever Configuration", fontWeight = FontWeight.Bold)
             }
         }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).weight(1f, fill = false),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
-        ) {
-            val scrollState = rememberScrollState()
-            Box(modifier = Modifier.fillMaxWidth()) {
+    }
+}
+
+@Composable
+private fun LeverStatusHeader(leverIndex: Int, onClose: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Lever ${leverIndex + 1} Status",
+            color = LeverFrameTheme.Colors.Brass,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        IconButton(onClick = onClose) {
+            Text("✕", color = LeverFrameTheme.Colors.Brass, fontSize = 16.sp)
+        }
+    }
+}
+
+@Composable
+private fun ColumnScope.LeverStatusBody(
+    leverIndex: Int,
+    leverDef: LeverDef,
+    levers: List<DomainLever>,
+    blocks: List<DomainBlock>,
+    onLccEnabledChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).weight(1f, fill = false),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))
+    ) {
+        val scrollState = rememberScrollState()
+        Box(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier.fillMaxWidth().verticalScroll(scrollState).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -116,96 +140,72 @@ fun LeverStatusScreen(
                     StatusItem("Event ID (Reversed)", if (leverDef.lcc_event_reversed.isBlank()) "None" else leverDef.lcc_event_reversed)
                 }
                 
-                if (leverDef.conditions.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        leverDef.conditions.forEach { rule ->
-                            val reqStateStr = if (rule.targetType == TargetType.BLOCK) {
-                                if (rule.requiredState) "OCCUPIED" else "EMPTY"
-                            } else {
-                                if (rule.requiredState) "REVERSED" else "NORMAL"
-                            }
-                            val targetLabel = if (rule.targetType == TargetType.BLOCK) "Block" else "Lever"
-                            
-                            val altStr = if (rule.altTargetIndex != -1) {
-                                val altStateStr = if (rule.altTargetType == TargetType.BLOCK) {
-                                    if (rule.altRequiredState) "OCCUPIED" else "EMPTY"
-                                } else {
-                                    if (rule.altRequiredState) "REVERSED" else "NORMAL"
-                                }
-                                val altTargetLabel = if (rule.altTargetType == TargetType.BLOCK) "Block" else "Lever"
-                                " OR $altTargetLabel ${rule.altTargetIndex + 1} is $altStateStr"
-                            } else ""
-                            
-                            val mainState = if (rule.targetType == TargetType.BLOCK) blocks.getOrNull(rule.targetIndex) ?: false else levers.getOrNull(rule.targetIndex) ?: false
-                            val mainSatisfied = mainState == rule.requiredState
-                            
-                            val altState = if (rule.altTargetType == TargetType.BLOCK) blocks.getOrNull(rule.altTargetIndex) ?: false else levers.getOrNull(rule.altTargetIndex) ?: false
-                            val altSatisfied = rule.altTargetIndex != -1 && altState == rule.altRequiredState
-                            
-                            val isSatisfied = mainSatisfied || altSatisfied
-                            
-                            val statusIcon = if (isSatisfied) "✅" else "❌"
-                            Text("$statusIcon $targetLabel ${rule.targetIndex + 1} must be $reqStateStr$altStr", color = Color.White, fontSize = 10.sp)
-                        }
-                    }
-                } else {
-                    Text("No interlocking rules.", color = Color.White, fontSize = 10.sp)
-                }
+                LeverStatusRulesSection(leverDef, levers, blocks)
             }
-            
-            if (scrollState.canScrollBackward) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(24.dp)
-                        .align(Alignment.TopCenter)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(Color(0xFF2A2A2A), Color.Transparent)
-                            )
-                        )
-                )
-            }
-            
-            if (scrollState.canScrollForward) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(24.dp)
-                        .align(Alignment.BottomCenter)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color(0xFF2A2A2A))
-                            )
-                        )
-                )
-            }
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Button(
-            onClick = onEditConfig,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = LeverFrameTheme.Colors.Brass, contentColor = Color.Black)
-        ) {
-            Text("Edit Configuration", fontWeight = FontWeight.Bold)
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        Button(
-            onClick = onClose,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A4A4A))
-        ) {
-            Text("Back")
-        }
         }
     }
 }
+
+@Composable
+private fun LeverStatusRulesSection(
+    leverDef: LeverDef,
+    levers: List<DomainLever>,
+    blocks: List<DomainBlock>
+) {
+    if (leverDef.conditions.isNotEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            leverDef.conditions.forEach { rule ->
+                val reqStateStr = if (rule.targetType == TargetType.BLOCK) {
+                    if (rule.requiredState) "OCCUPIED" else "EMPTY"
+                } else {
+                    if (rule.requiredState) "REVERSED" else "NORMAL"
+                }
+                val targetLabel = if (rule.targetType == TargetType.BLOCK) "Block" else "Lever"
+                
+                val altStr = if (rule.altTargetIndex != -1) {
+                    val altStateStr = if (rule.altTargetType == TargetType.BLOCK) {
+                        if (rule.altRequiredState) "OCCUPIED" else "EMPTY"
+                    } else {
+                        if (rule.altRequiredState) "REVERSED" else "NORMAL"
+                    }
+                    val altTargetLabel = if (rule.altTargetType == TargetType.BLOCK) "Block" else "Lever"
+                    " OR $altTargetLabel ${rule.altTargetIndex + 1} is $altStateStr"
+                } else ""
+                
+                val mainState = if (rule.targetType == TargetType.BLOCK) blocks.getOrNull(rule.targetIndex) ?: false else levers.getOrNull(rule.targetIndex)?.isReversed ?: false
+                val mainSatisfied = mainState == rule.requiredState
+                
+                val altState = if (rule.altTargetType == TargetType.BLOCK) blocks.getOrNull(rule.altTargetIndex) ?: false else levers.getOrNull(rule.altTargetIndex)?.isReversed ?: false
+                val altSatisfied = if (rule.altTargetIndex != -1) altState == rule.altRequiredState else false
+                
+                val isSatisfied = mainSatisfied || altSatisfied
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "$targetLabel ${rule.targetIndex + 1} is $reqStateStr$altStr",
+                        color = Color.LightGray,
+                        fontSize = 11.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        if (isSatisfied) "✔" else "✘",
+                        color = if (isSatisfied) Color.Green else Color.Red,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    } else {
+        Text("No interlocking rules.", color = Color.Gray, fontSize = 11.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+    }
+}
+
 
 @Composable
 private fun StatusItem(label: String, value: String) {

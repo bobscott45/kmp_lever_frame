@@ -49,7 +49,8 @@ data class LeverDef(
     val lcc_event_normal: String = "",
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
-    val autoReverser: Boolean = false
+    val autoReverser: Boolean = false,
+    val logic: AstNode? = null
 )
 
 data class BlockDef(
@@ -112,29 +113,39 @@ object Interlocking {
         val conflicts = mutableSetOf<Int>()
         for (i in tab.levers.indices) {
             if (levers[i].isReversed) {
-                for (condition in tab.levers[i].conditions) {
-                    if (condition.targetIndex != -1) {
-                        val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
-                            blocks.getOrNull(condition.targetIndex)?.isOccupied ?: false
-                        } else {
-                            levers.getOrNull(condition.targetIndex)?.isReversed ?: false
-                        }
-                        val primaryMatch = primaryTargetState == condition.requiredState
-                        
-                        val altMatch = if (condition.altTargetIndex != -1) {
-                            val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
-                                blocks.getOrNull(condition.altTargetIndex)?.isOccupied ?: false
+                val leverDef = tab.levers[i]
+                if (leverDef.logic != null) {
+                    val result = leverDef.logic.evaluate(levers, blocks)
+                    if (!result.isSatisfied) {
+                        conflicts.add(i)
+                        conflicts.addAll(result.involvedLevers)
+                    }
+                } else {
+                    // Fallback to legacy processing just in case logic is null (e.g. from tests)
+                    for (condition in leverDef.conditions) {
+                        if (condition.targetIndex != -1) {
+                            val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
+                                blocks.getOrNull(condition.targetIndex)?.isOccupied ?: false
                             } else {
-                                levers.getOrNull(condition.altTargetIndex)?.isReversed ?: false
+                                levers.getOrNull(condition.targetIndex)?.isReversed ?: false
                             }
-                            altTargetState == condition.altRequiredState
-                        } else false
-                        
-                        if (!primaryMatch && !altMatch) {
-                            conflicts.add(i)
-                            if (condition.targetType == TargetType.LEVER) conflicts.add(condition.targetIndex)
-                            if (condition.altTargetIndex != -1 && condition.altTargetType == TargetType.LEVER) {
-                                conflicts.add(condition.altTargetIndex)
+                            val primaryMatch = primaryTargetState == condition.requiredState
+                            
+                            val altMatch = if (condition.altTargetIndex != -1) {
+                                val altTargetState = if (condition.altTargetType == TargetType.BLOCK) {
+                                    blocks.getOrNull(condition.altTargetIndex)?.isOccupied ?: false
+                                } else {
+                                    levers.getOrNull(condition.altTargetIndex)?.isReversed ?: false
+                                }
+                                altTargetState == condition.altRequiredState
+                            } else false
+                            
+                            if (!primaryMatch && !altMatch) {
+                                conflicts.add(i)
+                                if (condition.targetType == TargetType.LEVER) conflicts.add(condition.targetIndex)
+                                if (condition.altTargetIndex != -1 && condition.altTargetType == TargetType.LEVER) {
+                                    conflicts.add(condition.altTargetIndex)
+                                }
                             }
                         }
                     }

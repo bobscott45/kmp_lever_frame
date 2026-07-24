@@ -27,15 +27,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-interface AppConfigRepository {
+interface ConfigurationRepository {
     var currentConfig: JsonConfig
     suspend fun initConfig()
     fun toJsonString(): String
     fun parseConfig(jsonString: String): List<Pair<String, TabDef>>
+    suspend fun saveConfig(newConfig: JsonConfig)
+}
+
+interface StatePersistenceRepository {
     suspend fun loadSavedStates(): SavedStatesData?
     suspend fun saveCurrentStates(states: SavedStatesData)
     suspend fun clearSavedStates()
-    suspend fun saveConfig(newConfig: JsonConfig)
 }
 
 @Serializable
@@ -54,6 +57,8 @@ data class JsonConfig(
     val enable_sound: Boolean = true,
     val schematic_weight_landscape: Float = 0.33f,
     val schematic_weight_portrait: Float = 0.25f,
+    val rule_editor_mode: String = "CLAUSE_BUILDER",
+    val rule_display_mode: String = "LOCKING_TABLE",
     val tabs: List<JsonTab> = emptyList()
 )
 
@@ -100,7 +105,8 @@ data class JsonLever(
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
     val auto_reverser: Boolean = false,
-    val interlocking: List<JsonInterlocking> = emptyList()
+    val interlocking: List<JsonInterlocking> = emptyList(),
+    val ast_logic: AstNode? = null
 )
 
 @Serializable
@@ -119,7 +125,7 @@ data class SavedStatesData(
     val blocks: List<List<Boolean>> = emptyList()
 )
 
-object ConfigManager : AppConfigRepository {
+object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
 
     val jsonFormat = Json { 
         ignoreUnknownKeys = true 
@@ -172,6 +178,8 @@ object ConfigManager : AppConfigRepository {
                 val normalSuffix = extractSuffix(jsonLever.lcc_event_normal, config.node_id)
                 val reversedSuffix = extractSuffix(jsonLever.lcc_event_reversed, config.node_id)
                 
+                val logicNode = jsonLever.ast_logic ?: conditions.toAstNode()
+                
                 LeverDef(
                     conditions = conditions,
                     type = type,
@@ -179,7 +187,8 @@ object ConfigManager : AppConfigRepository {
                     lcc_event_normal = if (normalSuffix.isNotBlank()) "${config.node_id}.$normalSuffix" else "",
                     lcc_event_reversed = if (reversedSuffix.isNotBlank()) "${config.node_id}.$reversedSuffix" else "",
                     lcc_enabled = jsonLever.lcc_enabled,
-                    autoReverser = jsonLever.auto_reverser
+                    autoReverser = jsonLever.auto_reverser,
+                    logic = logicNode
                 )
             }
 

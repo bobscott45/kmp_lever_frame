@@ -157,6 +157,8 @@ fun ConfigurationScreen(
                         lever = lever,
                         allLevers = tab.levers,
                         allBlocks = tab.blocks,
+                        ruleEditorMode = config.rule_editor_mode,
+                        ruleDisplayMode = config.rule_display_mode,
                         onLeverChange = { newLever ->
                             val newTabs = config.tabs.toMutableList()
                             val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
@@ -203,396 +205,17 @@ fun ConfigurationScreen(
                         }
                     )
                 } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    // Frame Selection Dropdown
-                    var frameSelectorExpanded by remember { mutableStateOf(false) }
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ExposedDropdownMenuBox(
-                            expanded = frameSelectorExpanded,
-                            onExpandedChange = { frameSelectorExpanded = !frameSelectorExpanded },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            OutlinedTextField(
-                                value = config.tabs.getOrNull(selectedFrameIndex)?.name ?: "No Frames",
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Selected Frame") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = frameSelectorExpanded) },
-                                modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                                colors = brassTextFieldColors()
-                            )
-                            ExposedDropdownMenu(
-                                expanded = frameSelectorExpanded,
-                                onDismissRequest = { frameSelectorExpanded = false }
-                            ) {
-                                config.tabs.forEachIndexed { index, tab ->
-                                    DropdownMenuItem(
-                                        text = { Text(tab.name) },
-                                        onClick = {
-                                            selectedFrameIndex = index
-                                            frameSelectorExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        TextButton(onClick = {
-                            val newTabs = config.tabs.toMutableList()
-                            newTabs.add(JsonTab(name = "New Frame"))
-                            config = config.copy(tabs = newTabs)
-                            selectedFrameIndex = newTabs.size - 1
-                        }) {
-                            Text("＋ Add")
-                        }
-                    }
-
-                    if (config.tabs.isNotEmpty()) {
-                        PrimaryScrollableTabRow(
-                            selectedTabIndex = selectedFrameConfigTab,
-                            containerColor = Color.Transparent,
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            edgePadding = 0.dp
-                        ) {
-                            Tab(selected = selectedFrameConfigTab == 0, onClick = { selectedFrameConfigTab = 0 }, text = { Text("Settings") })
-                            Tab(selected = selectedFrameConfigTab == 1, onClick = { selectedFrameConfigTab = 1 }, text = { Text("Levers") })
-                            Tab(selected = selectedFrameConfigTab == 2, onClick = { selectedFrameConfigTab = 2 }, text = { Text("Blocks") })
-                            Tab(selected = selectedFrameConfigTab == 3, onClick = { selectedFrameConfigTab = 3 }, text = { Text("Schematic") })
-                        }
-
-                        // Content for the selected frame
-                        if (selectedFrameConfigTab == 3) {
-                            Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                                Button(onClick = { isEditingSchematic = true }) {
-                                    Text("Open Fullscreen Schematic Editor")
-                                }
-                            }
-                        } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize().weight(1f),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            val tab = config.tabs[selectedFrameIndex]
-
-                            if (selectedFrameConfigTab == 0) {
-                                item {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        OutlinedTextField(
-                                            value = tab.name,
-                                            onValueChange = { newName ->
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(name = newName)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            label = { Text("Frame Title") },
-                                            modifier = Modifier.weight(1f).padding(end = 16.dp)
-                                        )
-                                        TextButton(onClick = { showFrameDeleteWarning = true }) {
-                                            Text("✕ Delete", color = MaterialTheme.colorScheme.error)
-                                        }
-                                    }
-                                }
-
-                                item {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        IntTextField(
-                                            value = tab.label_lines,
-                                            onValueChange = { 
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(label_lines = it)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            label = "Lever Label Lines",
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        IntTextField(
-                                            value = tab.label_line_height,
-                                            onValueChange = { 
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(label_line_height = it)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            label = "Lever Line Height",
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                }
-
-                                item {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        IntTextField(
-                                            value = tab.block_label_size,
-                                            onValueChange = { 
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(block_label_size = it)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            label = "Block Font Size",
-                                            modifier = Modifier.weight(1f)
-                                        )
-
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text("Block Layout", style = MaterialTheme.typography.bodySmall, color = LeverFrameTheme.Colors.Brass)
-                                            Column {
-                                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(32.dp)) {
-                                                    RadioButton(
-                                                        selected = tab.block_layout == "HORIZONTAL",
-                                                        onClick = {
-                                                            val newTabs = config.tabs.toMutableList()
-                                                            newTabs[selectedFrameIndex] = tab.copy(block_layout = "HORIZONTAL")
-                                                            config = config.copy(tabs = newTabs)
-                                                        }
-                                                    )
-                                                    Text("Horizontal", style = MaterialTheme.typography.bodyMedium)
-                                                }
-                                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(32.dp)) {
-                                                    RadioButton(
-                                                        selected = tab.block_layout == "VERTICAL",
-                                                        onClick = {
-                                                            val newTabs = config.tabs.toMutableList()
-                                                            newTabs[selectedFrameIndex] = tab.copy(block_layout = "VERTICAL")
-                                                            config = config.copy(tabs = newTabs)
-                                                        }
-                                                    )
-                                                    Text("Vertical", style = MaterialTheme.typography.bodyMedium)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                item {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = !tab.show_lever_numbers)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Checkbox(
-                                                checked = tab.show_lever_numbers,
-                                                onCheckedChange = { 
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = it)
-                                                    config = config.copy(tabs = newTabs)
-                                                }
-                                            )
-                                            Text("Show Lever Numbers", modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = !tab.show_block_numbers)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Checkbox(
-                                                checked = tab.show_block_numbers,
-                                                onCheckedChange = { 
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = it)
-                                                    config = config.copy(tabs = newTabs)
-                                                }
-                                            )
-                                            Text("Show Block Numbers", modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(use_short_codes = !tab.use_short_codes)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Checkbox(
-                                                checked = tab.use_short_codes,
-                                                onCheckedChange = { 
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = tab.copy(use_short_codes = it)
-                                                    config = config.copy(tabs = newTabs)
-                                                }
-                                            )
-                                            Text("Use Short Codes on Schematic", modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                val newTabs = config.tabs.toMutableList()
-                                                newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = !tab.use_short_codes_in_indicators)
-                                                config = config.copy(tabs = newTabs)
-                                            },
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Checkbox(
-                                                checked = tab.use_short_codes_in_indicators,
-                                                onCheckedChange = { 
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = it)
-                                                    config = config.copy(tabs = newTabs)
-                                                }
-                                            )
-                                            Text("Use Short Codes on Indicators", modifier = Modifier.padding(start = 8.dp))
-                                        }
-                                        OutlinedTextField(
-                                            value = tab.schematic_grid_size.toString(),
-                                            onValueChange = {
-                                                val intValue = it.toIntOrNull()
-                                                if (intValue != null && intValue > 0) {
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = tab.copy(schematic_grid_size = intValue)
-                                                    config = config.copy(tabs = newTabs)
-                                                }
-                                            },
-                                            label = { Text("Schematic Grid Size (min width)") },
-                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                            modifier = Modifier.fillMaxWidth(),
-                                            colors = brassTextFieldColors()
-                                        )
-                                    }
-                                }
-                            }
-
-                            if (selectedFrameConfigTab == 2) {
-
-                            // Blocks and Levers item headers are no longer needed
-                            // as they are split into sub-tabs
-
-                            itemsIndexed(tab.blocks) { blockIndex, block ->
-                                ElevatedCard(
-                                    modifier = Modifier.fillMaxWidth().clickable { editingBlockIndex = blockIndex }
-                                ) {
-                                    ListItem(
-                                        headlineContent = { Text(block.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Block", style = MaterialTheme.typography.bodyMedium) },
-                                        leadingContent = {
-                                            Box(
-                                                modifier = Modifier.size(32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text("${blockIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                                            }
-                                        },
-                                        trailingContent = {
-                                            Row {
-                                                IconButton(onClick = {
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = swapBlocksSafe(newTabs[selectedFrameIndex], blockIndex, blockIndex - 1)
-                                                    config = config.copy(tabs = newTabs)
-                                                }, enabled = blockIndex > 0) { Text("↑", style = MaterialTheme.typography.titleLarge) }
-                                                IconButton(onClick = {
-                                                    val newTabs = config.tabs.toMutableList()
-                                                    newTabs[selectedFrameIndex] = swapBlocksSafe(newTabs[selectedFrameIndex], blockIndex, blockIndex + 1)
-                                                    config = config.copy(tabs = newTabs)
-                                                }, enabled = blockIndex < tab.blocks.size - 1) { Text("↓", style = MaterialTheme.typography.titleLarge) }
-                                                Text("→", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically))
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-
-                            item {
-                                Button(
-                                    onClick = {
-                                        val newTabs = config.tabs.toMutableList()
-                                        val newBlocks = newTabs[selectedFrameIndex].blocks.toMutableList()
-                                        newBlocks.add(JsonBlock(label = "New Block"))
-                                        newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(blocks = newBlocks)
-                                        config = config.copy(tabs = newTabs)
-                                    },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-                                ) {
-                                    Text("＋ Add Block")
-                                }
-                            }
-
-                            }
-
-                            if (selectedFrameConfigTab == 1) {
-                                itemsIndexed(tab.levers) { leverIndex, lever ->
-                                    ElevatedCard(
-                                        modifier = Modifier.fillMaxWidth().clickable { editingLeverIndex = leverIndex }
-                                    ) {
-                                        ListItem(
-                                            headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever", style = MaterialTheme.typography.bodyMedium) },
-                                            supportingContent = { Text(lever.type) },
-                                            leadingContent = {
-                                                Box(
-                                                    modifier = Modifier.size(32.dp),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text("${leverIndex + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-                                                }
-                                            },
-                                            trailingContent = {
-                                                Row {
-                                                    IconButton(onClick = {
-                                                        val newTabs = config.tabs.toMutableList()
-                                                        newTabs[selectedFrameIndex] = swapLeversSafe(newTabs[selectedFrameIndex], leverIndex, leverIndex - 1)
-                                                        config = config.copy(tabs = newTabs)
-                                                    }, enabled = leverIndex > 0) { Text("↑", style = MaterialTheme.typography.titleLarge) }
-                                                    IconButton(onClick = {
-                                                        val newTabs = config.tabs.toMutableList()
-                                                        newTabs[selectedFrameIndex] = swapLeversSafe(newTabs[selectedFrameIndex], leverIndex, leverIndex + 1)
-                                                        config = config.copy(tabs = newTabs)
-                                                    }, enabled = leverIndex < tab.levers.size - 1) { Text("↓", style = MaterialTheme.typography.titleLarge) }
-                                                    Text("→", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp).align(Alignment.CenterVertically))
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-
-                                item {
-                                    Button(
-                                        onClick = {
-                                            val newTabs = config.tabs.toMutableList()
-                                            val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                                            newLevers.add(JsonLever(label = "SPARE", type = "SPARE"))
-                                            newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
-                                            config = config.copy(tabs = newTabs)
-                                        },
-                                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
-                                    ) {
-                                        Text("＋ Add Lever")
-                                    }
-                                }
-                            }
-                        }
-                        }
-                    } else {
-                        Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                            Text("No Frames configured.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    
-                    OutlinedButton(
-                        onClick = { showFramesResetWarning = true },
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Reset ALL Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                    }
-                }
+                    FrameSetupView(
+                        config = config,
+                        selectedFrameIndex = selectedFrameIndex,
+                        onSelectedFrameIndexChange = { selectedFrameIndex = it },
+                        selectedFrameConfigTab = selectedFrameConfigTab,
+                        onSelectedFrameConfigTabChange = { selectedFrameConfigTab = it },
+                        onConfigChange = { config = it },
+                        onEditLever = { editingLeverIndex = it },
+                        onEditBlock = { editingBlockIndex = it },
+                        onShowFramesResetWarning = { showFramesResetWarning = true }
+                    )
                 }
             }
         }
@@ -723,123 +346,151 @@ fun brassTextFieldColors() = OutlinedTextFieldDefaults.colors(
 fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedTextField(
-                value = config.node_name,
-                onValueChange = { onConfigChange(config.copy(node_name = it)) },
-                label = { Text("Node Name") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = brassTextFieldColors()
-            )
-            OutlinedTextField(
-                value = config.node_id,
-                onValueChange = { onConfigChange(config.copy(node_id = it)) },
-                label = { Text("Node ID") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = brassTextFieldColors()
-            )
-            OutlinedTextField(
-                value = config.jmri_hub_ip,
-                onValueChange = { onConfigChange(config.copy(jmri_hub_ip = it)) },
-                label = { Text("JMRI OPENLCB/LCC HUB IP ADDRESS (optional)") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = brassTextFieldColors()
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Restore Last State", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
-                Switch(
-                    checked = config.restore_last_state,
-                    onCheckedChange = { onConfigChange(config.copy(restore_last_state = it)) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                    )
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("LCC Enabled", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
-                Switch(
-                    checked = config.lcc_enabled,
-                    onCheckedChange = { onConfigChange(config.copy(lcc_enabled = it)) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                    )
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("LCC Master", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
-                Switch(
-                    checked = config.lcc_master,
-                    onCheckedChange = { onConfigChange(config.copy(lcc_master = it)) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                    )
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Enable Sound", style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
-                Switch(
-                    checked = config.enable_sound,
-                    onCheckedChange = { onConfigChange(config.copy(enable_sound = it)) },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
-                    )
-                )
-            }
-            
-            var policyExpanded by remember { mutableStateOf(false) }
-            val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
-            val currentPolicyName = policies[config.conflict_policy] ?: "Override Allowed"
-            
-            ExposedDropdownMenuBox(
-                expanded = policyExpanded,
-                onExpandedChange = { policyExpanded = !policyExpanded }
-            ) {
-                OutlinedTextField(
-                    value = currentPolicyName,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("External Event Policy") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
-                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                    colors = brassTextFieldColors()
-                )
-                ExposedDropdownMenu(
-                    expanded = policyExpanded,
-                    onDismissRequest = { policyExpanded = false }
-                ) {
-                    policies.forEach { (key, name) ->
-                        DropdownMenuItem(
-                            text = { Text(name) },
-                            onClick = {
-                                onConfigChange(config.copy(conflict_policy = key))
-                                policyExpanded = false
-                            }
-                        )
+            GlobalNetworkSettings(config, onConfigChange)
+            BehaviorSettings(config, onConfigChange)
+            JmriServerSettings(config, onConfigChange)
+            DeveloperSettings(config, onConfigChange)
+        }
+    }
+}
+
+@Composable
+private fun GlobalNetworkSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
+    Text("Global Network Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+    OutlinedTextField(
+        value = config.node_name,
+        onValueChange = { onConfigChange(config.copy(node_name = it)) },
+        label = { Text("Node Name") },
+        modifier = Modifier.fillMaxWidth(),
+        colors = brassTextFieldColors()
+    )
+    OutlinedTextField(
+        value = config.node_id,
+        onValueChange = { onConfigChange(config.copy(node_id = it)) },
+        label = { Text("Node ID") },
+        modifier = Modifier.fillMaxWidth(),
+        colors = brassTextFieldColors()
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BehaviorSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
+    Text("Behavior Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+    SettingSwitchRow("Restore Last State", config.restore_last_state) { onConfigChange(config.copy(restore_last_state = it)) }
+    SettingSwitchRow("LCC Enabled", config.lcc_enabled) { onConfigChange(config.copy(lcc_enabled = it)) }
+    SettingSwitchRow("LCC Master", config.lcc_master) { onConfigChange(config.copy(lcc_master = it)) }
+    SettingSwitchRow("Enable Sound", config.enable_sound) { onConfigChange(config.copy(enable_sound = it)) }
+    
+    var policyExpanded by remember { mutableStateOf(false) }
+    val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
+    val currentPolicyName = policies[config.conflict_policy] ?: "Override Allowed"
+    
+    ExposedDropdownMenuBox(
+        expanded = policyExpanded,
+        onExpandedChange = { policyExpanded = !policyExpanded }
+    ) {
+        OutlinedTextField(
+            value = currentPolicyName,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("External Event Policy") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = policyExpanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(
+            expanded = policyExpanded,
+            onDismissRequest = { policyExpanded = false }
+        ) {
+            policies.forEach { (id, name) ->
+                DropdownMenuItem(
+                    text = { Text(name) },
+                    onClick = {
+                        onConfigChange(config.copy(conflict_policy = id))
+                        policyExpanded = false
                     }
-                }
+                )
             }
         }
     }
 }
+
+@Composable
+private fun JmriServerSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
+    Text("JMRI / Server Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+    OutlinedTextField(
+        value = config.jmri_hub_ip,
+        onValueChange = { onConfigChange(config.copy(jmri_hub_ip = it)) },
+        label = { Text("JMRI OPENLCB/LCC HUB IP ADDRESS (optional)") },
+        modifier = Modifier.fillMaxWidth(),
+        colors = brassTextFieldColors()
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeveloperSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
+    Text("Developer Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
+    
+    var displayModeExpanded by remember { mutableStateOf(false) }
+    val displayModes = mapOf("LOCKING_TABLE" to "Locking Table", "CLAUSE_BUILDER" to "Clause Builder", "TEXT_FORMULA" to "Text Formula")
+    ExposedDropdownMenuBox(expanded = displayModeExpanded, onExpandedChange = { displayModeExpanded = !displayModeExpanded }) {
+        OutlinedTextField(
+            value = displayModes[config.rule_display_mode] ?: config.rule_display_mode,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Default Rule Display Mode") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = displayModeExpanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = displayModeExpanded, onDismissRequest = { displayModeExpanded = false }) {
+            displayModes.forEach { (mode, label) ->
+                DropdownMenuItem(text = { Text(label) }, onClick = { onConfigChange(config.copy(rule_display_mode = mode)); displayModeExpanded = false })
+            }
+        }
+    }
+    
+    var editorModeExpanded by remember { mutableStateOf(false) }
+    val editorModes = mapOf("CLAUSE_BUILDER" to "Clause Builder", "TEXT_FORMULA" to "Text Formula")
+    ExposedDropdownMenuBox(expanded = editorModeExpanded, onExpandedChange = { editorModeExpanded = !editorModeExpanded }) {
+        OutlinedTextField(
+            value = editorModes[config.rule_editor_mode] ?: config.rule_editor_mode,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Default Rule Editor") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = editorModeExpanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = editorModeExpanded, onDismissRequest = { editorModeExpanded = false }) {
+            editorModes.forEach { (mode, label) ->
+                DropdownMenuItem(text = { Text(label) }, onClick = { onConfigChange(config.copy(rule_editor_mode = mode)); editorModeExpanded = false })
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingSwitchRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = LeverFrameTheme.Colors.PaleBlue
+            )
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -849,11 +500,14 @@ fun LeverDetailScreen(
     lever: JsonLever,
     allLevers: List<JsonLever>,
     allBlocks: List<JsonBlock>,
+    ruleEditorMode: String,
+    ruleDisplayMode: String,
     onLeverChange: (JsonLever) -> Unit,
     onDelete: () -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(0) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var isEditingRules by rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PrimaryScrollableTabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent, edgePadding = 0.dp) {
@@ -1024,38 +678,69 @@ fun LeverDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Interlocking Rules", style = MaterialTheme.typography.titleMedium, color = LeverFrameTheme.Colors.Brass)
-                        TextButton(onClick = {
-                            val newRules = lever.interlocking.toMutableList()
-                            newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
-                            onLeverChange(lever.copy(interlocking = newRules))
-                        }) {
-                            Text("＋ Add Rule")
+                        val currentMode = if (isEditingRules) ruleEditorMode else ruleDisplayMode
+                        
+                        if (currentMode == "CLAUSE_BUILDER") {
+                            TextButton(onClick = {
+                                val newRules = lever.interlocking.toMutableList()
+                                newRules.add(JsonInterlocking(target = 0, state = "NORMAL"))
+                                onLeverChange(lever.copy(interlocking = newRules))
+                            }) {
+                                Text("＋ Add Rule")
+                            }
+                        }
+                        
+                        if (ruleDisplayMode == "LOCKING_TABLE") {
+                            if (isEditingRules) {
+                                TextButton(onClick = { isEditingRules = false }) {
+                                    Text("Done", color = LeverFrameTheme.Colors.Brass)
+                                }
+                            } else {
+                                TextButton(onClick = { isEditingRules = true }) {
+                                    Text("Edit Rules", color = LeverFrameTheme.Colors.Brass)
+                                }
+                            }
                         }
                     }
                 }
                 
-                itemsIndexed(lever.interlocking) { rIndex, rule ->
-                    MobileRuleCard(
-                        ruleIndex = rIndex,
-                        rule = rule,
-                        allLevers = allLevers,
-                        allBlocks = allBlocks,
-                        onRuleChange = { newRule ->
-                            val newRules = lever.interlocking.toMutableList()
-                            newRules[rIndex] = newRule
-                            onLeverChange(lever.copy(interlocking = newRules))
-                        },
-                        onDelete = {
-                            val newRules = lever.interlocking.toMutableList()
-                            newRules.removeAt(rIndex)
-                            onLeverChange(lever.copy(interlocking = newRules))
-                        }
-                    )
-                }
+                val currentMode = if (isEditingRules) ruleEditorMode else ruleDisplayMode
                 
-                if (lever.interlocking.isEmpty()) {
+                if (currentMode == "LOCKING_TABLE") {
                     item {
-                        Text("No rules defined for this lever.", color = Color.Gray, modifier = Modifier.padding(16.dp))
+                        LockingTableView(lever, allLevers, allBlocks)
+                    }
+                } else if (currentMode == "TEXT_FORMULA") {
+                    item {
+                        FormulaTextView(
+                            ast = lever.ast_logic ?: migrateJsonInterlockingToAst(lever.interlocking),
+                            onAstChange = { newAst -> onLeverChange(lever.copy(ast_logic = newAst, interlocking = emptyList())) }
+                        )
+                    }
+                } else { // CLAUSE_BUILDER
+                    itemsIndexed(lever.interlocking) { rIndex, rule ->
+                        MobileRuleCard(
+                            ruleIndex = rIndex,
+                            rule = rule,
+                            allLevers = allLevers,
+                            allBlocks = allBlocks,
+                            onRuleChange = { newRule ->
+                                val newRules = lever.interlocking.toMutableList()
+                                newRules[rIndex] = newRule
+                                onLeverChange(lever.copy(interlocking = newRules, ast_logic = migrateJsonInterlockingToAst(newRules)))
+                            },
+                            onDelete = {
+                                val newRules = lever.interlocking.toMutableList()
+                                newRules.removeAt(rIndex)
+                                onLeverChange(lever.copy(interlocking = newRules, ast_logic = migrateJsonInterlockingToAst(newRules)))
+                            }
+                        )
+                    }
+                    
+                    if (lever.interlocking.isEmpty()) {
+                        item {
+                            Text("No rules defined for this lever.", color = Color.Gray, modifier = Modifier.padding(16.dp))
+                        }
                     }
                 }
             }
@@ -1073,171 +758,158 @@ fun MobileRuleCard(
     onRuleChange: (JsonInterlocking) -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A)),
-        modifier = Modifier.fillMaxWidth()
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color(0xFF2A2A2A))
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Rule ${ruleIndex + 1}", style = MaterialTheme.typography.labelLarge)
-                TextButton(onClick = onDelete, modifier = Modifier.offset(x = 8.dp)) {
-                    Text("✕ Delete", color = MaterialTheme.colorScheme.error)
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Rule ${ruleIndex + 1}", color = LeverFrameTheme.Colors.Brass, fontWeight = FontWeight.Bold)
+                IconButton(onClick = onDelete) {
+                    Text("✕", color = MaterialTheme.colorScheme.error)
                 }
             }
             
-            Text("Primary Condition", style = MaterialTheme.typography.labelMedium, color = LeverFrameTheme.Colors.Brass)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                var typeExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }, modifier = Modifier.weight(1.5f)) {
-                    OutlinedTextField(
-                        value = rule.target_type,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
-                        listOf("LEVER", "BLOCK").forEach { s ->
-                            DropdownMenuItem(text = { Text(s) }, onClick = { 
-                                val newState = if (s == "BLOCK") "OCCUPIED" else "NORMAL"
-                                onRuleChange(rule.copy(target_type = s, state = newState)); typeExpanded = false 
-                            })
+            RuleTargetDropdown(
+                label = "Target",
+                targetType = rule.target_type,
+                targetIndex = rule.target,
+                allLevers = allLevers,
+                allBlocks = allBlocks,
+                onTargetSelected = { type, idx -> onRuleChange(rule.copy(target_type = type, target = idx)) }
+            )
+            
+            RuleStateDropdown(
+                label = "Required State",
+                targetType = rule.target_type,
+                state = rule.state,
+                onStateSelected = { onRuleChange(rule.copy(state = it)) }
+            )
+            
+            val hasAlt = rule.alt_target != -1
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = hasAlt,
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            onRuleChange(rule.copy(alt_target = 0, alt_target_type = "LEVER", alt_state = "NORMAL"))
+                        } else {
+                            onRuleChange(rule.copy(alt_target = -1, alt_target_type = "LEVER", alt_state = "NORMAL"))
                         }
-                    }
-                }
+                    },
+                    colors = CheckboxDefaults.colors(checkedColor = LeverFrameTheme.Colors.Brass)
+                )
+                Text("OR Alternate Condition")
+            }
+            
+            if (hasAlt) {
+                RuleTargetDropdown(
+                    label = "Alt Target",
+                    targetType = rule.alt_target_type ?: "LEVER",
+                    targetIndex = rule.alt_target ?: 0,
+                    allLevers = allLevers,
+                    allBlocks = allBlocks,
+                    onTargetSelected = { type, idx -> onRuleChange(rule.copy(alt_target_type = type, alt_target = idx)) }
+                )
                 
-                var targetExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = targetExpanded, onExpandedChange = { targetExpanded = !targetExpanded }, modifier = Modifier.weight(1.5f)) {
-                    val labelText = if (rule.target_type == "BLOCK") {
-                        allBlocks.getOrNull(rule.target)?.label?.replace("\n", " ") ?: "Block ${rule.target + 1}"
-                    } else {
-                        allLevers.getOrNull(rule.target)?.label?.replace("\n", " ") ?: "Lever ${rule.target + 1}"
-                    }
-                    
-                    OutlinedTextField(
-                        value = labelText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Target") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = targetExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = targetExpanded, onDismissRequest = { targetExpanded = false }) {
-                        if (rule.target_type == "BLOCK") {
-                            allBlocks.forEachIndexed { idx, blk ->
-                                DropdownMenuItem(text = { Text("[${idx + 1}] ${blk.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(target = idx)); targetExpanded = false })
-                            }
-                        } else {
-                            allLevers.forEachIndexed { idx, lvr ->
-                                DropdownMenuItem(text = { Text("[${idx + 1}] ${lvr.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(target = idx)); targetExpanded = false })
-                            }
-                        }
-                    }
-                }
-            }
-            
-            var stateExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = stateExpanded, onExpandedChange = { stateExpanded = !stateExpanded }, modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = rule.state,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Required State") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
-                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                    colors = brassTextFieldColors()
+                RuleStateDropdown(
+                    label = "Alt Required State",
+                    targetType = rule.alt_target_type ?: "LEVER",
+                    state = rule.alt_state ?: "NORMAL",
+                    onStateSelected = { onRuleChange(rule.copy(alt_state = it)) }
                 )
-                ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
-                    val options = if (rule.target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
-                    options.forEach { s ->
-                        DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(state = s)); stateExpanded = false })
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("OR Alternate Condition (Optional)", style = MaterialTheme.typography.labelMedium, color = LeverFrameTheme.Colors.Brass)
-            
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                var altTypeExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = altTypeExpanded, onExpandedChange = { altTypeExpanded = !altTypeExpanded }, modifier = Modifier.weight(1.5f)) {
-                    OutlinedTextField(
-                        value = rule.alt_target_type,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Alt Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altTypeExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = altTypeExpanded, onDismissRequest = { altTypeExpanded = false }) {
-                        listOf("LEVER", "BLOCK").forEach { s ->
-                            DropdownMenuItem(text = { Text(s) }, onClick = { 
-                                val newState = if (s == "BLOCK") "OCCUPIED" else "NORMAL"
-                                onRuleChange(rule.copy(alt_target_type = s, alt_state = newState)); altTypeExpanded = false 
-                            })
-                        }
-                    }
-                }
-
-                var altTargetExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(expanded = altTargetExpanded, onExpandedChange = { altTargetExpanded = !altTargetExpanded }, modifier = Modifier.weight(1.5f)) {
-                    val labelText = if (rule.alt_target == -1) {
-                        "None"
-                    } else if (rule.alt_target_type == "BLOCK") {
-                        allBlocks.getOrNull(rule.alt_target)?.label?.replace("\n", " ") ?: "Block ${rule.alt_target + 1}"
-                    } else {
-                        allLevers.getOrNull(rule.alt_target)?.label?.replace("\n", " ") ?: "Lever ${rule.alt_target + 1}"
-                    }
-                    
-                    OutlinedTextField(
-                        value = labelText,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Alt Target") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altTargetExpanded) },
-                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                        colors = brassTextFieldColors()
-                    )
-                    ExposedDropdownMenu(expanded = altTargetExpanded, onDismissRequest = { altTargetExpanded = false }) {
-                        DropdownMenuItem(text = { Text("None") }, onClick = { onRuleChange(rule.copy(alt_target = -1)); altTargetExpanded = false })
-                        if (rule.alt_target_type == "BLOCK") {
-                            allBlocks.forEachIndexed { idx, blk ->
-                                DropdownMenuItem(text = { Text("[${idx + 1}] ${blk.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(alt_target = idx)); altTargetExpanded = false })
-                            }
-                        } else {
-                            allLevers.forEachIndexed { idx, lvr ->
-                                DropdownMenuItem(text = { Text("[${idx + 1}] ${lvr.label.replace("\n", " ")}") }, onClick = { onRuleChange(rule.copy(alt_target = idx)); altTargetExpanded = false })
-                            }
-                        }
-                    }
-                }
-            }
-            
-            var altStateExpanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = altStateExpanded, onExpandedChange = { altStateExpanded = !altStateExpanded }, modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = rule.alt_state,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Alt Required State") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = altStateExpanded) },
-                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                    colors = brassTextFieldColors()
-                )
-                ExposedDropdownMenu(expanded = altStateExpanded, onDismissRequest = { altStateExpanded = false }) {
-                    val options = if (rule.alt_target_type == "BLOCK") listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
-                    options.forEach { s ->
-                        DropdownMenuItem(text = { Text(s) }, onClick = { onRuleChange(rule.copy(alt_state = s)); altStateExpanded = false })
-                    }
-                }
             }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RuleTargetDropdown(
+    label: String,
+    targetType: String,
+    targetIndex: Int,
+    allLevers: List<JsonLever>,
+    allBlocks: List<JsonBlock>,
+    onTargetSelected: (String, Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val displayValue = if (targetType == "BLOCK") {
+        "Block ${targetIndex + 1}" + (allBlocks.getOrNull(targetIndex)?.label?.let { " ($it)" } ?: "")
+    } else {
+        "Lever ${targetIndex + 1}" + (allLevers.getOrNull(targetIndex)?.label?.let { " ($it)" } ?: "")
+    }
+    
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        OutlinedTextField(
+            value = displayValue,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            allLevers.forEachIndexed { i, l ->
+                DropdownMenuItem(
+                    text = { Text("Lever ${i + 1} (${l.label})") },
+                    onClick = {
+                        onTargetSelected("LEVER", i)
+                        expanded = false
+                    }
+                )
+            }
+            Divider(color = Color.DarkGray)
+            allBlocks.forEachIndexed { i, b ->
+                DropdownMenuItem(
+                    text = { Text("Block ${i + 1} (${b.label})") },
+                    onClick = {
+                        onTargetSelected("BLOCK", i)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RuleStateDropdown(
+    label: String,
+    targetType: String,
+    state: String,
+    onStateSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val isBlock = targetType == "BLOCK"
+    val states = if (isBlock) listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+    
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        OutlinedTextField(
+            value = state,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            states.forEach { st ->
+                DropdownMenuItem(
+                    text = { Text(st) },
+                    onClick = {
+                        onStateSelected(st)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1394,167 +1066,3 @@ fun IntTextField(
     )
 }
 
-private fun JsonConfig.withoutRules(): JsonConfig {
-    return this.copy(tabs = this.tabs.map { tab ->
-        tab.copy(levers = tab.levers.map { lever ->
-            lever.copy(interlocking = emptyList())
-        })
-    })
-}
-
-private fun JsonConfig.withoutUiAndRules(): JsonConfig {
-    return this.copy(
-        jmri_hub_ip = "",
-        node_id = "",
-        node_name = "",
-        conflict_policy = 1,
-        display_sleep_timeout_ms = 0,
-        restore_last_state = false,
-        lcc_enabled = false,
-        lcc_master = false,
-        enable_sound = false,
-        tabs = this.tabs.map { tab ->
-            tab.copy(
-                show_lever_numbers = true,
-                show_block_numbers = false,
-                use_short_codes = false,
-                use_short_codes_in_indicators = false,
-                schematic_grid_size = 40,
-                label_lines = 2,
-                label_line_height = 18,
-                block_layout = "HORIZONTAL",
-                block_label_size = 8,
-            levers = tab.levers.map { lever ->
-                lever.copy(interlocking = emptyList(), auto_reverser = false)
-            }
-        )
-    })
-}
-
-fun swapBlocksSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
-    val newBlocks = tab.blocks.toMutableList()
-    val temp = newBlocks[indexA]
-    newBlocks[indexA] = newBlocks[indexB]
-    newBlocks[indexB] = temp
-
-    val newSchematicElements = tab.schematic_elements.map { elem ->
-        var newElem = elem
-        if (elem.linked_block == indexA) newElem = newElem.copy(linked_block = indexB)
-        else if (elem.linked_block == indexB) newElem = newElem.copy(linked_block = indexA)
-        newElem
-    }
-
-    val newLevers = tab.levers.map { lever ->
-        val newRules = lever.interlocking.map { rule ->
-            var newRule = rule
-            if (rule.target_type == "BLOCK") {
-                if (rule.target == indexA) newRule = newRule.copy(target = indexB)
-                else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
-            }
-            if (rule.alt_target_type == "BLOCK") {
-                if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
-                else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
-            }
-            newRule
-        }
-        lever.copy(interlocking = newRules)
-    }
-
-    return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
-}
-
-fun swapLeversSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
-    val newLevers = tab.levers.toMutableList()
-    val temp = newLevers[indexA]
-    newLevers[indexA] = newLevers[indexB]
-    newLevers[indexB] = temp
-
-    val newSchematicElements = tab.schematic_elements.map { elem ->
-        var newElem = elem
-        if (elem.linked_lever == indexA) newElem = newElem.copy(linked_lever = indexB)
-        else if (elem.linked_lever == indexB) newElem = newElem.copy(linked_lever = indexA)
-
-        if (elem.linked_lever_2 == indexA) newElem = newElem.copy(linked_lever_2 = indexB)
-        else if (elem.linked_lever_2 == indexB) newElem = newElem.copy(linked_lever_2 = indexA)
-        newElem
-    }
-
-    val newLeversMapped = newLevers.map { lever ->
-        val newRules = lever.interlocking.map { rule ->
-            var newRule = rule
-            if (rule.target_type == "LEVER") {
-                if (rule.target == indexA) newRule = newRule.copy(target = indexB)
-                else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
-            }
-            if (rule.alt_target_type == "LEVER") {
-                if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
-                else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
-            }
-            newRule
-        }
-        lever.copy(interlocking = newRules)
-    }
-
-    return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
-}
-
-fun deleteBlockSafe(tab: JsonTab, index: Int): JsonTab {
-    val newBlocks = tab.blocks.toMutableList()
-    newBlocks.removeAt(index)
-    
-    val newSchematicElements = tab.schematic_elements.map { elem ->
-        var newElem = elem
-        if (elem.linked_block == index) newElem = newElem.copy(linked_block = -1)
-        else if (elem.linked_block > index) newElem = newElem.copy(linked_block = elem.linked_block - 1)
-        newElem
-    }
-
-    val newLevers = tab.levers.map { lever ->
-        val newRules = lever.interlocking.mapNotNull { rule ->
-            var newRule = rule
-            if (rule.target_type == "BLOCK") {
-                if (rule.target == index) return@mapNotNull null
-                else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
-            }
-            if (rule.alt_target_type == "BLOCK") {
-                if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
-                else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
-            }
-            newRule
-        }
-        lever.copy(interlocking = newRules)
-    }
-    return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
-}
-
-fun deleteLeverSafe(tab: JsonTab, index: Int): JsonTab {
-    val newLevers = tab.levers.toMutableList()
-    newLevers.removeAt(index)
-    
-    val newSchematicElements = tab.schematic_elements.map { elem ->
-        var newElem = elem
-        if (elem.linked_lever == index) newElem = newElem.copy(linked_lever = -1)
-        else if (elem.linked_lever > index) newElem = newElem.copy(linked_lever = elem.linked_lever - 1)
-
-        if (elem.linked_lever_2 == index) newElem = newElem.copy(linked_lever_2 = -1)
-        else if (elem.linked_lever_2 > index) newElem = newElem.copy(linked_lever_2 = elem.linked_lever_2 - 1)
-        newElem
-    }
-
-    val newLeversMapped = newLevers.map { lever ->
-        val newRules = lever.interlocking.mapNotNull { rule ->
-            var newRule = rule
-            if (rule.target_type == "LEVER") {
-                if (rule.target == index) return@mapNotNull null
-                else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
-            }
-            if (rule.alt_target_type == "LEVER") {
-                if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
-                else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
-            }
-            newRule
-        }
-        lever.copy(interlocking = newRules)
-    }
-    return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
-}

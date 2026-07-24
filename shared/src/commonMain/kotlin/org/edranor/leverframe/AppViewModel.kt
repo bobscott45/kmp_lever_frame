@@ -33,7 +33,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 
 class AppViewModel(
-    private val configRepo: AppConfigRepository,
+    private val configRepo: ConfigurationRepository,
+    private val persistenceRepo: StatePersistenceRepository,
     private val lccClient: LccNetworkClient,
     private val eventProcessor: NetworkEventProcessor
 ) : ViewModel() {
@@ -59,7 +60,7 @@ class AppViewModel(
         initialValue = TransientUiState()
     )
 
-    private val persistenceService = PersistenceService(configRepo, viewModelScope, domainState)
+    private val persistenceService = PersistenceService(persistenceRepo, configRepo, viewModelScope, domainState)
 
     init {
         viewModelScope.launch {
@@ -104,7 +105,7 @@ class AppViewModel(
         }.toMutableList()
 
         // Restore from disk if configured
-        val storedData = configRepo.loadSavedStates()
+        val storedData = persistenceRepo.loadSavedStates()
         if (configRepo.currentConfig.restore_last_state && storedData != null) {
             frames.forEachIndexed { tabIdx, frame ->
                 var updatedLevers = frame.levers
@@ -398,7 +399,7 @@ class AppViewModel(
         viewModelScope.launch {
             configRepo.saveConfig(newConfig)
             if (clearStates) {
-                configRepo.clearSavedStates()
+                persistenceRepo.clearSavedStates()
             }
             
             if (!newConfig.lcc_enabled) {

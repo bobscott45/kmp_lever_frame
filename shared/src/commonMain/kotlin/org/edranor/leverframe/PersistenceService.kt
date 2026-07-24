@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 class PersistenceService(
-    private val configRepo: AppConfigRepository,
+    private val persistenceRepo: StatePersistenceRepository,
+    private val configRepo: ConfigurationRepository,
     private val scope: CoroutineScope,
     private val domainStateFlow: StateFlow<DomainState>
 ) {
@@ -23,7 +24,7 @@ class PersistenceService(
                 if (configRepo.currentConfig.restore_last_state) {
                     val leversToSave = domainStateFlow.value.frames.map { f -> f.levers.map { it.isReversed } }
                     val blocksToSave = domainStateFlow.value.frames.map { f -> f.blocks.map { it.isOccupied } }
-                    configRepo.saveCurrentStates(SavedStatesData(tabs = leversToSave, blocks = blocksToSave))
+                    persistenceRepo.saveCurrentStates(SavedStatesData(tabs = leversToSave, blocks = blocksToSave))
                 }
             }
         }

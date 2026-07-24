@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Implemented a resizable, draggable layout divider between the schematic and lever views, with persistent layout weights.
 
 ### Changed
+- **Architecture**: Refactored `AppConfigRepository` according to the Interface Segregation Principle (ISP), separating it into distinct `ConfigurationRepository` and `StatePersistenceRepository` interfaces.
+- **Architecture**: Refactored `AstNode` evaluation and stringification according to the Open/Closed Principle (OCP) using polymorphic dispatch instead of massive `when` blocks in `Interlocking.kt`.
 - **Architecture**: Extracted redundant auto-reverser cascade logic from `AppViewModel` and `NetworkEventProcessor` into a centralized `Interlocking` method, adhering to the Single Responsibility Principle.
 - **Architecture**: Implemented Dependency Injection using Koin, fully decoupling `AppViewModel` from its underlying network and disk persistence implementations.
 - **Persistence**: Enhanced `PersistenceService` to save and restore both Lever and Block Occupancy states across sessions (previously only Lever states were persisted).
@@ -40,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **UI/UX**: Restored the 'Default Rule Display Mode' and 'Default Rule Editor' dropdown settings to the System Settings screen and linked them back to the Lever configuration rules editor.
 - **Persistence**: Fixed Android state persistence by implementing `AndroidAppContext` and `Platform.android.kt` file operations, ensuring configuration and layout weights persist across sessions.
 - **UI/UX**: Fixed schematic turnout rendering where the main line track color incorrectly extended past the divergence point (V). The track now accurately splits to show the approaching block color on the left half and the departing block color on the right half.
 - **State**: Toggling the "Auto-Reverser" property in the Configuration screen now saves silently without triggering a full app reload warning, as it is dynamically evaluated like an interlocking rule.

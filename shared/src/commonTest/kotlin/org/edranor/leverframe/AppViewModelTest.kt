@@ -85,7 +85,7 @@ class AppViewModelTest {
         )
         
         val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
-        viewModel = AppViewModel(configRepo, lccClient, eventProcessor)
+        viewModel = AppViewModel(configRepo, configRepo, lccClient, eventProcessor)
     }
 
     @AfterTest
