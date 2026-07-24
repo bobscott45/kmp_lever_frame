@@ -74,27 +74,11 @@ class NetworkEventProcessor(
             }
 
             // Evaluate auto-reversers (cascade until steady state)
-            var reverserChanged: Boolean
-            do {
-                val frame = newFrames[tabIdx]
-                reverserChanged = false
-                val currentConflicts = Interlocking.getConflictingLevers(tabDef, frame.levers, frame.blocks)
-
-                tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                    if (leverDef.autoReverser && frame.levers[leverIdx].isReversed) {
-                        if (leverIdx in currentConflicts) {
-                            val newLevers = newFrames[tabIdx].levers.toMutableList()
-                            newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = false) // Force to NORMAL
-                            newFrames[tabIdx] = newFrames[tabIdx].copy(levers = newLevers)
-                            stateChanged = true
-                            reverserChanged = true
-                            if (leverDef.lcc_event_normal.isNotBlank()) {
-                                outgoingEvents.add(leverDef.lcc_event_normal)
-                            }
-                        }
-                    }
-                }
-            } while (reverserChanged)
+            val mutableLevers = newFrames[tabIdx].levers.toMutableList()
+            if (Interlocking.applyCascades(tabDef, mutableLevers, newFrames[tabIdx].blocks, outgoingEvents)) {
+                newFrames[tabIdx] = newFrames[tabIdx].copy(levers = mutableLevers)
+                stateChanged = true
+            }
         } // end forEachIndexed
 
         if (stateChanged) {

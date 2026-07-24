@@ -143,4 +143,36 @@ object Interlocking {
         }
         return conflicts.toList()
     }
+
+    /**
+     * Applies auto-reverser cascade logic, forcing reverser levers back to NORMAL if there is a conflict.
+     * Returns true if any changes were made, modifying the `levers` and `outgoingEvents` collections in-place.
+     */
+    fun applyCascades(
+        tab: TabDef,
+        levers: MutableList<DomainLever>,
+        blocks: List<DomainBlock>,
+        outgoingEvents: MutableList<String>
+    ): Boolean {
+        var anyChanged = false
+        var reverserChanged: Boolean
+        do {
+            reverserChanged = false
+            val currentConflicts = getConflictingLevers(tab, levers, blocks)
+
+            tab.levers.forEachIndexed { leverIdx, leverDef ->
+                if (leverDef.autoReverser && levers[leverIdx].isReversed) {
+                    if (leverIdx in currentConflicts) {
+                        levers[leverIdx] = levers[leverIdx].copy(isReversed = false) // Force to NORMAL
+                        reverserChanged = true
+                        anyChanged = true
+                        if (leverDef.lcc_event_normal.isNotBlank()) {
+                            outgoingEvents.add(leverDef.lcc_event_normal)
+                        }
+                    }
+                }
+            }
+        } while (reverserChanged)
+        return anyChanged
+    }
 }

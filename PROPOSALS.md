@@ -35,26 +35,26 @@ This makes the Interlocking engine much more expressive.
 **The Problem:** Hard-coded singleton dependencies make unit testing the `AppViewModel` or `Interlocking` logic difficult without spinning up the actual file system or network managers.
 **Improvement:** Introduce a lightweight DI framework (like Koin, which works well with KMP) or use manual constructor injection across the board.
 
+### 5. Remove Redundant Auto-Reverser Logic (High Priority)
+**Observation:** In `AppViewModel.kt`, there is a complex `do-while` loop that handles the cascading "Auto-Reverser" logic (snapping signals back to Danger when a block is occupied). This exact loop is duplicated in both `handleExternalEvent` and `toggleBlockState`.
+**Improvement:** Extract this logic into `Interlocking.kt` (e.g., `Interlocking.applyCascades(...)`). This will DRY up the code and make the interlocking engine responsible for resolving all state conflicts, rather than the ViewModel.
+
 ---
 
 ## Functionality Suggestions (Additional & Redundant)
 
-### 1. Remove Redundant Auto-Reverser Logic (High Priority)
-**Observation:** In `AppViewModel.kt`, there is a complex `do-while` loop that handles the cascading "Auto-Reverser" logic (snapping signals back to Danger when a block is occupied). This exact loop is duplicated in both `handleExternalEvent` and `toggleBlockState`.
-**Improvement:** Extract this logic into `Interlocking.kt` (e.g., `Interlocking.applyCascades(...)`). This will DRY up the code and make the interlocking engine responsible for resolving all state conflicts, rather than the ViewModel.
-
-### 2. Additional: Expression-based Interlocking Logic (Medium Priority)
+### 1. Additional: Expression-based Interlocking Logic (Medium Priority)
 **Observation:** The current `InterlockingCondition` struct supports basic `AND/OR` matching (e.g., Target A AND (AltTarget B)). 
 **Improvement:** Real-world mechanical locking can be incredibly complex (e.g., conditional locking where Lever 1 locks Lever 2 ONLY IF Lever 3 is reversed). Replacing the flat condition list with a Boolean Expression Tree (AST) would allow the simulator to model 100% accurate real-world mechanical locking tables.
 
-### 3. Additional: Session Logging & Diagnostics (Medium Priority)
+### 2. Additional: Session Logging & Diagnostics (Medium Priority)
 **Observation:** The app has a `SystemStatusScreen`, but debugging complex interlocking logic is entirely visual.
 **Improvement:** Add an internal logging tape that records events like "User Reversed Lever 4", "LCC Event Received: Block 2 Occupied", etc. This would be invaluable for users trying to debug why their virtual signal box isn't behaving as expected.
 
-### 4. Additional: Undo / Redo Stack (Low Priority)
+### 3. Additional: Undo / Redo Stack (Low Priority)
 **Observation:** As a simulator, users might accidentally pull the wrong lever and trigger an auto-reversing cascade they didn't want.
 **Improvement:** Implement the Command pattern for lever toggles. Keeping a localized history stack would allow users to "Undo" a move, stepping the state machine backward. 
 
-### 5. Additional: Route Setting (NX) Integration (Low Priority)
+### 4. Additional: Route Setting (NX) Integration (Low Priority)
 **Observation:** The system operates purely as a mechanical lever frame.
 **Improvement:** Since the application already knows about the track schematics and digital blocks, you could add an "eNtrance to eXit" (NX) mode. A user taps the start block and the destination block on the schematic, and the app calculates the route and automatically sequences the required points and signals.

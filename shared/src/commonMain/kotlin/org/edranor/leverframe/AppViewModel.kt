@@ -357,23 +357,7 @@ class AppViewModel(
                 val tabDef = configState.tabs[tabIndex].second
                 
                 // Evaluate auto-reversers (cascade until steady state)
-                var reverserChanged: Boolean
-                do {
-                    reverserChanged = false
-                    val currentConflicts = Interlocking.getConflictingLevers(tabDef, newLevers, newBlocks)
-                    
-                    tabDef.levers.forEachIndexed { leverIdx, leverDef ->
-                        if (leverDef.autoReverser && newLevers[leverIdx].isReversed) {
-                            if (leverIdx in currentConflicts) {
-                                newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = false) // Force to NORMAL
-                                reverserChanged = true
-                                if (leverDef.lcc_event_normal.isNotBlank()) {
-                                    outgoingEvents.add(leverDef.lcc_event_normal)
-                                }
-                            }
-                        }
-                    }
-                } while(reverserChanged)
+                Interlocking.applyCascades(tabDef, newLevers, newBlocks, outgoingEvents)
                 
                 updatedFrames[tabIndex] = frame.copy(blocks = newBlocks, levers = newLevers)
                 
