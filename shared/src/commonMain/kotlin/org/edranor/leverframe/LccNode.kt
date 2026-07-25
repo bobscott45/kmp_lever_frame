@@ -235,8 +235,8 @@ object LccNode : LccNetworkClient {
         try {
             val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
-                // Producer Identified CAN MTI is 0x054A -> 1954A prefix
-                val msg = ":X1954A${NODE_ALIAS}N$cleanHex;"
+                // Producer Identified Valid CAN MTI is 0x0544 -> 19544 prefix
+                val msg = ":X19544${NODE_ALIAS}N$cleanHex;"
                 GridConnectNetwork.sendMessage(msg)
                 println("Sent Producer Identified: $msg")
             }
