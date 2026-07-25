@@ -121,6 +121,15 @@ object LccNode : LccNetworkClient {
                     sendAllProducerIdentified()
                 } else if (msg.contains("X18914") || msg.contains("X19914")) { // Identify Producers Global/Addressed
                     sendAllProducerIdentified()
+                } else if (msg.startsWith(":X19828")) { // Protocol Support Inquiry Addressed
+                    val dataIdx = msg.indexOf('N')
+                    if (dataIdx != -1 && msg.length >= dataIdx + 5) {
+                        val destAlias = msg.substring(dataIdx + 2, dataIdx + 5)
+                        if (destAlias == NODE_ALIAS) {
+                            val srcAlias = msg.substring(7, 10)
+                            sendProtocolSupportReply(srcAlias)
+                        }
+                    }
                 } else if (msg.startsWith(":X1A${NODE_ALIAS}") || 
                            msg.startsWith(":X1C${NODE_ALIAS}") || 
                            msg.startsWith(":X1D${NODE_ALIAS}") || 
@@ -236,6 +245,20 @@ object LccNode : LccNetworkClient {
             println("Sent Datagram Received OK to $destAlias")
         } catch (e: Exception) {
             println("Failed to send Datagram Received OK: ${e.message}")
+        }
+    }
+
+    private fun sendProtocolSupportReply(destAlias: String) {
+        try {
+            // Protocol Support Reply (MTI 0x0668) is an addressed message.
+            // Payload: 0[destAlias] followed by 6 bytes of supported protocols.
+            // Protocols supported: ProtocolIdentification, Datagram, MemoryConfiguration, ProducerConsumer, SNIP, CDI
+            // Byte 0: 0xD4, Byte 1: 0x18, Bytes 2-5: 0x00
+            val msg = ":X19668${NODE_ALIAS}N0${destAlias}D41800000000;"
+            GridConnectNetwork.sendMessage(msg)
+            println("Sent Protocol Support Reply to $destAlias")
+        } catch (e: Exception) {
+            println("Failed to send Protocol Support Reply: ${e.message}")
         }
     }
 
