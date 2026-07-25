@@ -150,7 +150,7 @@ object LccNode : LccNetworkClient {
         try {
             // Build the SNIP payload bytes
             val payload = mutableListOf<Byte>()
-            payload.add(4) // Version 4
+            payload.add(1) // Version 1
             payload.addAll("Edranor".encodeToByteArray().toList())
             payload.add(0)
             payload.addAll("Lever Frame".encodeToByteArray().toList())
