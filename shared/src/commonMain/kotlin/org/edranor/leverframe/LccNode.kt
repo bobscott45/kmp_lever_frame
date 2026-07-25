@@ -101,7 +101,7 @@ object LccNode : LccNetworkClient {
                         val hexData = msg.substring(nIdx + 1, nIdx + 17)
                         _externalEvents.tryEmit(hexData)
                     }
-                } else if (msg.contains("19970")) { // Identify Events Global
+                } else if (msg.contains("19970") || msg.contains("19968")) { // Identify Events Global / Addressed
                     sendAllProducerIdentified()
                 } else if (msg.contains("19914")) { // Identify Producers Global/Addressed
                     sendAllProducerIdentified()
