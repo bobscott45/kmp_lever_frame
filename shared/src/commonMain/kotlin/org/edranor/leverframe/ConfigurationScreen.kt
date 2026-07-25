@@ -594,7 +594,7 @@ fun LeverDetailScreen(
 
                             OutlinedTextField(
                                 value = lever.label,
-                                onValueChange = { onLeverChange(lever.copy(label = it)) },
+                                onValueChange = { if (it.length <= 23) onLeverChange(lever.copy(label = it)) },
                                 label = { Text("Label") },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = brassTextFieldColors()
@@ -994,12 +994,14 @@ fun BlockDetailScreen(
                         OutlinedTextField(
                             value = block.label,
                             onValueChange = { newLabel -> 
-                                val oldAutoShort = block.label.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
+                                if (newLabel.length <= 23) {
+                                    val oldAutoShort = block.label.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
                                 val newAutoShort = newLabel.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
                                 
-                                val newShortCode = if (block.short_code.isBlank() || block.short_code == oldAutoShort) newAutoShort else block.short_code
-                                
-                                onBlockChange(block.copy(label = newLabel, short_code = newShortCode)) 
+                                    val newShortCode = if (block.short_code.isBlank() || block.short_code == oldAutoShort) newAutoShort else block.short_code
+                                    
+                                    onBlockChange(block.copy(label = newLabel, short_code = newShortCode.take(7))) 
+                                }
                             },
                             label = { Text("Label") },
                             modifier = Modifier.fillMaxWidth(),
@@ -1010,7 +1012,7 @@ fun BlockDetailScreen(
                         val isDuplicateShortCode = block.short_code.isNotBlank() && allBlocks.filterIndexed { index, _ -> index != blockIndex }.any { it.short_code == block.short_code }
                         OutlinedTextField(
                             value = block.short_code,
-                            onValueChange = { onBlockChange(block.copy(short_code = it)) },
+                            onValueChange = { if (it.length <= 7) onBlockChange(block.copy(short_code = it.uppercase())) },
                             label = { Text("Short Code (for Schematic)") },
                             modifier = Modifier.fillMaxWidth(),
                             isError = isDuplicateShortCode,

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Network**: Implemented Phase 2 of the generic OpenLCB extraction roadmap by building the Datagram Transport Layer over CAN (handling Single, First, Middle, and Last framing assembly) and automatically generating Datagram Received OK (`0x0A28`) acknowledgments.
 - **Testing**: Added permanent unit test coverage for LCC Event ID parsing (`LccNodeTest`).
 - **UI/UX**: Added clickable 'info' (ℹ️) popup icons next to complex settings (LCC Enabled, LCC Master, Restore Last State, Auto-Reverser, Broadcast Occupancy) in the Configuration Editor to display detailed explanations.
+- **UI/UX**: Constrained Lever and Block Name (Label) text inputs to 23 characters, and Block Short Code text inputs to 7 characters in the Configuration UI to perfectly match their OpenLCB Memory Space CDI allocation.
 - **Network**: Added support for broadcasting LCC events when Block Occupancy changes, with individual toggles per block in the Configuration Editor.
 - **UI/UX**: Added specific Left and Right variants for Turnouts and Bracket Signals in the schematic editor, and corrected the Turnout Right logic to accurately diverge to the right.
 - **UI/UX**: Added directional arrows (← and →) inside signal circles on the schematic maps to clearly indicate the direction of travel they control.
