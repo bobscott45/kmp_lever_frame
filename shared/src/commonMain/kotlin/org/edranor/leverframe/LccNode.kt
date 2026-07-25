@@ -62,7 +62,7 @@ object LccNode : LccNetworkClient {
 <description>This node's complex interlocking rules must be configured via its native UI.</description>
 </group>
 </segment>
-</cdi>""".encodeToByteArray()
+</cdi>""".encodeToByteArray() + byteArrayOf(0)
     
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()

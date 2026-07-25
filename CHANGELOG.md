@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **Network**: Fixed OpenLCB Configuration Description Information (CDI) parsing in JMRI by ensuring the dynamic XML payload is correctly terminated with a null byte (`0x00`) as required by the NMRA S-9.7.4.1 standard.
 - **Network**: Implemented Protocol Support Inquiry (MTI `0x0828`) interception and Protocol Support Reply (MTI `0x0668`). LeverFrame now announces its supported protocols (ProtocolIdentification, Datagram, MemoryConfiguration, ProducerConsumer, SNIP, CDI) so JMRI can populate its supported protocols list.
 - **Network**: Implemented Phase 3 of the generic OpenLCB extraction roadmap: Memory Configuration Protocol (MTI `0x20`). LeverFrame now responds to Memory Space Read commands (`0x40`) for the CDI space (`0xFF`) and serves a static XML Configuration Description Information (CDI) stub, successfully completing the Datagram integration with JMRI.
 - **Network**: Implemented Phase 2 of the generic OpenLCB extraction roadmap by building the Datagram Transport Layer over CAN (handling Single, First, Middle, and Last framing assembly) and automatically generating Datagram Received OK (`0x0A28`) acknowledgments.
