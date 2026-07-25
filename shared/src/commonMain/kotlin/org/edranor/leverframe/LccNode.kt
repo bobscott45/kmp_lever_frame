@@ -48,6 +48,22 @@ object LccNode : LccNetworkClient {
     
     internal val datagramBuffers = mutableMapOf<String, MutableList<Byte>>()
     
+    internal val cdiXml = """<?xml version="1.0" encoding="utf-8"?>
+<cdi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openlcb.org/schema/cdi/1/1/cdi.xsd">
+<identification>
+<manufacturer>Edranor</manufacturer>
+<model>LeverFrame Node</model>
+<hardwareVersion>1.0</hardwareVersion>
+<softwareVersion>1.2.0-dev</softwareVersion>
+</identification>
+<segment space="253" origin="0">
+<group>
+<name>LeverFrame Configuration</name>
+<description>This node's complex interlocking rules must be configured via its native UI.</description>
+</group>
+</segment>
+</cdi>""".encodeToByteArray()
+    
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()
 
@@ -150,9 +166,65 @@ object LccNode : LccNetworkClient {
         }
     }
 
-    private fun processDatagram(sourceAlias: String, payload: List<Byte>) {
+    internal fun processDatagram(sourceAlias: String, payload: List<Byte>) {
         println("Received complete datagram from $sourceAlias, length ${payload.size}")
+        
+        // 1. Acknowledge at the transport layer
         sendDatagramReceivedOk(sourceAlias)
+        
+        // 2. Process Memory Configuration Protocol (Protocol ID 0x20)
+        if (payload.isNotEmpty() && payload[0].toInt() == 0x20) {
+            // Check for Memory Space Read (0x40) in space 0xFF (0x03) -> 0x43
+            if (payload.size >= 7 && (payload[1].toInt() and 0xFF) == 0x43) {
+                val address = ((payload[2].toInt() and 0xFF).toLong() shl 24) or
+                              ((payload[3].toInt() and 0xFF).toLong() shl 16) or
+                              ((payload[4].toInt() and 0xFF).toLong() shl 8) or
+                              ((payload[5].toInt() and 0xFF).toLong())
+                val len = payload[6].toInt() and 0xFF
+                
+                val dataChunk = if (address < cdiXml.size) {
+                    val endAddr = minOf(address + len, cdiXml.size.toLong()).toInt()
+                    cdiXml.sliceArray(address.toInt() until endAddr)
+                } else {
+                    ByteArray(0)
+                }
+                
+                val replyPayload = mutableListOf<Byte>()
+                replyPayload.add(0x20.toByte())
+                replyPayload.add(0x53.toByte()) // Read Reply (0x50) for 0xFF (0x03)
+                replyPayload.add(payload[2])
+                replyPayload.add(payload[3])
+                replyPayload.add(payload[4])
+                replyPayload.add(payload[5])
+                replyPayload.addAll(dataChunk.toList())
+                
+                sendDatagram(sourceAlias, replyPayload)
+            }
+        }
+    }
+
+    internal fun sendDatagram(destAlias: String, payload: List<Byte>) {
+        try {
+            if (payload.size <= 8) {
+                val hexData = payload.joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                GridConnectNetwork.sendMessage(":X1A${destAlias}${NODE_ALIAS}N${hexData};")
+            } else {
+                val chunks = payload.chunked(8)
+                for ((index, chunk) in chunks.withIndex()) {
+                    val hexData = chunk.joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    if (index == 0) {
+                        GridConnectNetwork.sendMessage(":X1C${destAlias}${NODE_ALIAS}N${hexData};")
+                    } else if (index == chunks.lastIndex) {
+                        GridConnectNetwork.sendMessage(":X1E${destAlias}${NODE_ALIAS}N${hexData};")
+                    } else {
+                        GridConnectNetwork.sendMessage(":X1D${destAlias}${NODE_ALIAS}N${hexData};")
+                    }
+                }
+            }
+            println("Sent outgoing datagram to $destAlias (size ${payload.size})")
+        } catch (e: Exception) {
+            println("Failed to send datagram: ${e.message}")
+        }
     }
 
     private fun sendDatagramReceivedOk(destAlias: String) {
