@@ -27,6 +27,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+object OpenLcbConstants {
+    const val MAX_LABEL_LENGTH = 23
+    const val MAX_SHORT_CODE_LENGTH = 7
+    const val CDI_LABEL_SPACE = MAX_LABEL_LENGTH + 1
+    const val CDI_SHORT_CODE_SPACE = MAX_SHORT_CODE_LENGTH + 1
+}
+
 interface ConfigurationRepository {
     var currentConfig: JsonConfig
     suspend fun initConfig()

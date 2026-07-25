@@ -594,7 +594,7 @@ fun LeverDetailScreen(
 
                             OutlinedTextField(
                                 value = lever.label,
-                                onValueChange = { if (it.length <= 23) onLeverChange(lever.copy(label = it)) },
+                                onValueChange = { if (it.length <= OpenLcbConstants.MAX_LABEL_LENGTH) onLeverChange(lever.copy(label = it)) },
                                 label = { Text("Label") },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = brassTextFieldColors()
@@ -994,13 +994,13 @@ fun BlockDetailScreen(
                         OutlinedTextField(
                             value = block.label,
                             onValueChange = { newLabel -> 
-                                if (newLabel.length <= 23) {
+                                if (newLabel.length <= OpenLcbConstants.MAX_LABEL_LENGTH) {
                                     val oldAutoShort = block.label.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
                                 val newAutoShort = newLabel.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
                                 
                                     val newShortCode = if (block.short_code.isBlank() || block.short_code == oldAutoShort) newAutoShort else block.short_code
                                     
-                                    onBlockChange(block.copy(label = newLabel, short_code = newShortCode.take(7))) 
+                                    onBlockChange(block.copy(label = newLabel, short_code = newShortCode.take(OpenLcbConstants.MAX_SHORT_CODE_LENGTH))) 
                                 }
                             },
                             label = { Text("Label") },
@@ -1012,7 +1012,7 @@ fun BlockDetailScreen(
                         val isDuplicateShortCode = block.short_code.isNotBlank() && allBlocks.filterIndexed { index, _ -> index != blockIndex }.any { it.short_code == block.short_code }
                         OutlinedTextField(
                             value = block.short_code,
-                            onValueChange = { if (it.length <= 7) onBlockChange(block.copy(short_code = it.uppercase())) },
+                            onValueChange = { if (it.length <= OpenLcbConstants.MAX_SHORT_CODE_LENGTH) onBlockChange(block.copy(short_code = it.uppercase())) },
                             label = { Text("Short Code (for Schematic)") },
                             modifier = Modifier.fillMaxWidth(),
                             isError = isDuplicateShortCode,

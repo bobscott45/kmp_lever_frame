@@ -65,7 +65,7 @@ object LccNode : LccNetworkClient {
         <group replication="$numLevers">
             <name>Levers</name>
             <repname>Lever</repname>
-            <string size="24"><name>Name</name></string>
+            <string size="${OpenLcbConstants.CDI_LABEL_SPACE}"><name>Name</name></string>
             <eventid><name>Event Normal</name></eventid>
             <eventid><name>Event Reversed</name></eventid>
         </group>""")
@@ -76,8 +76,8 @@ object LccNode : LccNetworkClient {
         <group replication="$numBlocks">
             <name>Blocks</name>
             <repname>Block</repname>
-            <string size="24"><name>Name</name></string>
-            <string size="8"><name>Short Code</name></string>
+            <string size="${OpenLcbConstants.CDI_LABEL_SPACE}"><name>Name</name></string>
+            <string size="${OpenLcbConstants.CDI_SHORT_CODE_SPACE}"><name>Short Code</name></string>
             <eventid><name>Event Occupied</name></eventid>
             <eventid><name>Event Empty</name></eventid>
         </group>""")
@@ -151,7 +151,9 @@ object LccNode : LccNetworkClient {
         val config = ConfigManager.currentConfig
         val numLevers = config.tabs.sumOf { it.levers.size }
         val numBlocks = config.tabs.sumOf { it.blocks.size }
-        val size = 3 + numLevers * 40 + numBlocks * 48
+        val leverSize = OpenLcbConstants.CDI_LABEL_SPACE + 16
+        val blockSize = OpenLcbConstants.CDI_LABEL_SPACE + OpenLcbConstants.CDI_SHORT_CODE_SPACE + 16
+        val size = 3 + numLevers * leverSize + numBlocks * blockSize
         val buffer = ByteArray(size)
         
         buffer[0] = if (config.lcc_master) 1 else 0
@@ -161,8 +163,8 @@ object LccNode : LccNetworkClient {
         var offset = 3
         for (tab in config.tabs) {
             for (lever in tab.levers) {
-                writeString(lever.label, 24, buffer, offset)
-                offset += 24
+                writeString(lever.label, OpenLcbConstants.CDI_LABEL_SPACE, buffer, offset)
+                offset += OpenLcbConstants.CDI_LABEL_SPACE
                 
                 val normHex = expandEventId(lever.lcc_event_normal, config.node_id)
                 val revHex = expandEventId(lever.lcc_event_reversed, config.node_id)
@@ -173,10 +175,10 @@ object LccNode : LccNetworkClient {
                 offset += 16
             }
             for (block in tab.blocks) {
-                writeString(block.label, 24, buffer, offset)
-                offset += 24
-                writeString(block.short_code, 8, buffer, offset)
-                offset += 8
+                writeString(block.label, OpenLcbConstants.CDI_LABEL_SPACE, buffer, offset)
+                offset += OpenLcbConstants.CDI_LABEL_SPACE
+                writeString(block.short_code, OpenLcbConstants.CDI_SHORT_CODE_SPACE, buffer, offset)
+                offset += OpenLcbConstants.CDI_SHORT_CODE_SPACE
                 
                 val occHex = expandEventId(block.lcc_event_occupied, config.node_id)
                 val empHex = expandEventId(block.lcc_event_empty, config.node_id)
@@ -211,9 +213,9 @@ object LccNode : LccNetworkClient {
         var offset = 3
         val newTabs = config.tabs.map { tab ->
             val newLevers = tab.levers.map { lever ->
-                if (offset + 40 <= buffer.size) {
-                    val label = readString(buffer, offset, 24)
-                    offset += 24
+                if (offset + (OpenLcbConstants.CDI_LABEL_SPACE + 16) <= buffer.size) {
+                    val label = readString(buffer, offset, OpenLcbConstants.CDI_LABEL_SPACE)
+                    offset += OpenLcbConstants.CDI_LABEL_SPACE
                     
                     val normHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     val revHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
@@ -229,11 +231,11 @@ object LccNode : LccNetworkClient {
             }
             
             val newBlocks = tab.blocks.map { block ->
-                if (offset + 48 <= buffer.size) {
-                    val label = readString(buffer, offset, 24)
-                    offset += 24
-                    val shortCode = readString(buffer, offset, 8)
-                    offset += 8
+                if (offset + (OpenLcbConstants.CDI_LABEL_SPACE + OpenLcbConstants.CDI_SHORT_CODE_SPACE + 16) <= buffer.size) {
+                    val label = readString(buffer, offset, OpenLcbConstants.CDI_LABEL_SPACE)
+                    offset += OpenLcbConstants.CDI_LABEL_SPACE
+                    val shortCode = readString(buffer, offset, OpenLcbConstants.CDI_SHORT_CODE_SPACE)
+                    offset += OpenLcbConstants.CDI_SHORT_CODE_SPACE
                     
                     val occHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     val empHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
