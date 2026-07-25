@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: Added clickable 'info' (ℹ️) popup icons next to complex settings (LCC Enabled, LCC Master, Restore Last State, Auto-Reverser, Broadcast Occupancy) in the Configuration Editor to display detailed explanations.
 - **Network**: Added support for broadcasting LCC events when Block Occupancy changes, with individual toggles per block in the Configuration Editor.
 - **UI/UX**: Added specific Left and Right variants for Turnouts and Bracket Signals in the schematic editor, and corrected the Turnout Right logic to accurately diverge to the right.
 - **UI/UX**: Added directional arrows (← and →) inside signal circles on the schematic maps to clearly indicate the direction of travel they control.
