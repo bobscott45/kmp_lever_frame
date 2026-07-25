@@ -148,18 +148,20 @@ The Rules tab displays the interlocking rules based on your **Default Rule Displ
 
 <screenshot of adding/editing an interlocking condition dialog>
 
-### Hot-Reloading Interlocking Rules
+### Silent Updates (Hot-Reloading)
 
-When you edit *only* the **Interlocking Rules** of a lever (adding, removing, or changing targets) and click **Save**, the application will perform a **Hot-Reload**. This silently applies the new interlocking logic in the background without dropping your LCC connection, without triggering a warning dialog, and without resetting the current positions of your levers. 
+When you edit *only* the **Interlocking Rules** (adding, removing, or changing targets) or **LCC Settings** (event IDs, broadcast toggles, enabling/disabling LCC for a lever) and click **Save**, the application will perform a **Silent Update** (Hot-Reload). This smoothly applies the new logic or network configuration in the background without dropping your overall network connection, without triggering a warning dialog, and without resetting the current positions of your levers.
 
-If you modify anything else—such as adding/deleting a lever, changing a label, or editing LCC event IDs—the app will fall back to a standard **Save & Reset**, returning all levers to NORMAL and restarting the network connection to ensure system consistency.
+If you modify structural elements—such as adding/deleting a lever or block, or changing a label—the app will fall back to a standard **Save & Reset**, returning all levers to NORMAL and restarting the network connection to ensure system consistency.
 
 ### Blocks
 
 Similar to levers, existing blocks are listed on the main tab and can be reordered using the **↑** and **↓** arrows. Pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
 
 * **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf, and its **Short Code** for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
-* **LCC Events**: Define the LCC Event IDs that will trigger this block to show as "Occupied" or "Empty".
+* **LCC Events**: 
+    * **Broadcast Occupancy Changes**: If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Empty events to the LCC network.
+    * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Empty" when received from the network.
 
 ### Schematic Editor
 
