@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **Network**: Implemented dynamic OpenLCB Configuration Description Information (CDI) generation. LeverFrame now dynamically constructs its CDI XML to expose all loaded Levers, as well as general network toggles (`LCC Master Mode`, `LCC Enabled`, `Restore Last State`).
+- **Network**: Implemented Memory Space 253 (0xFD) read and write support. JMRI can now read and modify Lever Event IDs directly via the Configuration interface, and any changes will automatically persist to LeverFrame's native config file.
 - **Network**: Fixed an OpenLCB CAN Datagram framing bug where frames were being encoded with incorrect MTIs (`1C`/`1D`/`1E`) instead of the S-9.7.3 standard (`1B` First / `1C` Middle / `1D` Last), which caused JMRI to reject datagrams with `0x1042`.
 - **Network**: Fixed OpenLCB Configuration Description Information (CDI) parsing in JMRI by ensuring the dynamic XML payload is correctly terminated with a null byte (`0x00`) as required by the NMRA S-9.7.4.1 standard.
 - **Network**: Implemented Protocol Support Inquiry (MTI `0x0828`) interception and Protocol Support Reply (MTI `0x0668`). LeverFrame now announces its supported protocols (ProtocolIdentification, Datagram, MemoryConfiguration, ProducerConsumer, SNIP, CDI) so JMRI can populate its supported protocols list.
-- **Network**: Implemented Phase 3 of the generic OpenLCB extraction roadmap: Memory Configuration Protocol (MTI `0x20`). LeverFrame now responds to Memory Space Read commands (`0x40`) for the CDI space (`0xFF`) and serves a static XML Configuration Description Information (CDI) stub, successfully completing the Datagram integration with JMRI.
+- **Network**: Implemented Phase 3 of the generic OpenLCB extraction roadmap: Memory Configuration Protocol (MTI `0x20`). LeverFrame now responds to Memory Space Read commands (`0x40`) for the CDI space (`0xFF`) and serves a dynamic XML Configuration Description Information (CDI) stub, successfully completing the Datagram integration with JMRI.
 - **Network**: Implemented Phase 2 of the generic OpenLCB extraction roadmap by building the Datagram Transport Layer over CAN (handling Single, First, Middle, and Last framing assembly) and automatically generating Datagram Received OK (`0x0A28`) acknowledgments.
 - **Testing**: Added permanent unit test coverage for LCC Event ID parsing (`LccNodeTest`).
 - **UI/UX**: Added clickable 'info' (ℹ️) popup icons next to complex settings (LCC Enabled, LCC Master, Restore Last State, Auto-Reverser, Broadcast Occupancy) in the Configuration Editor to display detailed explanations.

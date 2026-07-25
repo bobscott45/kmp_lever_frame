@@ -76,7 +76,7 @@ class LccNodeTest {
     fun testCdiXmlNullTerminator() {
         // The CDI XML byte array must end with a null terminator (0x00)
         // according to the NMRA S-9.7.4.1 standard for Configuration Description Information.
-        val lastByte = LccNode.cdiXml.last()
+        val lastByte = LccNode.getCdiXml().last()
         assertEquals(0.toByte(), lastByte, "CDI XML must be null-terminated")
     }
 

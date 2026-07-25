@@ -48,7 +48,10 @@ object LccNode : LccNetworkClient {
     
     internal val datagramBuffers = mutableMapOf<String, MutableList<Byte>>()
     
-    internal val cdiXml = """<?xml version="1.0" encoding="utf-8"?>
+    internal fun getCdiXml(): ByteArray {
+        val config = ConfigManager.currentConfig
+        val numLevers = config.tabs.sumOf { it.levers.size }
+        val xml = """<?xml version="1.0" encoding="utf-8"?>
 <cdi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openlcb.org/schema/cdi/1/1/cdi.xsd">
 <identification>
 <manufacturer>Edranor</manufacturer>
@@ -57,12 +60,97 @@ object LccNode : LccNetworkClient {
 <softwareVersion>1.2.0-dev</softwareVersion>
 </identification>
 <segment space="253" origin="0">
-<group>
-<name>LeverFrame Configuration</name>
-<description>This node's complex interlocking rules must be configured via its native UI.</description>
-</group>
+    <group>
+        <name>Network Toggles</name>
+        <description>General node settings</description>
+        <int size="1">
+            <name>LCC Master Mode</name>
+            <description>1 = Master (Broadcasts events), 0 = Slave (Only listens)</description>
+            <min>0</min><max>1</max><default>1</default>
+        </int>
+        <int size="1">
+            <name>LCC Enabled</name>
+            <description>1 = Enabled, 0 = Disabled</description>
+            <min>0</min><max>1</max><default>1</default>
+        </int>
+        <int size="1">
+            <name>Restore Last State</name>
+            <description>1 = Restore last state on boot, 0 = Normal</description>
+            <min>0</min><max>1</max><default>1</default>
+        </int>
+    </group>
+    <group offset="3" replication="$numLevers">
+        <name>Levers</name>
+        <repname>Lever</repname>
+        <eventid><name>Event Normal</name></eventid>
+        <eventid><name>Event Reversed</name></eventid>
+    </group>
 </segment>
-</cdi>""".encodeToByteArray() + byteArrayOf(0)
+</cdi>"""
+        return xml.encodeToByteArray() + byteArrayOf(0)
+    }
+
+    private fun parseEventIdStringToHex(eventId: String): String {
+        return parseEventId(eventId).padEnd(16, '0')
+    }
+
+    internal fun buildMemorySpace(): ByteArray {
+        val config = ConfigManager.currentConfig
+        val numLevers = config.tabs.sumOf { it.levers.size }
+        val size = 3 + numLevers * 16
+        val buffer = ByteArray(size)
+        
+        buffer[0] = if (config.lcc_master) 1 else 0
+        buffer[1] = if (config.lcc_enabled) 1 else 0
+        buffer[2] = if (config.restore_last_state) 1 else 0
+        
+        var offset = 3
+        for (tab in config.tabs) {
+            for (lever in tab.levers) {
+                val normHex = parseEventIdStringToHex(lever.lcc_event_normal)
+                val revHex = parseEventIdStringToHex(lever.lcc_event_reversed)
+                val normBytes = normHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                val revBytes = revHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                normBytes.copyInto(buffer, offset)
+                revBytes.copyInto(buffer, offset + 8)
+                offset += 16
+            }
+        }
+        return buffer
+    }
+
+    internal fun applyMemorySpace(buffer: ByteArray) {
+        var config = ConfigManager.currentConfig
+        
+        if (buffer.size >= 3) {
+            config = config.copy(
+                lcc_master = buffer[0].toInt() != 0,
+                lcc_enabled = buffer[1].toInt() != 0,
+                restore_last_state = buffer[2].toInt() != 0
+            )
+        }
+        
+        var offset = 3
+        val newTabs = config.tabs.map { tab ->
+            val newLevers = tab.levers.map { lever ->
+                if (offset + 16 <= buffer.size) {
+                    val normEvent = buffer.copyOfRange(offset, offset + 8).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val revEvent = buffer.copyOfRange(offset + 8, offset + 16).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    offset += 16
+                    lever.copy(lcc_event_normal = normEvent, lcc_event_reversed = revEvent)
+                } else {
+                    lever
+                }
+            }
+            tab.copy(levers = newLevers)
+        }
+        config = config.copy(tabs = newTabs)
+        
+        ConfigManager.currentConfig = config
+        kotlinx.coroutines.MainScope().launch {
+            ConfigManager.saveConfig(config)
+        }
+    }
     
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()
@@ -181,30 +269,63 @@ object LccNode : LccNetworkClient {
         
         // 2. Process Memory Configuration Protocol (Protocol ID 0x20)
         if (payload.isNotEmpty() && payload[0].toInt() == 0x20) {
-            // Check for Memory Space Read (0x40) in space 0xFF (0x03) -> 0x43
-            if (payload.size >= 7 && (payload[1].toInt() and 0xFF) == 0x43) {
+            val subCmd = payload[1].toInt() and 0xFF
+            // Read Request (0x40)
+            if ((subCmd and 0xC0) == 0x40 && payload.size >= 7) {
+                val space = subCmd and 0x03
                 val address = ((payload[2].toInt() and 0xFF).toLong() shl 24) or
                               ((payload[3].toInt() and 0xFF).toLong() shl 16) or
                               ((payload[4].toInt() and 0xFF).toLong() shl 8) or
                               ((payload[5].toInt() and 0xFF).toLong())
                 val len = payload[6].toInt() and 0xFF
                 
-                val dataChunk = if (address < cdiXml.size) {
-                    val endAddr = minOf(address + len, cdiXml.size.toLong()).toInt()
-                    cdiXml.sliceArray(address.toInt() until endAddr)
+                val memorySpace = if (space == 0x03) getCdiXml() else if (space == 0x01) buildMemorySpace() else ByteArray(0)
+                
+                val dataChunk = if (address < memorySpace.size) {
+                    val endAddr = minOf(address + len, memorySpace.size.toLong()).toInt()
+                    memorySpace.sliceArray(address.toInt() until endAddr)
                 } else {
                     ByteArray(0)
                 }
                 
                 val replyPayload = mutableListOf<Byte>()
                 replyPayload.add(0x20.toByte())
-                replyPayload.add(0x53.toByte()) // Read Reply (0x50) for 0xFF (0x03)
+                replyPayload.add((0x50 or space).toByte()) // Read Reply
                 replyPayload.add(payload[2])
                 replyPayload.add(payload[3])
                 replyPayload.add(payload[4])
                 replyPayload.add(payload[5])
                 replyPayload.addAll(dataChunk.toList())
                 
+                sendDatagram(sourceAlias, replyPayload)
+            }
+            // Write Request (0x00)
+            else if ((subCmd and 0xC0) == 0x00 && payload.size >= 7) {
+                val space = subCmd and 0x03
+                val address = ((payload[2].toInt() and 0xFF).toLong() shl 24) or
+                              ((payload[3].toInt() and 0xFF).toLong() shl 16) or
+                              ((payload[4].toInt() and 0xFF).toLong() shl 8) or
+                              ((payload[5].toInt() and 0xFF).toLong())
+                              
+                val writeData = payload.drop(6)
+                if (space == 0x01) { // Space 253
+                    val currentMem = buildMemorySpace()
+                    if (address < currentMem.size) {
+                        val endAddr = minOf(address + writeData.size, currentMem.size.toLong()).toInt()
+                        for (i in address.toInt() until endAddr) {
+                            currentMem[i] = writeData[i - address.toInt()]
+                        }
+                        applyMemorySpace(currentMem)
+                    }
+                }
+                
+                val replyPayload = mutableListOf<Byte>()
+                replyPayload.add(0x20.toByte())
+                replyPayload.add((0x10 or space).toByte()) // Write Reply
+                replyPayload.add(payload[2])
+                replyPayload.add(payload[3])
+                replyPayload.add(payload[4])
+                replyPayload.add(payload[5])
                 sendDatagram(sourceAlias, replyPayload)
             }
         }
