@@ -997,6 +997,15 @@ fun BlockDetailScreen(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                         
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = block.broadcast_toggles,
+                                onCheckedChange = { onBlockChange(block.copy(broadcast_toggles = it)) },
+                                colors = CheckboxDefaults.colors(checkedColor = LeverFrameTheme.Colors.Brass)
+                            )
+                            Text("Broadcast Occupancy Changes", modifier = Modifier.padding(start = 8.dp))
+                        }
+                        
                         val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
                         
                         val occupiedSuffix = block.lcc_event_occupied

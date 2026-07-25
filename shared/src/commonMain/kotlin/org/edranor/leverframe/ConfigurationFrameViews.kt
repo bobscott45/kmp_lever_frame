@@ -103,7 +103,7 @@ fun FrameSetupView(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (selectedFrameConfigTab == 0) {
-                    frameGeneralSettingsTab(tab, selectedFrameIndex, config, onConfigChange)
+                    frameGeneralSettingsTab(tab, selectedFrameIndex, config, onConfigChange, onShowFramesResetWarning)
                 }
                 if (selectedFrameConfigTab == 1) {
                     frameLeversTab(tab, selectedFrameIndex, config, onConfigChange, onEditLever)
@@ -124,7 +124,8 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
     tab: JsonTab,
     selectedFrameIndex: Int,
     config: JsonConfig,
-    onConfigChange: (JsonConfig) -> Unit
+    onConfigChange: (JsonConfig) -> Unit,
+    onShowFramesResetWarning: () -> Unit
 ) {
     item {
         OutlinedTextField(
@@ -216,6 +217,15 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                     }
                 }
             }
+        }
+    }
+    item {
+        OutlinedButton(
+            onClick = onShowFramesResetWarning,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Reset All Frames to Factory Defaults", textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
     }
 }
