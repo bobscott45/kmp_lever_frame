@@ -131,9 +131,9 @@ object LccNode : LccNetworkClient {
                         }
                     }
                 } else if (msg.startsWith(":X1A${NODE_ALIAS}") || 
+                           msg.startsWith(":X1B${NODE_ALIAS}") || 
                            msg.startsWith(":X1C${NODE_ALIAS}") || 
-                           msg.startsWith(":X1D${NODE_ALIAS}") || 
-                           msg.startsWith(":X1E${NODE_ALIAS}")) {
+                           msg.startsWith(":X1D${NODE_ALIAS}")) {
                     handleIncomingDatagramFrame(msg)
                 }
             }
@@ -147,31 +147,29 @@ object LccNode : LccNetworkClient {
     internal fun handleIncomingDatagramFrame(msg: String) {
         try {
             if (msg.length < 13) return
-            val frameType = msg.substring(2, 4) // 1A, 1C, 1D, 1E
-            val destAlias = msg.substring(4, 7)
+            val frameType = msg.substring(2, 4) // 1A, 1B, 1C, 1D
             val sourceAlias = msg.substring(7, 10)
             val dataIdx = msg.indexOf('N')
-            val hexData = if (dataIdx != -1 && msg.endsWith(";")) {
-                msg.substring(dataIdx + 1, msg.length - 1)
-            } else ""
-
-            val bytes = hexData.chunked(2).map { it.toInt(16).toByte() }
-
-            if (frameType == "1A") { // Single frame
-                processDatagram(sourceAlias, bytes)
-            } else if (frameType == "1C") { // First frame
-                datagramBuffers[sourceAlias] = bytes.toMutableList()
-            } else if (frameType == "1D") { // Middle frame
-                datagramBuffers[sourceAlias]?.addAll(bytes)
-            } else if (frameType == "1E") { // Last frame
+            if (dataIdx == -1) return
+            
+            val hexData = msg.substring(dataIdx + 1, msg.length - 1)
+            val payloadBytes = hexData.chunked(2).map { it.toInt(16).toByte() }
+            
+            if (frameType == "1A") { // Single frame datagram
+                processDatagram(sourceAlias, payloadBytes)
+            } else if (frameType == "1B") { // First frame
+                datagramBuffers[sourceAlias] = payloadBytes.toMutableList()
+            } else if (frameType == "1C") { // Middle frame
+                datagramBuffers[sourceAlias]?.addAll(payloadBytes)
+            } else if (frameType == "1D") { // Last frame
                 datagramBuffers[sourceAlias]?.let {
-                    it.addAll(bytes)
-                    processDatagram(sourceAlias, it.toList())
+                    it.addAll(payloadBytes)
+                    processDatagram(sourceAlias, it)
                     datagramBuffers.remove(sourceAlias)
                 }
             }
         } catch (e: Exception) {
-            println("Error parsing datagram frame: ${e.message}")
+            println("Failed to parse datagram frame: ${e.message}")
         }
     }
 
@@ -222,11 +220,11 @@ object LccNode : LccNetworkClient {
                 for ((index, chunk) in chunks.withIndex()) {
                     val hexData = chunk.joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     if (index == 0) {
-                        GridConnectNetwork.sendMessage(":X1C${destAlias}${NODE_ALIAS}N${hexData};")
+                        GridConnectNetwork.sendMessage(":X1B${destAlias}${NODE_ALIAS}N${hexData};")
                     } else if (index == chunks.lastIndex) {
-                        GridConnectNetwork.sendMessage(":X1E${destAlias}${NODE_ALIAS}N${hexData};")
-                    } else {
                         GridConnectNetwork.sendMessage(":X1D${destAlias}${NODE_ALIAS}N${hexData};")
+                    } else {
+                        GridConnectNetwork.sendMessage(":X1C${destAlias}${NODE_ALIAS}N${hexData};")
                     }
                 }
             }

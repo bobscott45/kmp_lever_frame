@@ -56,14 +56,14 @@ class LccNodeTest {
         
         // Assume NODE_ALIAS is 12A (the default hardcoded one right now for testing)
         // A middle frame requires a first frame
-        LccNode.handleIncomingDatagramFrame(":X1C12A456N01020304050607;") // First frame
+        LccNode.handleIncomingDatagramFrame(":X1B12A456N01020304050607;") // First frame
         assertEquals(1, LccNode.datagramBuffers.size)
         assertEquals(7, LccNode.datagramBuffers["456"]?.size)
         
-        LccNode.handleIncomingDatagramFrame(":X1D12A456N08090A0B0C0D0E;") // Middle frame
+        LccNode.handleIncomingDatagramFrame(":X1C12A456N08090A0B0C0D0E;") // Middle frame
         assertEquals(14, LccNode.datagramBuffers["456"]?.size)
         
-        LccNode.handleIncomingDatagramFrame(":X1E12A456N0F10;") // Last frame
+        LccNode.handleIncomingDatagramFrame(":X1D12A456N0F10;") // Last frame
         // Buffer should be cleared after last frame
         assertEquals(0, LccNode.datagramBuffers.size)
         
