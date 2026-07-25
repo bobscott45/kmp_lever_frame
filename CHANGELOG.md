@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **Network**: Added support for broadcasting LCC events when Block Occupancy changes, with individual toggles per block in the Configuration Editor.
 - **UI/UX**: Added specific Left and Right variants for Turnouts and Bracket Signals in the schematic editor, and corrected the Turnout Right logic to accurately diverge to the right.
 - **UI/UX**: Added directional arrows (← and →) inside signal circles on the schematic maps to clearly indicate the direction of travel they control.
 - **UI/UX**: Added real-time duplicate validation in the Configuration Editor to enforce uniqueness for Block labels, Block short codes, and Lever labels.
@@ -46,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **Network**: Fixed LCC Identify Producer/Consumer event IDs to use the correct `0x544` and `0x4C4` MTIs and properly prefix the Event IDs with the Node ID, fixing compatibility with the JMRI LCC Event Table.
+- **State**: Fixed a bug where changing LCC Event IDs or broadcast toggles for blocks and levers incorrectly prompted the user for a full Frame state reset.
 - **UI/UX**: Restored the 'Default Rule Display Mode' and 'Default Rule Editor' dropdown settings to the System Settings screen and linked them back to the Lever configuration rules editor.
 - **Persistence**: Fixed Android state persistence by implementing `AndroidAppContext` and `Platform.android.kt` file operations, ensuring configuration and layout weights persist across sessions.
 - **UI/UX**: Fixed schematic turnout rendering where the main line track color incorrectly extended past the divergence point (V). The track now accurately splits to show the approaching block color on the left half and the departing block color on the right half.
