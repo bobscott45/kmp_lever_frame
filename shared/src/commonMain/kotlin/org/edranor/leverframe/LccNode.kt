@@ -101,6 +101,10 @@ object LccNode : LccNetworkClient {
                         val hexData = msg.substring(nIdx + 1, nIdx + 17)
                         _externalEvents.tryEmit(hexData)
                     }
+                } else if (msg.contains("19970") || msg.contains("19968")) { // Identify Events Global / Addressed
+                    sendAllProducerIdentified()
+                } else if (msg.contains("19914")) { // Identify Producers Global/Addressed
+                    sendAllProducerIdentified()
                 }
             }
         }
@@ -199,15 +203,23 @@ object LccNode : LccNetworkClient {
     }
 
     private fun sendAllProducerIdentified() {
-        ConfigManager.currentConfig.tabs.forEach { tab ->
-            tab.levers.forEach { lever ->
-                if (lever.lcc_event_normal.isNotBlank()) {
-                    sendProducerIdentified(lever.lcc_event_normal)
-                }
-                if (lever.lcc_event_reversed.isNotBlank()) {
-                    sendProducerIdentified(lever.lcc_event_reversed)
+        try {
+            val parsedTabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+            parsedTabs.forEach { (_, tabDef) ->
+                tabDef.levers.forEach { lever ->
+                    if (lever.lcc_enabled) {
+                        if (lever.lcc_event_normal.isNotBlank()) {
+                            sendProducerIdentified(lever.lcc_event_normal)
+                        }
+                        if (lever.lcc_event_reversed.isNotBlank()) {
+                            sendProducerIdentified(lever.lcc_event_reversed)
+                        }
+                    }
                 }
             }
+        } catch (e: Exception) {
+            println("Error generating Producer Identified messages: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -231,8 +243,8 @@ object LccNode : LccNetworkClient {
         try {
             val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
-                // Producer Identified CAN MTI is 0x054A -> 1954A prefix
-                val msg = ":X1954A${NODE_ALIAS}N$cleanHex;"
+                // Producer Identified Valid CAN MTI is 0x0544 -> 19544 prefix
+                val msg = ":X19544${NODE_ALIAS}N$cleanHex;"
                 GridConnectNetwork.sendMessage(msg)
                 println("Sent Producer Identified: $msg")
             }

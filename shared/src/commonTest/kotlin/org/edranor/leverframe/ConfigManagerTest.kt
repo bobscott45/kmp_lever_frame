@@ -76,4 +76,34 @@ class ConfigManagerTest {
         assertEquals(1, parsed.size)
         assertEquals(LeverType.SPARE, parsed[0].second.levers[0].type)
     }
+
+    @Test
+    fun testLccEventIdsAreProperlyPrefixed() {
+        val json = """
+            {
+                "node_id": "05.01.01.01.03.01",
+                "tabs": [
+                    {
+                        "name": "Test",
+                        "levers": [
+                            {
+                                "label": "L1",
+                                "type": "SPARE",
+                                "lcc_event_normal": "11.01",
+                                "lcc_event_reversed": "05.01.01.01.03.01.11.02"
+                            }
+                        ]
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val parsed = ConfigManager.parseConfig(json)
+        val lever = parsed[0].second.levers[0]
+        
+        // Both the short suffix and the fully-qualified event ID in the JSON 
+        // should end up correctly prefixed in the parsed LeverDef.
+        assertEquals("05.01.01.01.03.01.11.01", lever.lcc_event_normal)
+        assertEquals("05.01.01.01.03.01.11.02", lever.lcc_event_reversed)
+    }
 }
