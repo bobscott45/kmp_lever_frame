@@ -46,6 +46,8 @@ object LccNode : LccNetworkClient {
     
     private var lccJob: Job? = null
     
+    internal val datagramBuffers = mutableMapOf<String, MutableList<Byte>>()
+    
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()
 
@@ -103,6 +105,11 @@ object LccNode : LccNetworkClient {
                     sendAllProducerIdentified()
                 } else if (msg.contains("X18914") || msg.contains("X19914")) { // Identify Producers Global/Addressed
                     sendAllProducerIdentified()
+                } else if (msg.startsWith(":X1A${NODE_ALIAS}") || 
+                           msg.startsWith(":X1C${NODE_ALIAS}") || 
+                           msg.startsWith(":X1D${NODE_ALIAS}") || 
+                           msg.startsWith(":X1E${NODE_ALIAS}")) {
+                    handleIncomingDatagramFrame(msg)
                 }
             }
         }
@@ -110,6 +117,54 @@ object LccNode : LccNetworkClient {
 
     private fun getCleanNodeId(): String {
         return ConfigManager.currentConfig.node_id.replace(".", "").padStart(12, '0').uppercase()
+    }
+
+    internal fun handleIncomingDatagramFrame(msg: String) {
+        try {
+            if (msg.length < 13) return
+            val frameType = msg.substring(2, 4) // 1A, 1C, 1D, 1E
+            val destAlias = msg.substring(4, 7)
+            val sourceAlias = msg.substring(7, 10)
+            val dataIdx = msg.indexOf('N')
+            val hexData = if (dataIdx != -1 && msg.endsWith(";")) {
+                msg.substring(dataIdx + 1, msg.length - 1)
+            } else ""
+
+            val bytes = hexData.chunked(2).map { it.toInt(16).toByte() }
+
+            if (frameType == "1A") { // Single frame
+                processDatagram(sourceAlias, bytes)
+            } else if (frameType == "1C") { // First frame
+                datagramBuffers[sourceAlias] = bytes.toMutableList()
+            } else if (frameType == "1D") { // Middle frame
+                datagramBuffers[sourceAlias]?.addAll(bytes)
+            } else if (frameType == "1E") { // Last frame
+                datagramBuffers[sourceAlias]?.let {
+                    it.addAll(bytes)
+                    processDatagram(sourceAlias, it.toList())
+                    datagramBuffers.remove(sourceAlias)
+                }
+            }
+        } catch (e: Exception) {
+            println("Error parsing datagram frame: ${e.message}")
+        }
+    }
+
+    private fun processDatagram(sourceAlias: String, payload: List<Byte>) {
+        println("Received complete datagram from $sourceAlias, length ${payload.size}")
+        sendDatagramReceivedOk(sourceAlias)
+    }
+
+    private fun sendDatagramReceivedOk(destAlias: String) {
+        try {
+            // Datagram Received OK (MTI 0x0A28) is an addressed message.
+            // In CAN, it's sent as 19A28[NODE_ALIAS]N0[destAlias]
+            val msg = ":X19A28${NODE_ALIAS}N0${destAlias};"
+            GridConnectNetwork.sendMessage(msg)
+            println("Sent Datagram Received OK to $destAlias")
+        } catch (e: Exception) {
+            println("Failed to send Datagram Received OK: ${e.message}")
+        }
     }
 
     private fun sendAliasMapDefinition() {
