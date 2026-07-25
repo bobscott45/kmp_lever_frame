@@ -54,19 +54,39 @@ object LccNode : LccNetworkClient {
         var currentOffset = 3
         for (tab in config.tabs) {
             val numLevers = tab.levers.size
-            if (numLevers > 0) {
+            val numBlocks = tab.blocks.size
+            if (numLevers > 0 || numBlocks > 0) {
                 tabGroups.append("""
     <group offset="$currentOffset">
-        <name>${tab.name} Levers</name>
-        <description>Levers for ${tab.name}</description>
-        <group offset="0" replication="$numLevers">
+        <name>${tab.name}</name>
+        <description>Configuration for ${tab.name}</description>""")
+        
+                var tabOffset = 0
+                if (numLevers > 0) {
+                    tabGroups.append("""
+        <group offset="$tabOffset" replication="$numLevers">
             <name>Levers</name>
             <repname>Lever</repname>
             <eventid><name>Event Normal</name></eventid>
             <eventid><name>Event Reversed</name></eventid>
-        </group>
+        </group>""")
+                    tabOffset += numLevers * 16
+                }
+                
+                if (numBlocks > 0) {
+                    tabGroups.append("""
+        <group offset="$tabOffset" replication="$numBlocks">
+            <name>Blocks</name>
+            <repname>Block</repname>
+            <eventid><name>Event Occupied</name></eventid>
+            <eventid><name>Event Empty</name></eventid>
+        </group>""")
+                    tabOffset += numBlocks * 16
+                }
+                
+                tabGroups.append("""
     </group>""")
-                currentOffset += numLevers * 16
+                currentOffset += tabOffset
             }
         }
         
@@ -110,7 +130,8 @@ object LccNode : LccNetworkClient {
     internal fun buildMemorySpace(): ByteArray {
         val config = ConfigManager.currentConfig
         val numLevers = config.tabs.sumOf { it.levers.size }
-        val size = 3 + numLevers * 16
+        val numBlocks = config.tabs.sumOf { it.blocks.size }
+        val size = 3 + numLevers * 16 + numBlocks * 16
         val buffer = ByteArray(size)
         
         buffer[0] = if (config.lcc_master) 1 else 0
@@ -126,6 +147,15 @@ object LccNode : LccNetworkClient {
                 val revBytes = revHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 normBytes.copyInto(buffer, offset)
                 revBytes.copyInto(buffer, offset + 8)
+                offset += 16
+            }
+            for (block in tab.blocks) {
+                val occHex = parseEventIdStringToHex(block.lcc_event_occupied)
+                val empHex = parseEventIdStringToHex(block.lcc_event_empty)
+                val occBytes = occHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                val empBytes = empHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+                occBytes.copyInto(buffer, offset)
+                empBytes.copyInto(buffer, offset + 8)
                 offset += 16
             }
         }
@@ -155,7 +185,19 @@ object LccNode : LccNetworkClient {
                     lever
                 }
             }
-            tab.copy(levers = newLevers)
+            
+            val newBlocks = tab.blocks.map { block ->
+                if (offset + 16 <= buffer.size) {
+                    val occEvent = buffer.copyOfRange(offset, offset + 8).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val empEvent = buffer.copyOfRange(offset + 8, offset + 16).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    offset += 16
+                    block.copy(lcc_event_occupied = occEvent, lcc_event_empty = empEvent)
+                } else {
+                    block
+                }
+            }
+            
+            tab.copy(levers = newLevers, blocks = newBlocks)
         }
         config = config.copy(tabs = newTabs)
         
