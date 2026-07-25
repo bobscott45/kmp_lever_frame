@@ -57,7 +57,8 @@ data class BlockDef(
     val label: String = "",
     val shortCode: String = "",
     val lcc_event_occupied: String = "",
-    val lcc_event_empty: String = ""
+    val lcc_event_empty: String = "",
+    val broadcastToggles: Boolean = false
 )
 
 data class SchematicElementDef(

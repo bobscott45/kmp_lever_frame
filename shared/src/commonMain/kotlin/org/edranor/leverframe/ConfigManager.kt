@@ -94,7 +94,8 @@ data class JsonBlock(
     val label: String = "",
     val short_code: String = "",
     val lcc_event_occupied: String = "",
-    val lcc_event_empty: String = ""
+    val lcc_event_empty: String = "",
+    val broadcast_toggles: Boolean = false
 )
 
 @Serializable
@@ -200,7 +201,8 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                     label = jsonBlock.label,
                     shortCode = jsonBlock.short_code,
                     lcc_event_occupied = if (occupiedSuffix.isNotBlank()) "${config.node_id}.$occupiedSuffix" else "",
-                    lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else ""
+                    lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else "",
+                    broadcastToggles = jsonBlock.broadcast_toggles
                 )
             }
             

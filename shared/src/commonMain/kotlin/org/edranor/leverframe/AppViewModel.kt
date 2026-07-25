@@ -360,6 +360,15 @@ class AppViewModel(
                 // Evaluate auto-reversers (cascade until steady state)
                 Interlocking.applyCascades(tabDef, newLevers, newBlocks, outgoingEvents)
                 
+                val blockDef = tabDef.blocks[blockIndex]
+                if (blockDef.broadcastToggles) {
+                    val isOccupied = newBlocks[blockIndex].isOccupied
+                    val eventStr = if (isOccupied) blockDef.lcc_event_occupied else blockDef.lcc_event_empty
+                    if (eventStr.isNotBlank()) {
+                        outgoingEvents.add(eventStr)
+                    }
+                }
+                
                 updatedFrames[tabIndex] = frame.copy(blocks = newBlocks, levers = newLevers)
                 
                 val conflicts = if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex in updatedFrames.indices) {
