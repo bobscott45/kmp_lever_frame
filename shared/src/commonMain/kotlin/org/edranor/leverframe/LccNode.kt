@@ -203,13 +203,16 @@ object LccNode : LccNetworkClient {
     }
 
     private fun sendAllProducerIdentified() {
-        ConfigManager.currentConfig.tabs.forEach { tab ->
-            tab.levers.forEach { lever ->
-                if (lever.lcc_event_normal.isNotBlank()) {
-                    sendProducerIdentified(lever.lcc_event_normal)
-                }
-                if (lever.lcc_event_reversed.isNotBlank()) {
-                    sendProducerIdentified(lever.lcc_event_reversed)
+        val parsedTabs = ConfigManager.parseConfig(ConfigManager.toJsonString())
+        parsedTabs.forEach { (_, tabDef) ->
+            tabDef.levers.forEach { lever ->
+                if (lever.lcc_enabled) {
+                    if (lever.lcc_event_normal.isNotBlank()) {
+                        sendProducerIdentified(lever.lcc_event_normal)
+                    }
+                    if (lever.lcc_event_reversed.isNotBlank()) {
+                        sendProducerIdentified(lever.lcc_event_reversed)
+                    }
                 }
             }
         }
