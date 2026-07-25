@@ -50,7 +50,26 @@ object LccNode : LccNetworkClient {
     
     internal fun getCdiXml(): ByteArray {
         val config = ConfigManager.currentConfig
-        val numLevers = config.tabs.sumOf { it.levers.size }
+        val tabGroups = StringBuilder()
+        var currentOffset = 3
+        for (tab in config.tabs) {
+            val numLevers = tab.levers.size
+            if (numLevers > 0) {
+                tabGroups.append("""
+    <group offset="$currentOffset">
+        <name>${tab.name} Levers</name>
+        <description>Levers for ${tab.name}</description>
+        <group offset="0" replication="$numLevers">
+            <name>Levers</name>
+            <repname>Lever</repname>
+            <eventid><name>Event Normal</name></eventid>
+            <eventid><name>Event Reversed</name></eventid>
+        </group>
+    </group>""")
+                currentOffset += numLevers * 16
+            }
+        }
+        
         val xml = """<?xml version="1.0" encoding="utf-8"?>
 <cdi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://openlcb.org/schema/cdi/1/1/cdi.xsd">
 <identification>
@@ -78,13 +97,7 @@ object LccNode : LccNetworkClient {
             <description>1 = Restore last state on boot, 0 = Normal</description>
             <min>0</min><max>1</max><default>1</default>
         </int>
-    </group>
-    <group offset="3" replication="$numLevers">
-        <name>Levers</name>
-        <repname>Lever</repname>
-        <eventid><name>Event Normal</name></eventid>
-        <eventid><name>Event Reversed</name></eventid>
-    </group>
+    </group>$tabGroups
 </segment>
 </cdi>"""
         return xml.encodeToByteArray() + byteArrayOf(0)
