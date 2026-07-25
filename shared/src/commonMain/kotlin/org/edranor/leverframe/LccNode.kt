@@ -65,6 +65,7 @@ object LccNode : LccNetworkClient {
         <group replication="$numLevers">
             <name>Levers</name>
             <repname>Lever</repname>
+            <string size="24"><name>Name</name></string>
             <eventid><name>Event Normal</name></eventid>
             <eventid><name>Event Reversed</name></eventid>
         </group>""")
@@ -75,6 +76,8 @@ object LccNode : LccNetworkClient {
         <group replication="$numBlocks">
             <name>Blocks</name>
             <repname>Block</repname>
+            <string size="24"><name>Name</name></string>
+            <string size="8"><name>Short Code</name></string>
             <eventid><name>Event Occupied</name></eventid>
             <eventid><name>Event Empty</name></eventid>
         </group>""")
@@ -137,11 +140,18 @@ object LccNode : LccNetworkClient {
         return hexUpper.chunked(2).joinToString(".")
     }
 
+    private fun writeString(str: String, maxSize: Int, buf: ByteArray, off: Int) {
+        val bytes = str.encodeToByteArray()
+        val len = minOf(bytes.size, maxSize - 1)
+        bytes.copyInto(buf, off, 0, len)
+        buf[off + len] = 0
+    }
+
     internal fun buildMemorySpace(): ByteArray {
         val config = ConfigManager.currentConfig
         val numLevers = config.tabs.sumOf { it.levers.size }
         val numBlocks = config.tabs.sumOf { it.blocks.size }
-        val size = 3 + numLevers * 16 + numBlocks * 16
+        val size = 3 + numLevers * 40 + numBlocks * 48
         val buffer = ByteArray(size)
         
         buffer[0] = if (config.lcc_master) 1 else 0
@@ -151,6 +161,9 @@ object LccNode : LccNetworkClient {
         var offset = 3
         for (tab in config.tabs) {
             for (lever in tab.levers) {
+                writeString(lever.label, 24, buffer, offset)
+                offset += 24
+                
                 val normHex = expandEventId(lever.lcc_event_normal, config.node_id)
                 val revHex = expandEventId(lever.lcc_event_reversed, config.node_id)
                 val normBytes = normHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
@@ -160,6 +173,11 @@ object LccNode : LccNetworkClient {
                 offset += 16
             }
             for (block in tab.blocks) {
+                writeString(block.label, 24, buffer, offset)
+                offset += 24
+                writeString(block.short_code, 8, buffer, offset)
+                offset += 8
+                
                 val occHex = expandEventId(block.lcc_event_occupied, config.node_id)
                 val empHex = expandEventId(block.lcc_event_empty, config.node_id)
                 val occBytes = occHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
@@ -170,6 +188,13 @@ object LccNode : LccNetworkClient {
             }
         }
         return buffer
+    }
+
+    private fun readString(buf: ByteArray, off: Int, maxSize: Int): String {
+        val slice = buf.sliceArray(off until off + maxSize)
+        val nullIdx = slice.indexOf(0.toByte())
+        val len = if (nullIdx >= 0) nullIdx else maxSize
+        return slice.sliceArray(0 until len).decodeToString()
     }
 
     internal fun applyMemorySpace(buffer: ByteArray) {
@@ -186,22 +211,39 @@ object LccNode : LccNetworkClient {
         var offset = 3
         val newTabs = config.tabs.map { tab ->
             val newLevers = tab.levers.map { lever ->
-                if (offset + 16 <= buffer.size) {
+                if (offset + 40 <= buffer.size) {
+                    val label = readString(buffer, offset, 24)
+                    offset += 24
+                    
                     val normHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     val revHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     offset += 16
-                    lever.copy(lcc_event_normal = contractEventId(normHex, config.node_id), lcc_event_reversed = contractEventId(revHex, config.node_id))
+                    lever.copy(
+                        label = label,
+                        lcc_event_normal = contractEventId(normHex, config.node_id),
+                        lcc_event_reversed = contractEventId(revHex, config.node_id)
+                    )
                 } else {
                     lever
                 }
             }
             
             val newBlocks = tab.blocks.map { block ->
-                if (offset + 16 <= buffer.size) {
+                if (offset + 48 <= buffer.size) {
+                    val label = readString(buffer, offset, 24)
+                    offset += 24
+                    val shortCode = readString(buffer, offset, 8)
+                    offset += 8
+                    
                     val occHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     val empHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     offset += 16
-                    block.copy(lcc_event_occupied = contractEventId(occHex, config.node_id), lcc_event_empty = contractEventId(empHex, config.node_id))
+                    block.copy(
+                        label = label,
+                        short_code = shortCode,
+                        lcc_event_occupied = contractEventId(occHex, config.node_id),
+                        lcc_event_empty = contractEventId(empHex, config.node_id)
+                    )
                 } else {
                     block
                 }
