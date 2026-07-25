@@ -85,11 +85,13 @@ object LccNode : LccNetworkClient {
             GridConnectNetwork.incomingMessages.collect { msgRaw ->
                 val msg = msgRaw.uppercase()
                 // Handle incoming GridConnect messages here if needed
-                if (msg.contains("X18A70") || msg.contains("X19A70")) { // Verify Node ID (Global)
+                if (msg.contains("X18490") || msg.contains("X19490")) { // Verify Node ID (Global)
                     // Respond with Verified Node ID
                     sendVerifiedNodeId()
                 } else if (msg.contains("X18DE8") || msg.contains("X19DE8")) { // Simple Node Info Request
-                    sendSimpleNodeInfoReply()
+                    val startIdx = if (msg.contains("X18DE8")) msg.indexOf("X18DE8") + 6 else msg.indexOf("X19DE8") + 6
+                    val destAlias = msg.substring(startIdx, startIdx + 3)
+                    sendSimpleNodeInfoReply(destAlias)
                 } else if (msg.contains("X185B4") || msg.contains("X195B4")) { // PCER Event
                     val startIdx = if (msg.contains("X185B4")) msg.indexOf("X185B4") + 1 else msg.indexOf("X195B4") + 1
                     val nIdx = msg.indexOf("N", startIdx)
@@ -146,7 +148,7 @@ object LccNode : LccNetworkClient {
         }
     }
 
-    private fun sendSimpleNodeInfoReply() {
+    private fun sendSimpleNodeInfoReply(destAlias: String) {
         try {
             // Build the SNIP payload bytes
             val payload = mutableListOf<Byte>()
@@ -166,10 +168,13 @@ object LccNode : LccNetworkClient {
             payload.add(0)
 
             // Simple Node Info Reply is a Global message (MTI 0x0A08).
-            // Data is just streamed in 8-byte CAN frames. No dest alias or frame flags in payload.
-            val chunks = payload.chunked(8)
+            // Actually, SNIP is an Addressed Message.
+            // Over CAN, addressed messages must include the 12-bit destination alias in the first 2 bytes of the payload.
+            // Therefore, we split the payload into 6-byte chunks, and prepend the destination alias.
+            val chunks = payload.chunked(6)
             for (chunk in chunks) {
                 val hexData = StringBuilder()
+                hexData.append("0").append(destAlias)
                 for (b in chunk) {
                     hexData.append(b.toUByte().toString(16).padStart(2, '0').uppercase())
                 }

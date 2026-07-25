@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Repository**: Untracked the `.agents/` configuration directory and added it to `.gitignore` to prevent committing local AI assistant state.
 
 ### Fixed
+- **Network**: Fixed OpenLCB CAN implementation for `Verify Node ID (Global)` by listening to the correct `0x0490` MTI. Fixed `Simple Node Info Reply` (SNIP) data corruption in JMRI by properly prepending the 12-bit destination alias to the CAN payload of addressed messages.
 - **Network**: Fixed LCC Identify Producer/Consumer event IDs to use the correct `0x544` and `0x4C4` MTIs and properly prefix the Event IDs with the Node ID, fixing compatibility with the JMRI LCC Event Table.
 - **State**: Fixed a bug where changing LCC Event IDs or broadcast toggles for blocks and levers incorrectly prompted the user for a full Frame state reset.
 - **UI/UX**: Restored the 'Default Rule Display Mode' and 'Default Rule Editor' dropdown settings to the System Settings screen and linked them back to the Lever configuration rules editor.
