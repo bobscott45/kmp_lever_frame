@@ -377,9 +377,23 @@ private fun GlobalNetworkSettings(config: JsonConfig, onConfigChange: (JsonConfi
 @Composable
 private fun BehaviorSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
     Text("Behavior Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-    SettingSwitchRow("Restore Last State", config.restore_last_state) { onConfigChange(config.copy(restore_last_state = it)) }
-    SettingSwitchRow("LCC Enabled", config.lcc_enabled) { onConfigChange(config.copy(lcc_enabled = it)) }
-    SettingSwitchRow("LCC Master", config.lcc_master) { onConfigChange(config.copy(lcc_master = it)) }
+    SettingSwitchRow(
+        label = "Restore Last State", 
+        checked = config.restore_last_state,
+        infoText = "If enabled, LeverFrame will remember the physical position of all levers between app sessions and restore them when restarted."
+    ) { onConfigChange(config.copy(restore_last_state = it)) }
+    
+    SettingSwitchRow(
+        label = "LCC Enabled", 
+        checked = config.lcc_enabled,
+        infoText = "If enabled, LeverFrame will broadcast and listen to Layout Command Control (LCC) network events. Requires a configured JMRI Hub or physical LCC connection."
+    ) { onConfigChange(config.copy(lcc_enabled = it)) }
+    
+    SettingSwitchRow(
+        label = "LCC Master", 
+        checked = config.lcc_master,
+        infoText = "If enabled, this instance of LeverFrame acts as the master authority for lever states, resolving conflicting state changes from the network."
+    ) { onConfigChange(config.copy(lcc_master = it)) }
     SettingSwitchRow("Enable Sound", config.enable_sound) { onConfigChange(config.copy(enable_sound = it)) }
     
     var policyExpanded by remember { mutableStateOf(false) }
@@ -473,13 +487,40 @@ private fun DeveloperSettings(config: JsonConfig, onConfigChange: (JsonConfig) -
 }
 
 @Composable
-private fun SettingSwitchRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun SettingSwitchRow(
+    label: String, 
+    checked: Boolean, 
+    infoText: String? = null,
+    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
+    textColor: androidx.compose.ui.graphics.Color = LeverFrameTheme.Colors.Brass,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    var showInfo by remember { mutableStateOf(false) }
+
+    if (showInfo && infoText != null) {
+        AlertDialog(
+            onDismissRequest = { showInfo = false },
+            title = { Text(label) },
+            text = { Text(infoText) },
+            confirmButton = {
+                TextButton(onClick = { showInfo = false }) { Text("OK") }
+            }
+        )
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge, color = LeverFrameTheme.Colors.Brass)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(label, style = textStyle, color = textColor)
+            if (infoText != null) {
+                IconButton(onClick = { showInfo = true }) {
+                    Text("ℹ️", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
@@ -603,18 +644,13 @@ fun LeverDetailScreen(
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("LCC Configuration", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                             
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("LCC Enabled", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                                Switch(
-                                    checked = lever.lcc_enabled,
-                                    onCheckedChange = { onLeverChange(lever.copy(lcc_enabled = it)) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
-                                )
-                            }
+                            SettingSwitchRow(
+                                label = "LCC Enabled",
+                                checked = lever.lcc_enabled,
+                                infoText = "If enabled, toggling this lever will broadcast the corresponding Normal/Reversed events to the LCC network.",
+                                textStyle = MaterialTheme.typography.bodyMedium,
+                                textColor = Color.White
+                            ) { onLeverChange(lever.copy(lcc_enabled = it)) }
 
                             Spacer(modifier = Modifier.height(8.dp))
                             Text("LCC Events (Optional)", style = MaterialTheme.typography.bodyMedium, color = LeverFrameTheme.Colors.Brass)
@@ -997,14 +1033,13 @@ fun BlockDetailScreen(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
                         
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = block.broadcast_toggles,
-                                onCheckedChange = { onBlockChange(block.copy(broadcast_toggles = it)) },
-                                colors = CheckboxDefaults.colors(checkedColor = LeverFrameTheme.Colors.Brass)
-                            )
-                            Text("Broadcast Occupancy Changes", modifier = Modifier.padding(start = 8.dp))
-                        }
+                        SettingSwitchRow(
+                            label = "Broadcast Occupancy Changes",
+                            checked = block.broadcast_toggles,
+                            infoText = "If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Empty events to the LCC network.",
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            textColor = Color.White
+                        ) { onBlockChange(block.copy(broadcast_toggles = it)) }
                         
                         val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
                         
