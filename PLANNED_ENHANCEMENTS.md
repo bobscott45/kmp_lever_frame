@@ -48,3 +48,14 @@ To achieve this extraction without breaking the current application, the work sh
 4. **Phase 4: Library Extraction**
    * *Effort: Medium*
    * Decouple the networking code from LeverFrame's business logic and move it into a separate Gradle module (`:openlcb` or similar).
+
+## 2. Route Setting (NX) Integration
+
+### The Goal
+The system currently operates purely as a mechanical lever frame, requiring operators to manually sequence points and signals in the correct order to clear a route. The goal is to add an "eNtrance to eXit" (NX) mode on top of the existing mechanical interlocking.
+
+### Implementation Strategy
+Since the application already parses the track schematics and understands digital blocks and point configurations, it has all the data required to build a routing graph. 
+* **User Interaction**: A user would tap a start block (Entrance) and a destination block (Exit) on the schematic.
+* **Pathfinding**: The application would calculate the shortest valid route through the track schematic.
+* **Execution**: It would automatically sequence the required points and clear the appropriate signals by programmatically pulling the levers, provided the mechanical interlocking rules allow it.
