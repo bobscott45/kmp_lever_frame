@@ -72,4 +72,33 @@ class LccNodeTest {
         // Just passes through, doesn't leave anything in buffer
         assertEquals(0, LccNode.datagramBuffers.size)
     }
+    @Test
+    fun testCdiXmlNullTerminator() {
+        // The CDI XML byte array must end with a null terminator (0x00)
+        // according to the NMRA S-9.7.4.1 standard for Configuration Description Information.
+        val lastByte = LccNode.cdiXml.last()
+        assertEquals(0.toByte(), lastByte, "CDI XML must be null-terminated")
+    }
+
+    @Test
+    fun testMemoryConfigurationRead() {
+        // Test parsing of a Memory Space Read request (0x20 0x43) for the CDI space (0xFF).
+        // 0x20 = Memory Configuration Protocol
+        // 0x43 = Read Request (0x40) | Space 0xFF (0x03)
+        // address = 0x00 00 00 00, length = 64
+        val requestPayload = listOf<Byte>(
+            0x20, 0x43, 0x00, 0x00, 0x00, 0x00, 64
+        )
+        
+        // This processDatagram is internal and won't actually throw an exception,
+        // it will just call sendDatagram() and sendDatagramReceivedOk() internally.
+        // We just ensure it doesn't crash or throw index out of bounds.
+        LccNode.processDatagram("456", requestPayload)
+        
+        // Test a read that exceeds the CDI size
+        val largeAddressRequest = listOf<Byte>(
+            0x20, 0x43, 0x00, 0x00, 0x08, 0x00, 64 // address 0x0800 = 2048, longer than CDI
+        )
+        LccNode.processDatagram("456", largeAddressRequest)
+    }
 }
