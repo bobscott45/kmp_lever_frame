@@ -40,7 +40,17 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
                 block_layout = "HORIZONTAL",
                 block_label_size = 8,
                 levers = tab.levers.map { lever ->
-                    lever.copy(interlocking = emptyList(), ast_logic = null, auto_reverser = false)
+                    lever.copy(
+                        interlocking = emptyList(), 
+                        ast_logic = null, 
+                        auto_reverser = false,
+                        lcc_event_normal = "",
+                        lcc_event_reversed = "",
+                        lcc_enabled = false
+                    )
+                },
+                blocks = tab.blocks.map { block ->
+                    block.copy(lcc_event_occupied = "", lcc_event_empty = "", broadcast_toggles = false)
                 }
             )
         }
