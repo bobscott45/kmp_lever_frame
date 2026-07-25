@@ -51,42 +51,37 @@ object LccNode : LccNetworkClient {
     internal fun getCdiXml(): ByteArray {
         val config = ConfigManager.currentConfig
         val tabGroups = StringBuilder()
-        var currentOffset = 3
         for (tab in config.tabs) {
             val numLevers = tab.levers.size
             val numBlocks = tab.blocks.size
             if (numLevers > 0 || numBlocks > 0) {
                 tabGroups.append("""
-    <group offset="$currentOffset">
+    <group>
         <name>${tab.name}</name>
         <description>Configuration for ${tab.name}</description>""")
         
-                var tabOffset = 0
                 if (numLevers > 0) {
                     tabGroups.append("""
-        <group offset="$tabOffset" replication="$numLevers">
+        <group replication="$numLevers">
             <name>Levers</name>
             <repname>Lever</repname>
             <eventid><name>Event Normal</name></eventid>
             <eventid><name>Event Reversed</name></eventid>
         </group>""")
-                    tabOffset += numLevers * 16
                 }
                 
                 if (numBlocks > 0) {
                     tabGroups.append("""
-        <group offset="$tabOffset" replication="$numBlocks">
+        <group replication="$numBlocks">
             <name>Blocks</name>
             <repname>Block</repname>
             <eventid><name>Event Occupied</name></eventid>
             <eventid><name>Event Empty</name></eventid>
         </group>""")
-                    tabOffset += numBlocks * 16
                 }
                 
                 tabGroups.append("""
     </group>""")
-                currentOffset += tabOffset
             }
         }
         
@@ -123,8 +118,23 @@ object LccNode : LccNetworkClient {
         return xml.encodeToByteArray() + byteArrayOf(0)
     }
 
-    private fun parseEventIdStringToHex(eventId: String): String {
-        return parseEventId(eventId).padEnd(16, '0')
+    private fun expandEventId(eventId: String, nodeId: String): String {
+        if (eventId.isBlank()) return "".padEnd(16, '0')
+        val clean = eventId.replace(".", "")
+        if (clean.length == 4) {
+            return (nodeId.replace(".", "") + clean).padEnd(16, '0').uppercase()
+        }
+        return clean.padEnd(16, '0').uppercase()
+    }
+
+    private fun contractEventId(hexEventId: String, nodeId: String): String {
+        val nodeHex = nodeId.replace(".", "").uppercase()
+        val hexUpper = hexEventId.uppercase()
+        if (hexUpper.startsWith(nodeHex) && hexUpper.length == 16) {
+            val suffix = hexUpper.substring(12, 16)
+            return "${suffix.substring(0, 2)}.${suffix.substring(2, 4)}"
+        }
+        return hexUpper.chunked(2).joinToString(".")
     }
 
     internal fun buildMemorySpace(): ByteArray {
@@ -141,8 +151,8 @@ object LccNode : LccNetworkClient {
         var offset = 3
         for (tab in config.tabs) {
             for (lever in tab.levers) {
-                val normHex = parseEventIdStringToHex(lever.lcc_event_normal)
-                val revHex = parseEventIdStringToHex(lever.lcc_event_reversed)
+                val normHex = expandEventId(lever.lcc_event_normal, config.node_id)
+                val revHex = expandEventId(lever.lcc_event_reversed, config.node_id)
                 val normBytes = normHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 val revBytes = revHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 normBytes.copyInto(buffer, offset)
@@ -150,8 +160,8 @@ object LccNode : LccNetworkClient {
                 offset += 16
             }
             for (block in tab.blocks) {
-                val occHex = parseEventIdStringToHex(block.lcc_event_occupied)
-                val empHex = parseEventIdStringToHex(block.lcc_event_empty)
+                val occHex = expandEventId(block.lcc_event_occupied, config.node_id)
+                val empHex = expandEventId(block.lcc_event_empty, config.node_id)
                 val occBytes = occHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 val empBytes = empHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
                 occBytes.copyInto(buffer, offset)
@@ -177,10 +187,10 @@ object LccNode : LccNetworkClient {
         val newTabs = config.tabs.map { tab ->
             val newLevers = tab.levers.map { lever ->
                 if (offset + 16 <= buffer.size) {
-                    val normEvent = buffer.copyOfRange(offset, offset + 8).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
-                    val revEvent = buffer.copyOfRange(offset + 8, offset + 16).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val normHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val revHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     offset += 16
-                    lever.copy(lcc_event_normal = normEvent, lcc_event_reversed = revEvent)
+                    lever.copy(lcc_event_normal = contractEventId(normHex, config.node_id), lcc_event_reversed = contractEventId(revHex, config.node_id))
                 } else {
                     lever
                 }
@@ -188,10 +198,10 @@ object LccNode : LccNetworkClient {
             
             val newBlocks = tab.blocks.map { block ->
                 if (offset + 16 <= buffer.size) {
-                    val occEvent = buffer.copyOfRange(offset, offset + 8).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
-                    val empEvent = buffer.copyOfRange(offset + 8, offset + 16).joinToString(".") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val occHex = buffer.copyOfRange(offset, offset + 8).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
+                    val empHex = buffer.copyOfRange(offset + 8, offset + 16).joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     offset += 16
-                    block.copy(lcc_event_occupied = occEvent, lcc_event_empty = empEvent)
+                    block.copy(lcc_event_occupied = contractEventId(occHex, config.node_id), lcc_event_empty = contractEventId(empHex, config.node_id))
                 } else {
                     block
                 }
