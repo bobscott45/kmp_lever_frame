@@ -85,21 +85,21 @@ object LccNode : LccNetworkClient {
             GridConnectNetwork.incomingMessages.collect { msgRaw ->
                 val msg = msgRaw.uppercase()
                 // Handle incoming GridConnect messages here if needed
-                if (msg.contains("X18A70")) { // Verify Node ID (Global)
+                if (msg.contains("X18A70") || msg.contains("X19A70")) { // Verify Node ID (Global)
                     // Respond with Verified Node ID
                     sendVerifiedNodeId()
-                } else if (msg.contains("19DE8")) { // Simple Node Info Request
+                } else if (msg.contains("X18DE8") || msg.contains("X19DE8")) { // Simple Node Info Request
                     sendSimpleNodeInfoReply()
-                } else if (msg.contains("195B4")) { // PCER Event
-                    val startIdx = msg.indexOf("195B4")
+                } else if (msg.contains("X185B4") || msg.contains("X195B4")) { // PCER Event
+                    val startIdx = if (msg.contains("X185B4")) msg.indexOf("X185B4") + 1 else msg.indexOf("X195B4") + 1
                     val nIdx = msg.indexOf("N", startIdx)
                     if (nIdx != -1 && msg.length >= nIdx + 17) {
                         val hexData = msg.substring(nIdx + 1, nIdx + 17)
                         _externalEvents.tryEmit(hexData)
                     }
-                } else if (msg.contains("19970") || msg.contains("19968")) { // Identify Events Global / Addressed
+                } else if (msg.contains("X18970") || msg.contains("X19970") || msg.contains("X18968") || msg.contains("X19968")) { // Identify Events Global / Addressed
                     sendAllProducerIdentified()
-                } else if (msg.contains("19914")) { // Identify Producers Global/Addressed
+                } else if (msg.contains("X18914") || msg.contains("X19914")) { // Identify Producers Global/Addressed
                     sendAllProducerIdentified()
                 }
             }
