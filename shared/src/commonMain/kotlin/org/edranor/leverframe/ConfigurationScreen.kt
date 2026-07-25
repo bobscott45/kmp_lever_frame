@@ -493,6 +493,7 @@ private fun SettingSwitchRow(
     infoText: String? = null,
     textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
     textColor: androidx.compose.ui.graphics.Color = LeverFrameTheme.Colors.Brass,
+    modifier: Modifier = Modifier.fillMaxWidth(),
     onCheckedChange: (Boolean) -> Unit
 ) {
     var showInfo by remember { mutableStateOf(false) }
@@ -509,7 +510,7 @@ private fun SettingSwitchRow(
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -692,21 +693,14 @@ fun LeverDetailScreen(
             if (selectedTab == 2) {
                 item {
                     Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Auto-Reverser", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                                Text("(Return to Normal if rules fail)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                            }
-                            Switch(
-                                checked = lever.auto_reverser,
-                                onCheckedChange = { onLeverChange(lever.copy(auto_reverser = it)) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = LeverFrameTheme.Colors.PaleBlue)
-                            )
-                        }
+                        SettingSwitchRow(
+                            label = "Auto-Reverser",
+                            checked = lever.auto_reverser,
+                            infoText = "If enabled, this lever will automatically return to the Normal position when any of its interlocking rules evaluate to false (e.g., if an interlocked block becomes occupied).",
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            textColor = Color.White,
+                            modifier = Modifier.fillMaxWidth().padding(12.dp)
+                        ) { onLeverChange(lever.copy(auto_reverser = it)) }
                     }
                     
                     // Interlocking Rules Group Header
