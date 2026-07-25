@@ -89,11 +89,7 @@ object LccNode : LccNetworkClient {
                     // Respond with Verified Node ID
                     sendVerifiedNodeId()
                 } else if (msg.contains("19DE8")) { // Simple Node Info Request
-                    val startIdx = msg.indexOf("19DE8")
-                    if (startIdx >= 0 && msg.length >= startIdx + 8) {
-                        val jmriAliasStr = msg.substring(startIdx + 5, startIdx + 8)
-                        sendSimpleNodeInfoReply(jmriAliasStr)
-                    }
+                    sendSimpleNodeInfoReply()
                 } else if (msg.contains("195B4")) { // PCER Event
                     val startIdx = msg.indexOf("195B4")
                     val nIdx = msg.indexOf("N", startIdx)
@@ -150,44 +146,30 @@ object LccNode : LccNetworkClient {
         }
     }
 
-    private fun sendSimpleNodeInfoReply(destAliasHex: String) {
+    private fun sendSimpleNodeInfoReply() {
         try {
-            val destAlias = destAliasHex.toIntOrNull(16) ?: return
-            
             // Build the SNIP payload bytes
             val payload = mutableListOf<Byte>()
             payload.add(4) // Version 4
-            payload.addAll("Kotlin App".encodeToByteArray().toList())
+            payload.addAll("Edranor".encodeToByteArray().toList())
             payload.add(0)
             payload.addAll("Lever Frame".encodeToByteArray().toList())
             payload.add(0)
             payload.addAll("1.0".encodeToByteArray().toList())
             payload.add(0)
-            payload.addAll("1.0.0".encodeToByteArray().toList())
+            payload.addAll("1.2.0".encodeToByteArray().toList())
             payload.add(0)
-            payload.add(2) // Version 2
+            payload.add(1) // User Data Version 1
             payload.addAll(ConfigManager.currentConfig.node_name.encodeToByteArray().toList())
             payload.add(0)
             payload.addAll("Desktop Lever Frame Node".encodeToByteArray().toList())
             payload.add(0)
 
-            // Send in chunks of 6 bytes (since 2 bytes are used for dest alias)
-            val destByte0 = ((destAlias shr 8) and 0x0F)
-            val destByte1 = (destAlias and 0xFF).toByte()
-
-            val chunks = payload.chunked(6)
-            for ((index, chunk) in chunks.withIndex()) {
-                val frameFlag = when {
-                    chunks.size == 1 -> 0x00 // Only frame
-                    index == 0 -> 0x10       // First frame
-                    index == chunks.size - 1 -> 0x20 // Last frame
-                    else -> 0x30             // Middle frame
-                }
-                val currentDestByte0 = (destByte0 or frameFlag).toByte()
-
+            // Simple Node Info Reply is a Global message (MTI 0x0A08).
+            // Data is just streamed in 8-byte CAN frames. No dest alias or frame flags in payload.
+            val chunks = payload.chunked(8)
+            for (chunk in chunks) {
                 val hexData = StringBuilder()
-                hexData.append(currentDestByte0.toUByte().toString(16).padStart(2, '0').uppercase())
-                hexData.append(destByte1.toUByte().toString(16).padStart(2, '0').uppercase())
                 for (b in chunk) {
                     hexData.append(b.toUByte().toString(16).padStart(2, '0').uppercase())
                 }
@@ -196,7 +178,7 @@ object LccNode : LccNetworkClient {
                 val msg = ":X19A08${NODE_ALIAS}N${hexData};"
                 GridConnectNetwork.sendMessage(msg)
             }
-            println("Sent SNIP Reply to $destAliasHex")
+            println("Sent SNIP Reply")
         } catch (e: Exception) {
             println("Failed to send SNIP Reply: ${e.message}")
         }
