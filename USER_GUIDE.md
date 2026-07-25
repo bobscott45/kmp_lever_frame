@@ -76,6 +76,7 @@ This controls the top-level behavior of the application and its connection to th
 *   **Conflict Policy**: Determines how the application resolves situations where the internal lever state differs from a received network event.
 *   **Restore Last State**: When enabled, the application saves the position of all levers when closed and restores them upon restart.
 *   **LCC Enabled**: Toggles whether the application connects to the OpenLCB/LCC network at all. When enabled, it performs normal LCC startup and broadcasts current states. When disabled, the app is completely isolated from the network.
+*   **Remote CDI Configuration**: If connected to an LCC network, almost all of these system settings (and individual lever/block Event IDs and labels) can be remotely configured using JMRI's OpenLCB Configuration window.
 *   **LCC Master**: Determines if the LeverFrame acts as the authoritative brain for the interlocking. 
     *   **ON (Checked)**: The frame listens to track occupancy events to dynamically lock levers, enforces interlocking on remote commands from other panels, and broadcasts its saved states on startup to force layout alignment.
     *   **OFF (Unchecked)**: The frame acts as a "dumb panel". It ignores external events (block sensors or remote lever commands) and relies purely on your manual clicks and its internal static state.
@@ -122,7 +123,7 @@ To return to the main list of levers, tap the **← Back** button in the top app
 
 To delete a lever, click on the **✕ Delete** button at the top right of the Basic Info section.
 
-* **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired. Note that lever names must be unique within the frame.
+* **Label**: The text displayed on the brass nameplate (e.g., "UP MAIN HOME"). Use multiple lines or spaces to format as desired. Note that lever names must be unique within the frame. (Max 23 characters).
 * **Lever Type**: The functional type and color of the lever (e.g., Home Signal is Red, Distant Signal is Yellow, Points are Black).
 
 #### LCC (Tab)
@@ -158,7 +159,7 @@ If you modify structural elements—such as adding/deleting a lever or block, or
 
 Similar to levers, existing blocks are listed on the main tab and can be reordered using the **↑** and **↓** arrows. Pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
 
-* **Basic Info**: Configure the block's **Label**, which determines the text displayed on the Digital Block Shelf, and its **Short Code** for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
+* **Basic Info**: Configure the block's **Label** (Max 23 characters), which determines the text displayed on the Digital Block Shelf, and its **Short Code** (Max 7 characters) for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
 * **LCC Events**: 
     * **Broadcast Occupancy Changes**: If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Empty events to the LCC network.
     * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Empty" when received from the network.
