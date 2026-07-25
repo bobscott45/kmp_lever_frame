@@ -560,12 +560,14 @@ fun LeverDetailScreen(
 
                             var typeExpanded by remember { mutableStateOf(false) }
                             val types = listOf("HOME_SIGNAL", "DISTANT_SIGNAL", "POINTS", "FACING_POINTS", "BROWN", "GREEN", "SPARE")
+                            val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
+                            
                             ExposedDropdownMenuBox(
                                 expanded = typeExpanded,
                                 onExpandedChange = { typeExpanded = !typeExpanded }
                             ) {
                                 OutlinedTextField(
-                                    value = lever.type,
+                                    value = formatDisplay(lever.type),
                                     onValueChange = {},
                                     readOnly = true,
                                     label = { Text("Lever Type") },
@@ -579,7 +581,7 @@ fun LeverDetailScreen(
                                 ) {
                                     types.forEach { t ->
                                         DropdownMenuItem(
-                                            text = { Text(t) },
+                                            text = { Text(formatDisplay(t)) },
                                             onClick = {
                                                 onLeverChange(lever.copy(type = t))
                                                 typeExpanded = false
@@ -885,10 +887,11 @@ private fun RuleStateDropdown(
     var expanded by remember { mutableStateOf(false) }
     val isBlock = targetType == "BLOCK"
     val states = if (isBlock) listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+    val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
     
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
         OutlinedTextField(
-            value = state,
+            value = formatDisplay(state),
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
@@ -899,7 +902,7 @@ private fun RuleStateDropdown(
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             states.forEach { st ->
                 DropdownMenuItem(
-                    text = { Text(st) },
+                    text = { Text(formatDisplay(st)) },
                     onClick = {
                         onStateSelected(st)
                         expanded = false

@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Implemented a resizable, draggable layout divider between the schematic and lever views, with persistent layout weights.
 
 ### Changed
+- **UI/UX**: Fixed frame settings layout on mobile portrait mode to intelligently display configuration checkboxes 1 per row instead of 2.
+- **UI/UX**: Formatted configuration dropdown menus (Lever Type, Required State) to display human-readable strings (e.g., "Distant Signal") rather than raw enum constants.
 - **Architecture**: Refactored the massive UI files (`ConfigurationScreen.kt`, `App.kt`) into smaller, highly cohesive, single-responsibility composables (`ConfigurationFrameViews`, `ClauseBuilderView`, `LeverComponent`, etc.).
 - **UI/UX**: Improved the Interlocking Rules UI flow by offering three distinct Display Modes (Locking Table, Clause Builder, Text Formula) with seamless switching to the user's preferred visual editor.
 - **Architecture**: Refactored `AppConfigRepository` according to the Interface Segregation Principle (ISP), separating it into distinct `ConfigurationRepository` and `StatePersistenceRepository` interfaces.

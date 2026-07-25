@@ -151,52 +151,70 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
             }, label = "Label Line Height", modifier = Modifier.weight(1f))
         }
         
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                Checkbox(
-                    checked = tab.show_lever_numbers,
-                    onCheckedChange = {
-                        val newTabs = config.tabs.toMutableList()
-                        newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = it)
-                        onConfigChange(config.copy(tabs = newTabs))
-                    }
-                )
-                Text("Show Lever Numbers")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                Checkbox(
-                    checked = tab.use_short_codes,
-                    onCheckedChange = {
-                        val newTabs = config.tabs.toMutableList()
-                        newTabs[selectedFrameIndex] = tab.copy(use_short_codes = it)
-                        onConfigChange(config.copy(tabs = newTabs))
-                    }
-                )
-                Text("Use Short Codes on Schematic")
-            }
+        val updateShowLeverNumbers: (Boolean) -> Unit = {
+            val newTabs = config.tabs.toMutableList()
+            newTabs[selectedFrameIndex] = tab.copy(show_lever_numbers = it)
+            onConfigChange(config.copy(tabs = newTabs))
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                Checkbox(
-                    checked = tab.show_block_numbers,
-                    onCheckedChange = {
-                        val newTabs = config.tabs.toMutableList()
-                        newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = it)
-                        onConfigChange(config.copy(tabs = newTabs))
+        val updateUseShortCodes: (Boolean) -> Unit = {
+            val newTabs = config.tabs.toMutableList()
+            newTabs[selectedFrameIndex] = tab.copy(use_short_codes = it)
+            onConfigChange(config.copy(tabs = newTabs))
+        }
+        val updateShowBlockNumbers: (Boolean) -> Unit = {
+            val newTabs = config.tabs.toMutableList()
+            newTabs[selectedFrameIndex] = tab.copy(show_block_numbers = it)
+            onConfigChange(config.copy(tabs = newTabs))
+        }
+        val updateUseShortCodesInIndicators: (Boolean) -> Unit = {
+            val newTabs = config.tabs.toMutableList()
+            newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = it)
+            onConfigChange(config.copy(tabs = newTabs))
+        }
+
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            if (maxWidth < 600.dp) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(checked = tab.show_lever_numbers, onCheckedChange = updateShowLeverNumbers)
+                        Text("Show Lever Numbers")
                     }
-                )
-                Text("Show Block Numbers on Frame")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                Checkbox(
-                    checked = tab.use_short_codes_in_indicators,
-                    onCheckedChange = {
-                        val newTabs = config.tabs.toMutableList()
-                        newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = it)
-                        onConfigChange(config.copy(tabs = newTabs))
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(checked = tab.use_short_codes, onCheckedChange = updateUseShortCodes)
+                        Text("Use Short Codes on Schematic")
                     }
-                )
-                Text("Use Short Codes in Block Indicators")
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(checked = tab.show_block_numbers, onCheckedChange = updateShowBlockNumbers)
+                        Text("Show Block Numbers on Frame")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(checked = tab.use_short_codes_in_indicators, onCheckedChange = updateUseShortCodesInIndicators)
+                        Text("Use Short Codes in Block Indicators")
+                    }
+                }
+            } else {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(checked = tab.show_lever_numbers, onCheckedChange = updateShowLeverNumbers)
+                            Text("Show Lever Numbers")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(checked = tab.use_short_codes, onCheckedChange = updateUseShortCodes)
+                            Text("Use Short Codes on Schematic")
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(checked = tab.show_block_numbers, onCheckedChange = updateShowBlockNumbers)
+                            Text("Show Block Numbers on Frame")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(checked = tab.use_short_codes_in_indicators, onCheckedChange = updateUseShortCodesInIndicators)
+                            Text("Use Short Codes in Block Indicators")
+                        }
+                    }
+                }
             }
         }
     }
