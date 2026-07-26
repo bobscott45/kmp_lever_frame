@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 1.2.0-dev
 
+### Fixed
+- **UI/UX**: Restored the dynamic color indicator for Turnouts on the schematic. The diverging route leg will now properly illuminate Green when the points are thrown, providing clear visual feedback of the active route.
+
+
 ### Added
 - **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
 - **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
