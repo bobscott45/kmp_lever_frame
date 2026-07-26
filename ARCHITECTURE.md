@@ -8,6 +8,7 @@ The project is built using the standard Kotlin Multiplatform structure with Comp
 *   **`shared/`**: Contains ~99% of the application's code. This includes all UI layouts, state management, networking, and business logic.
     *   **`commonMain/`**: Platform-agnostic Kotlin code and Compose UI.
     *   **`androidMain/`**, **`jvmMain/`**, **`iosMain/`**: Platform-specific `expect/actual` implementations (e.g., file system access, network specifics, screen-wake locks).
+*   **`openlcb/`**: A decoupled library module providing the generic OpenLCB/LCC network protocol engine, datagram handling, and GridConnect parsing without any dependency on the app's domain logic.
 *   **`androidApp/`**: A thin wrapper containing the `MainActivity` that initializes the shared Compose UI on Android.
 *   **`desktopApp/`**: A thin wrapper containing `MainKt` which sets up the JVM `Window` and launches the Compose UI.
 *   **`iosApp/`**: An Xcode project containing a SwiftUI wrapper that hosts the shared Compose UI.
@@ -40,9 +41,10 @@ The brain of the lever frame.
 *   When a user attempts to move a lever, the `AppViewModel` queries this engine to determine if the move is legal based on both lever and block occupancies.
 *   The logic aims to exactly replicate physical mechanical tappet locking mechanisms found in prototypical signal boxes, enhanced with electro-mechanical track circuit interactions.
 
-### 2.4 Networking (`GridConnectNetwork.kt` & `LccNode.kt`)
-*   **`GridConnectNetwork`**: A robust, Coroutine-based TCP engine utilizing `io.ktor.network`. It manages the raw socket connections (acting as either a TCP Server listening on port 12021, or a TCP Client bridging to a JMRI Hub). It exposes incoming messages and connection statuses via `SharedFlow` and `StateFlow`.
-*   **`LccNode`**: Acts as the OpenLCB/LCC protocol translator. It observes the raw GridConnect strings (e.g., `:X195B4000N;`), parses the Event IDs, and dispatches state changes to the `AppViewModel`. Conversely, when a lever is moved, it generates the appropriate GridConnect string and pushes it to the network.
+### 2.4 Networking (The `:openlcb` module)
+*   **`OpenLcbEngine`**: Housed in the decoupled `:openlcb` module, this engine acts as the OpenLCB/LCC protocol translator. It handles the raw CAN framing, SNIP metadata, and Memory Configuration datagram logic purely based on byte arrays and string flows.
+*   **`GridConnectNetwork`**: A robust, Coroutine-based TCP engine inside `:openlcb` utilizing `io.ktor.network`. It manages the raw socket connections (acting as either a TCP Server listening on port 12021, or a TCP Client bridging to a JMRI Hub).
+*   **`LccNode` (Adapter in `:shared`)**: Bridges LeverFrame's internal `ConfigManager` to the generic `:openlcb` library interfaces (`OpenLcbConfig`, `MemorySpaceHandler`, `EventProducerProvider`), allowing the network layer to remain strictly agnostic of the app's domain logic.
 
 ### 2.5 User Interface
 Built entirely in Compose Multiplatform.
