@@ -193,6 +193,14 @@ The application features a built-in visual editor for designing the track schema
     * You can configure the **Placement** (Top, Bottom, Left, Right) to ensure the button aligns perfectly with the track line and avoids obscuring signals or lever numbers.
 * **Saving**: Press the Save icon in the top right to compile your grid back into the configuration file and return to the frame settings.
 
+### Using NX Routing on the Schematic
+
+Once you have configured NX Route buttons on your schematic, you can use them to automatically set complex routes from the main operational view:
+
+* **Setting a Route**: Tap an **Entrance** button (it will highlight and briefly show reachable routes). Then, tap a valid **Exit** button on the schematic. The NX Routing Engine will automatically trace the track, calculate the required diverging points, throw the physical levers, and sequentially clear all required signals (including dependent FPLs or flank protection) with full interlocking safety checks.
+* **Canceling a Route**: If a route is already set and its entrance signal is clear, you can cancel it by tapping the **Entrance** button twice (a double-tap), OR by tapping the Entrance and then the Exit again. The system will drop the entrance signal to Danger and safely trace downstream to drop any other intermediate signals it had cleared for that route. Points will remain in their last position to minimize mechanical wear.
+* **Route Errors**: If the track is physically occupied by a train, or if a required lever is mechanically locked by another part of the interlocking, the route will fail to set and a floating red error banner will appear indicating exactly what prevented the route from completing.
+
 ---
 
 ## The Block Occupancy Shelf

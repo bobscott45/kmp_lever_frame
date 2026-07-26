@@ -401,6 +401,7 @@ fun RowScope.MainTabRow(
 fun ErrorBanners(
     errorMessage: String?,
     networkError: String?,
+    onDismissErrorMessage: () -> Unit,
     onDismissNetworkError: () -> Unit
 ) {
     AnimatedVisibility(
@@ -409,12 +410,18 @@ fun ErrorBanners(
         exit = shrinkVertically()
     ) {
         errorMessage?.let { msg ->
-            Text(
-                text = msg,
-                color = LeverFrameTheme.Colors.ErrorText,
-                modifier = Modifier.padding(bottom = 16.dp),
-                fontWeight = FontWeight.Bold
-            )
+            ElevatedCard(
+                colors = CardDefaults.elevatedCardColors(containerColor = LeverFrameTheme.Colors.ErrorText.copy(alpha=0.9f)),
+                modifier = Modifier.padding(bottom = 8.dp).clickable { onDismissErrorMessage() },
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = msg,
+                    color = Color.White,
+                    modifier = Modifier.padding(12.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 
@@ -671,11 +678,6 @@ private fun NavContent(
                     Column(modifier = Modifier.fillMaxSize()) {
                         if (!isLandscapeCompact) {
                             TopMenuBar(configState, uiState, viewModel)
-                            ErrorBanners(
-                                errorMessage = uiState.errorMessage,
-                                networkError = uiState.networkError,
-                                onDismissNetworkError = viewModel::dismissNetworkError
-                            )
                         }
                         
                         if (isLandscapeCompact) {
@@ -689,6 +691,12 @@ private fun NavContent(
                                                 tabDef = currentTabDef,
                                                 levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
                                                 blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
+                                                onNxRouteExecute = { route ->
+                                                    viewModel.setNxRoute(uiState.selectedTabIndex, route)
+                                                },
+                                                onNxRouteCancel = { pos ->
+                                                    viewModel.cancelNxRoute(uiState.selectedTabIndex, pos)
+                                                },
                                                 modifier = Modifier
                                                     .fillMaxHeight()
                                                     .weight(schematicWeight)
@@ -731,11 +739,6 @@ private fun NavContent(
                                 val leversWeight by animateFloatAsState(if (isSchematicVisibleLandscape) (1f - dragLandscapeWeight) else 1.0f)
                                 Column(modifier = Modifier.weight(leversWeight).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
                                     TopMenuBar(configState, uiState, viewModel)
-                                    ErrorBanners(
-                                        errorMessage = uiState.errorMessage,
-                                        networkError = uiState.networkError,
-                                        onDismissNetworkError = viewModel::dismissNetworkError
-                                    )
                                     BlockShelfGroup(domainState, configState, uiState, viewModel)
                                     LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
                                 }
@@ -750,6 +753,12 @@ private fun NavContent(
                                             tabDef = currentTabDef,
                                             levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
                                             blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
+                                            onNxRouteExecute = { route ->
+                                                viewModel.setNxRoute(uiState.selectedTabIndex, route)
+                                            },
+                                            onNxRouteCancel = { pos ->
+                                                viewModel.cancelNxRoute(uiState.selectedTabIndex, pos)
+                                            },
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .weight(schematicWeight)
@@ -796,6 +805,16 @@ private fun NavContent(
                                 LeverTrackGroup(domainState, configState, uiState, viewModel, soundPlayer)
                             }
                         }
+                    }
+                    
+                    // Floating Error Banners Overlay
+                    Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = if (isLandscapeCompact) 8.dp else 56.dp)) {
+                        ErrorBanners(
+                            errorMessage = uiState.errorMessage,
+                            networkError = uiState.networkError,
+                            onDismissErrorMessage = viewModel::dismissErrorMessage,
+                            onDismissNetworkError = viewModel::dismissNetworkError
+                        )
                     }
                 }
 }

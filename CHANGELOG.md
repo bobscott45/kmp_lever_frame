@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: Implemented a complete "Entrance-Exit" (NX) Routing Engine. Users can now tap an Entrance signal and an Exit signal on the active schematic to automatically establish complex routes.
+- **Logic**: The NX Routing Engine automatically traces track connections, determines the correct required states for all turnouts (straight or diverging), and throws the physical levers in sequence.
+- **Logic**: NX Routing automatically parses mathematical AST interlocking logic for requested signals to seamlessly resolve and pull out-of-path prerequisites like Facing Point Locks (FPLs), trap points, and flank protection turnouts.
+- **UI/UX**: NX Routes can be intuitively cancelled by double-tapping the Entrance button, or toggling the Entrance and Exit again. Cancellation safely drops all downstream signals on the route while leaving points in their last position to minimize mechanical wear.
+- **UI/UX**: NX Routing now features a floating error banner that gracefully catches and explains interlocking rejections (e.g., "Cannot set route: Track circuit occupied" or "Lever 4 is mechanically locked").
 - **Simulation**: Added a global "Simulation Mode" toggle in Behavior Settings. When enabled, it forces all hardware blocks to be manually interactive on the UI for logic testing, while safely suppressing Virtual Sensor network broadcasts to prevent injecting simulated events into a live physical layout.
 - **Network**: Implemented dynamic OpenLCB Configuration Description Information (CDI) generation. LeverFrame now dynamically constructs its CDI XML to expose all loaded Levers and Blocks (beautifully grouped into expandable sections by their configured Frame/Tab), as well as general network toggles (`LCC Master Mode`, `LCC Enabled`, `Restore Last State`). Memory mapping has been extended so you can view and edit the Name (Label) of both Levers and Blocks, as well as the Short Code of Blocks, directly from JMRI.
 - **Network**: Implemented Memory Space 253 (0xFD) read and write support. JMRI can now read and modify Lever Event IDs directly via the Configuration interface, and any changes will automatically persist to LeverFrame's native config file.

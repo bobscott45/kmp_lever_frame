@@ -60,5 +60,6 @@ data class TransientUiState(
     val initialEditLeverIndex: Int? = null,
     val errorMessage: String? = null,
     val networkError: String? = null,
-    val networkStatus: String = "Disconnected"
+    val networkStatus: String = "Disconnected",
+    val routeErrorCells: List<Pair<Int, Int>> = emptyList()
 )

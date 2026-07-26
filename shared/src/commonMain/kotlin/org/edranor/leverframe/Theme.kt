@@ -48,7 +48,7 @@ object LeverFrameTheme {
         val FrameBorder = Color(0xFF2b2b2b)
         val TabUnselected = Color.White
         
-        val ErrorText = Color.Red
+        val ErrorText = Color(0xFFa63c3c) // Softer, less aggressive red
     }
     
     object Animation {

@@ -18,6 +18,7 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 * **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
 * **Digital Block Shelf**: Define and monitor track occupancy blocks directly above the lever frame. 
 * **Live Track Schematic**: A reactive, grid-based panel diagram that dynamically renders live block occupancies and point positions, complete with a built-in visual layout editor.
+* **NX (Entrance-Exit) Routing**: Prototypical relay-style route setting! Simply tap an Entrance signal and an Exit signal on the live schematic, and the NX Routing Engine will automatically trace the track, calculate the required diverging points, throw the physical levers, and sequentially clear all required signals (and their dependencies like FPLs) with full interlocking safety checks.
 * **Cross-Interlocking & Auto-Reversers**: Interlock mechanical levers directly to digital block occupancies. Signals can be configured as "Auto-Reversers", automatically snapping back to Danger when a train enters a block, mimicking prototypical track-circuit interlocking.
 * **Touch UI**: Built with Compose Multiplatform, featuring dark modes and gesture-based lever pulling.
 * **Optional Sounds**: Configurable auditory feedback mimicking the physical clunks of mechanical levers, tappet locking, and block instrument bells.
