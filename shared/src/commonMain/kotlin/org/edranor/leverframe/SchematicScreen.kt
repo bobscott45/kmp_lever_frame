@@ -108,6 +108,41 @@ fun SchematicScreen(
                                     reachableExits = emptyList()
                                 }
                             }
+                        onDoubleTap = { offset ->
+                            val gridSizeX = gridDpX.toPx()
+                            val gridSizeY = tabDef.schematicGridSize.dp.toPx()
+                            val actualDrawingWidth = cellsX * gridSizeX
+                            val startX = (size.width - actualDrawingWidth) / 2f
+                            
+                            val clickedX = ((offset.x - startX) / gridSizeX).toInt()
+                            val clickedY = (offset.y / gridSizeY).toInt()
+                            val clickedPos = Pair(clickedX, clickedY)
+                            
+                            val clickedElem = tabDef.schematicElements.find { it.x == clickedX && it.y == clickedY }
+                            if (clickedElem != null && (clickedElem.nxButton == NxButtonType.ENTRANCE_ONLY || clickedElem.nxButton == NxButtonType.BOTH)) {
+                                onNxRouteCancel(clickedPos)
+                                activeNxStart = null
+                                reachableRoutes = emptyList()
+                                reachableExits = emptyList()
+                            }
+                        },
+                        onLongPress = { offset ->
+                            val gridSizeX = gridDpX.toPx()
+                            val gridSizeY = tabDef.schematicGridSize.dp.toPx()
+                            val actualDrawingWidth = cellsX * gridSizeX
+                            val startX = (size.width - actualDrawingWidth) / 2f
+                            
+                            val clickedX = ((offset.x - startX) / gridSizeX).toInt()
+                            val clickedY = (offset.y / gridSizeY).toInt()
+                            val clickedPos = Pair(clickedX, clickedY)
+                            
+                            val clickedElem = tabDef.schematicElements.find { it.x == clickedX && it.y == clickedY }
+                            if (clickedElem != null && (clickedElem.nxButton == NxButtonType.ENTRANCE_ONLY || clickedElem.nxButton == NxButtonType.BOTH)) {
+                                onNxRouteCancel(clickedPos)
+                                activeNxStart = null
+                                reachableRoutes = emptyList()
+                                reachableExits = emptyList()
+                            }
                         }
                     )
                 }
