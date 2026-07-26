@@ -178,7 +178,7 @@ object GridConnectNetwork {
      * Sends a GridConnect message (e.g. ":X195B4000N;") to the connected socket.
      */
     fun sendMessage(msg: String) {
-        if (writeChannel != null && writeChannel?.isClosedForWrite == false) {
+        if (writeChannel != null) {
             sendQueue.trySend(msg)
         } else {
             val errMsg = "GridConnect Not Connected. Cannot send: $msg"

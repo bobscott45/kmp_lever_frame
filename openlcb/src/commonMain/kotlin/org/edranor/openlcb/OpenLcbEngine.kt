@@ -248,7 +248,7 @@ object OpenLcbEngine : LccNetworkClient {
     private fun sendAliasMapDefinition() {
         try {
             val nodeId = getCleanNodeId()
-            val msg = ":X10701${NODE_ALIAS}N${nodeId};"
+            val msg = ":X10700${NODE_ALIAS}N${nodeId};"
             GridConnectNetwork.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send AMD: ${e.message}")
@@ -258,7 +258,7 @@ object OpenLcbEngine : LccNetworkClient {
     private fun sendInitializationComplete() {
         try {
             val nodeId = getCleanNodeId()
-            val msg = ":X19100${NODE_ALIAS}N${nodeId};"
+            val msg = ":X19087${NODE_ALIAS}N${nodeId};"
             GridConnectNetwork.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send Initialization Complete: ${e.message}")
