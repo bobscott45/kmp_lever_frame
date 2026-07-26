@@ -22,9 +22,14 @@ class NxRoutingService(
         val startElem = map[entrancePos]
         if (startElem != null && startElem.type.contains("SIGNAL") && startElem.linkedLever >= 0) {
             val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
-            val isReversed = levers.getOrNull(startElem.linkedLever)?.isReversed == true
-            if (isReversed) {
-                interlockingService.toggleLever(tabIndex, startElem.linkedLever, selectedTabIndex)
+            val isReversed1 = levers.getOrNull(startElem.linkedLever)?.isReversed == true
+            val isReversed2 = if (startElem.type.startsWith("BRACKET_SIGNAL") && startElem.linkedLever2 >= 0) {
+                levers.getOrNull(startElem.linkedLever2)?.isReversed == true
+            } else false
+            
+            if (isReversed1 || isReversed2) {
+                if (isReversed1) interlockingService.toggleLever(tabIndex, startElem.linkedLever, selectedTabIndex)
+                if (isReversed2) interlockingService.toggleLever(tabIndex, startElem.linkedLever2, selectedTabIndex)
                 
                 var currentQueue = listOf(startElem)
                 val visited = mutableSetOf<Pair<Int, Int>>()
