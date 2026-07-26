@@ -77,8 +77,8 @@ class NxRoutingService(
                             org.edranor.leverframe.RestoreOverride.DEFAULT -> tabDef.defaultRestorePointsOnCancel
                         }
                     }
-                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" && isRestoring(tabDef.levers[it]) }
-                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" && isRestoring(tabDef.levers[it]) }
+                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "BROWN" && isRestoring(tabDef.levers[it]) }
+                    val pointLevers = tabDef.levers.indices.filter { (tabDef.levers[it].type.name == "POINTS" || tabDef.levers[it].type.name == "FACING_POINTS") && isRestoring(tabDef.levers[it]) }
                     
                     // Unplunge specific FPLs
                     for (fplIdx in fplLevers) {
@@ -234,8 +234,8 @@ class NxRoutingService(
         }
         
         // Simulate the correct signalman sequence: Unplunge FPLs -> Move Points -> Replunge FPLs
-        val fplLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "FACING_POINTS" }
-        val pointLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "POINTS" }
+        val fplLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "BROWN" }
+        val pointLevers = requiredLeverStates.keys.filter { val t = tabDef.levers.getOrNull(it)?.type?.name; t == "POINTS" || t == "FACING_POINTS" }
         val otherLevers = requiredLeverStates.keys.filter { !fplLevers.contains(it) && !pointLevers.contains(it) }
         
         // 1) Unplunge all FPLs (move to Normal)

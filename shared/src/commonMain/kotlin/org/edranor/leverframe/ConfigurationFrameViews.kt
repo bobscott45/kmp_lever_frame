@@ -183,6 +183,17 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
             newTabs[selectedFrameIndex] = tab.copy(default_restore_points = it)
             onConfigChange(config.copy(tabs = newTabs))
         }
+        
+        var showRestoreInfo by remember { mutableStateOf(false) }
+        
+        if (showRestoreInfo) {
+            AlertDialog(
+                onDismissRequest = { showRestoreInfo = false },
+                title = { Text("Default Restore Points") },
+                text = { Text("If enabled, when an NX route is cancelled, any FPLs and Points that were moved by the route will attempt to restore to their Normal positions (unless overridden in their individual Lever settings).") },
+                confirmButton = { TextButton(onClick = { showRestoreInfo = false }) { Text("OK") } }
+            )
+        }
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             if (maxWidth < 600.dp) {
@@ -206,6 +217,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Checkbox(checked = tab.default_restore_points, onCheckedChange = updateDefaultRestorePoints)
                         Text("Default Restore Points/FPLs to Normal on NX Route Cancel")
+                        IconButton(onClick = { showRestoreInfo = true }) { Text("ℹ️", style = MaterialTheme.typography.bodyLarge) }
                     }
                 }
             } else {
@@ -234,6 +246,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Checkbox(checked = tab.default_restore_points, onCheckedChange = updateDefaultRestorePoints)
                             Text("Default Restore Points to Normal on Cancel")
+                            IconButton(onClick = { showRestoreInfo = true }) { Text("ℹ️", style = MaterialTheme.typography.bodyLarge) }
                         }
                     }
                 }
