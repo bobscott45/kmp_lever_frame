@@ -155,8 +155,12 @@ class NxRoutingService(
         val startElemCheck = map[route.pathCells.firstOrNull()]
         if (startElemCheck != null && startElemCheck.type.contains("SIGNAL") && startElemCheck.linkedLever >= 0) {
             val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
-            val isReversed = levers.getOrNull(startElemCheck.linkedLever)?.isReversed == true
-            if (isReversed) {
+            val isReversed1 = levers.getOrNull(startElemCheck.linkedLever)?.isReversed == true
+            val isReversed2 = if (startElemCheck.type.startsWith("BRACKET_SIGNAL") && startElemCheck.linkedLever2 >= 0) {
+                levers.getOrNull(startElemCheck.linkedLever2)?.isReversed == true
+            } else false
+            
+            if (isReversed1 || isReversed2) {
                 return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
             }
         }
