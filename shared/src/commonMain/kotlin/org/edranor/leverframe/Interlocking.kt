@@ -42,6 +42,12 @@ enum class LeverType {
     SPARE
 }
 
+enum class RestoreOverride {
+    DEFAULT,
+    ALWAYS,
+    NEVER
+}
+
 data class LeverDef(
     val conditions: List<InterlockingCondition> = emptyList(),
     val type: LeverType = LeverType.SPARE,
@@ -51,7 +57,7 @@ data class LeverDef(
     val lcc_enabled: Boolean = true,
     val autoReverser: Boolean = false,
     val logic: AstNode? = null,
-    val restoreOnCancel: Boolean = false
+    val restoreOverride: RestoreOverride = RestoreOverride.DEFAULT
 )
 
 enum class BlockMode {
@@ -115,6 +121,7 @@ data class TabDef(
     val useShortCodes: Boolean = false,
     val useShortCodesInIndicators: Boolean = false,
     val schematicGridSize: Int = 40,
+    val defaultRestorePointsOnCancel: Boolean = false,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

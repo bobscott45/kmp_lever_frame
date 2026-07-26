@@ -178,6 +178,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
             newTabs[selectedFrameIndex] = tab.copy(use_short_codes_in_indicators = it)
             onConfigChange(config.copy(tabs = newTabs))
         }
+        val updateDefaultRestorePoints: (Boolean) -> Unit = {
+            val newTabs = config.tabs.toMutableList()
+            newTabs[selectedFrameIndex] = tab.copy(default_restore_points = it)
+            onConfigChange(config.copy(tabs = newTabs))
+        }
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             if (maxWidth < 600.dp) {
@@ -197,6 +202,10 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Checkbox(checked = tab.use_short_codes_in_indicators, onCheckedChange = updateUseShortCodesInIndicators)
                         Text("Use Short Codes in Block Indicators")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Checkbox(checked = tab.default_restore_points, onCheckedChange = updateDefaultRestorePoints)
+                        Text("Default Restore Points/FPLs to Normal on NX Route Cancel")
                     }
                 }
             } else {
@@ -219,6 +228,10 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Checkbox(checked = tab.use_short_codes_in_indicators, onCheckedChange = updateUseShortCodesInIndicators)
                             Text("Use Short Codes in Block Indicators")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Checkbox(checked = tab.default_restore_points, onCheckedChange = updateDefaultRestorePoints)
+                            Text("Default Restore Points to Normal on Cancel")
                         }
                     }
                 }

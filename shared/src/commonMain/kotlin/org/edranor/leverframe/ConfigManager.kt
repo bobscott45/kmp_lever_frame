@@ -82,6 +82,7 @@ data class JsonTab(
     val use_short_codes: Boolean = false,
     val use_short_codes_in_indicators: Boolean = false,
     val schematic_grid_size: Int = 40,
+    val default_restore_points: Boolean = false,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -117,7 +118,7 @@ data class JsonLever(
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
     val auto_reverser: Boolean = false,
-    val restore_on_cancel: Boolean = false,
+    val restore_override: String = "DEFAULT",
     val interlocking: List<JsonInterlocking> = emptyList(),
     val ast_logic: AstNode? = null
 )
@@ -201,7 +202,7 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                     lcc_event_reversed = if (reversedSuffix.isNotBlank()) "${config.node_id}.$reversedSuffix" else "",
                     lcc_enabled = jsonLever.lcc_enabled,
                     autoReverser = jsonLever.auto_reverser,
-                    restoreOnCancel = jsonLever.restore_on_cancel,
+                    restoreOverride = try { org.edranor.leverframe.RestoreOverride.valueOf(jsonLever.restore_override) } catch (e: Exception) { org.edranor.leverframe.RestoreOverride.DEFAULT },
                     logic = logicNode
                 )
             }
@@ -249,6 +250,7 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 useShortCodes = jsonTab.use_short_codes,
                 useShortCodesInIndicators = jsonTab.use_short_codes_in_indicators,
                 schematicGridSize = jsonTab.schematic_grid_size,
+                defaultRestorePointsOnCancel = jsonTab.default_restore_points,
                 blocks = blocks,
                 schematicElements = schematicElements
             )

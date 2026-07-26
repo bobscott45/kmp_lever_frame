@@ -70,8 +70,15 @@ class NxRoutingService(
                 // It will gracefully fail and leave them Reversed if they are locked by another active route.
                 val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
                 if (postSignalLevers != null) {
-                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" && tabDef.levers[it].restoreOnCancel }
-                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" && tabDef.levers[it].restoreOnCancel }
+                    val isRestoring = { leverDef: org.edranor.leverframe.LeverDef ->
+                        when (leverDef.restoreOverride) {
+                            org.edranor.leverframe.RestoreOverride.ALWAYS -> true
+                            org.edranor.leverframe.RestoreOverride.NEVER -> false
+                            org.edranor.leverframe.RestoreOverride.DEFAULT -> tabDef.defaultRestorePointsOnCancel
+                        }
+                    }
+                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" && isRestoring(tabDef.levers[it]) }
+                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" && isRestoring(tabDef.levers[it]) }
                     
                     // Unplunge specific FPLs
                     for (fplIdx in fplLevers) {
