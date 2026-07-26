@@ -65,6 +65,13 @@ Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or 
 
 *(Note regarding iOS distribution: Due to Apple's developer program fees and maintenance overhead, pre-compiled iOS binaries are not provided via the App Store. However, because the source code is fully available under the GPLv3 license, iOS users with a Mac can open the project in Xcode and compile/install it directly to their iPads at no cost.)*
 
+### Running Tests
+Tests live under the `shared/` and `:openlcb` modules and run on the host JVM.
+- **Run all common and JVM tests**: `./gradlew check`
+- **Run Android host tests**: `./gradlew :shared:testAndroidHostTest`
+- **Run Desktop (JVM) tests**: `./gradlew :shared:jvmTest`
+- **Run a single test class**: `./gradlew :shared:jvmTest --tests "org.edranor.leverframe.AppViewModelTest"`
+
 ## Example Interlocking Configuration
 
 The app includes a prototypical demonstration configuration by default, showcasing sequential signaling, mutually locking facing points, and conditional 'OR' route locking.
