@@ -1,5 +1,7 @@
 package org.edranor.leverframe
 
+import org.edranor.openlcb.LccNetworkClient
+
 class NetworkEventProcessor(
     private val lccClient: LccNetworkClient,
     private val configRepo: ConfigurationRepository

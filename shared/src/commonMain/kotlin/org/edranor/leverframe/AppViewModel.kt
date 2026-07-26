@@ -21,6 +21,7 @@
  */
 package org.edranor.leverframe
 
+import org.edranor.openlcb.LccNetworkClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
