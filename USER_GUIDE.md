@@ -74,6 +74,7 @@ This controls the top-level behavior of the application and its connection to th
 *   **JMRI Hub IP**: If you are using JMRI to bridge Wi-Fi LCC events to a physical CAN bus, enter the IP address of the JMRI computer here. The app connects to port `12021` automatically.
 *   **Wi-Fi Settings (SSID & Passwords)**: Used by the application to manage network connectivity.
 *   **Conflict Policy**: Determines how the application resolves situations where the internal lever state differs from a received network event.
+*   **Simulation Mode**: If enabled, forces all block indicators to be manually clickable for interactive testing of interlocking logic, overriding any physical sensor constraints. It also safely suppresses Virtual Sensor broadcasts to prevent injecting fake events into a live layout.
 *   **Restore Last State**: When enabled, the application saves the position of all levers when closed and restores them upon restart.
 *   **LCC Enabled**: Toggles whether the application connects to the OpenLCB/LCC network at all. When enabled, it performs normal LCC startup and broadcasts current states. When disabled, the app is completely isolated from the network.
 *   **Remote CDI Configuration**: If connected to an LCC network, almost all of these system settings (and individual lever/block Event IDs and labels) can be remotely configured using JMRI's OpenLCB Configuration window.
@@ -160,9 +161,12 @@ If you modify structural elements—such as adding/deleting a lever or block, or
 Similar to levers, existing blocks are listed on the main tab and can be reordered using the **↑** and **↓** arrows. Pressing on a block description will open a dedicated **Block Detail Screen**. The block configuration options are displayed sequentially on this screen:
 
 * **Basic Info**: Configure the block's **Label** (Max 23 characters), which determines the text displayed on the Digital Block Shelf, and its **Short Code** (Max 7 characters) for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
-* **LCC Events**: 
-    * **Broadcast Occupancy Changes**: If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Clear events to the LCC network.
-    * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Clear" when received from the network.
+* **Hardware & LCC Events**: 
+    * **Block Operating Mode**: Choose between three operational modes for the digital block shelf:
+        * **Hardware Sensor (Read-Only)**: The UI block cannot be clicked. It only updates its occupied/clear state when it receives the configured Event IDs from your physical layout network.
+        * **Virtual Sensor (Broadcasts)**: The UI block can be clicked manually. When toggled, it broadcasts the corresponding Event IDs to the network to act as a simulated train for the rest of your layout.
+        * **Local Only (No Broadcast)**: The UI block can be clicked manually, but does NOT broadcast to the network. It only updates your internal Lever Frame interlocking logic.
+    * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Clear" when received from the network (or the events it will broadcast if set to Virtual Sensor mode).
 
 ### Schematic Editor
 

@@ -66,6 +66,7 @@ data class JsonConfig(
     val schematic_weight_portrait: Float = 0.25f,
     val rule_editor_mode: String = "CLAUSE_BUILDER",
     val rule_display_mode: String = "LOCKING_TABLE",
+    val sim_mode: Boolean = false,
     val tabs: List<JsonTab> = emptyList()
 )
 
@@ -102,7 +103,7 @@ data class JsonBlock(
     val short_code: String = "",
     val lcc_event_occupied: String = "",
     val lcc_event_empty: String = "",
-    val broadcast_toggles: Boolean = false
+    val mode: String = "LOCAL_ONLY"
 )
 
 @Serializable
@@ -204,12 +205,14 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 val occupiedSuffix = extractSuffix(jsonBlock.lcc_event_occupied, config.node_id)
                 val emptySuffix = extractSuffix(jsonBlock.lcc_event_empty, config.node_id)
                 
+                val mode = try { BlockMode.valueOf(jsonBlock.mode) } catch (e: Exception) { BlockMode.LOCAL_ONLY }
+                
                 BlockDef(
                     label = jsonBlock.label,
                     shortCode = jsonBlock.short_code,
                     lcc_event_occupied = if (occupiedSuffix.isNotBlank()) "${config.node_id}.$occupiedSuffix" else "",
                     lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else "",
-                    broadcastToggles = jsonBlock.broadcast_toggles
+                    mode = mode
                 )
             }
             

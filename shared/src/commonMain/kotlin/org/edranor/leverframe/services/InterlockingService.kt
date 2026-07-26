@@ -236,7 +236,7 @@ class InterlockingService(
                 }
                 
                 val blockDef = tabDef.blocks[blockIndex]
-                if (blockDef.broadcastToggles) {
+                if (blockDef.mode == org.edranor.leverframe.BlockMode.VIRTUAL_SENSOR && !configState.config.sim_mode) {
                     val isOccupied = newBlocks[blockIndex].isOccupied
                     val eventStr = if (isOccupied) blockDef.lcc_event_occupied else blockDef.lcc_event_empty
                     if (eventStr.isNotBlank()) {

@@ -528,12 +528,20 @@ fun BlockShelfGroup(
                     val isOccupied = if (index < blocks.size) blocks[index].isOccupied else true
                     val baseLabel = if (currentTabDef.useShortCodesInIndicators && blockDef.shortCode.isNotBlank()) blockDef.shortCode else blockDef.label
                     val labelText = if (currentTabDef.showBlockNumbers) "${index + 1} $baseLabel" else baseLabel
+                    
+                    val canClick = when {
+                        configState.config.sim_mode -> true
+                        blockDef.mode == org.edranor.leverframe.BlockMode.HARDWARE_SENSOR -> false
+                        else -> true
+                    }
+                    
                     BlockIndicator(
-                        label = labelText, 
+                        label = labelText,
                         isOccupied = isOccupied,
                         layout = currentTabDef.blockLayout,
                         fontSize = currentTabDef.blockLabelSize,
-                        onToggle = { viewModel.toggleBlockState(uiState.selectedTabIndex, index) }
+                        enabled = canClick,
+                        onToggle = { if (canClick) viewModel.toggleBlockState(uiState.selectedTabIndex, index) }
                     )
                 }
             }
@@ -547,6 +555,7 @@ fun BlockIndicator(
     isOccupied: Boolean,
     layout: String,
     fontSize: Int,
+    enabled: Boolean = true,
     onToggle: () -> Unit
 ) {
     val ledSize = (fontSize * 1.2f).dp
@@ -578,7 +587,7 @@ fun BlockIndicator(
             modifier = Modifier
                 .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
                 .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
-                .clickable { onToggle() }
+                .clickable(enabled = enabled) { onToggle() }
                 .padding(horizontal = hPad, vertical = vPad)
         ) {
             content()
@@ -589,7 +598,7 @@ fun BlockIndicator(
             modifier = Modifier
                 .background(Color(0xFF4A2511), RoundedCornerShape(4.dp)) // Richer Mahogany
                 .border(1.dp, Color(0xFF6B3E26), RoundedCornerShape(4.dp))
-                .clickable { onToggle() }
+                .clickable(enabled = enabled) { onToggle() }
                 .padding(horizontal = hPad, vertical = vPad)
         ) {
             content()

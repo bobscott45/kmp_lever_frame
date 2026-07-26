@@ -50,7 +50,7 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
                     )
                 },
                 blocks = tab.blocks.map { block ->
-                    block.copy(lcc_event_occupied = "", lcc_event_empty = "", broadcast_toggles = false)
+                    block.copy(lcc_event_occupied = "", lcc_event_empty = "", mode = "LOCAL_ONLY")
                 }
             )
         }

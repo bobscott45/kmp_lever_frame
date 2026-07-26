@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **Simulation**: Added a global "Simulation Mode" toggle in Behavior Settings. When enabled, it forces all hardware blocks to be manually interactive on the UI for logic testing, while safely suppressing Virtual Sensor network broadcasts to prevent injecting simulated events into a live physical layout.
 - **Network**: Implemented dynamic OpenLCB Configuration Description Information (CDI) generation. LeverFrame now dynamically constructs its CDI XML to expose all loaded Levers and Blocks (beautifully grouped into expandable sections by their configured Frame/Tab), as well as general network toggles (`LCC Master Mode`, `LCC Enabled`, `Restore Last State`). Memory mapping has been extended so you can view and edit the Name (Label) of both Levers and Blocks, as well as the Short Code of Blocks, directly from JMRI.
 - **Network**: Implemented Memory Space 253 (0xFD) read and write support. JMRI can now read and modify Lever Event IDs directly via the Configuration interface, and any changes will automatically persist to LeverFrame's native config file.
 - **Network**: Fixed an issue where JMRI interpreted CDI group `<offset>` attributes differently than expected, causing the memory map to be misaligned by exactly 3 bytes and display shifted Event IDs (e.g. `00.00.00.00.00.11.81.00`). Memory is now strictly sequential.
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Implemented a resizable, draggable layout divider between the schematic and lever views, with persistent layout weights.
 
 ### Changed
+- **UI/UX**: Replaced conflicting boolean flags for Block Configuration (`has_physical_sensor` and `broadcast_toggles`) with a single, unambiguous "Block Operating Mode" dropdown (Hardware Sensor, Virtual Sensor, Local Only).
 - **Architecture**: Extracted OpenLCB CDI memory allocation sizes (Label and Short Code lengths) into a centralized `OpenLcbConstants` object to ensure the UI constraint filters and the CDI memory map logic remain perfectly in sync.
 - **UI/UX**: Fixed frame settings layout on mobile portrait mode to intelligently display configuration checkboxes 1 per row instead of 2.
 - **UI/UX**: Formatted configuration dropdown menus (Lever Type, Required State) to display human-readable strings (e.g., "Distant Signal") rather than raw enum constants.

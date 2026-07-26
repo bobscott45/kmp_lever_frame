@@ -384,6 +384,12 @@ private fun GlobalNetworkSettings(config: JsonConfig, onConfigChange: (JsonConfi
 private fun BehaviorSettings(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {
     Text("Behavior Settings", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
     SettingSwitchRow(
+        label = "Simulation Mode", 
+        checked = config.sim_mode,
+        infoText = "If enabled, forces all block indicators to be manually clickable for interactive testing, overriding physical sensor settings."
+    ) { onConfigChange(config.copy(sim_mode = it)) }
+
+    SettingSwitchRow(
         label = "Restore Last State", 
         checked = config.restore_last_state,
         infoText = "If enabled, LeverFrame will remember the physical position of all levers between app sessions and restore them when restarted."
@@ -1056,15 +1062,31 @@ fun BlockDetailScreen(
                 // LCC Events Group
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("LCC Events", style = MaterialTheme.typography.titleSmall, color = LeverFrameTheme.Colors.Brass)
-                        
-                        SettingSwitchRow(
-                            label = "Broadcast Occupancy Changes",
-                            checked = block.broadcast_toggles,
-                            infoText = "If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Empty events to the LCC network.",
-                            textStyle = MaterialTheme.typography.bodyMedium,
-                            textColor = Color.White
-                        ) { onBlockChange(block.copy(broadcast_toggles = it)) }
+                        var modeExpanded by remember { mutableStateOf(false) }
+                        val modes = mapOf(
+                            "HARDWARE_SENSOR" to "Hardware Sensor (Read-Only)",
+                            "VIRTUAL_SENSOR" to "Virtual Sensor (Broadcasts)",
+                            "LOCAL_ONLY" to "Local Only (No Broadcast)"
+                        )
+                        ExposedDropdownMenuBox(expanded = modeExpanded, onExpandedChange = { modeExpanded = !modeExpanded }) {
+                            OutlinedTextField(
+                                value = modes[block.mode] ?: block.mode,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Block Operating Mode") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = modeExpanded) },
+                                modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                colors = brassTextFieldColors()
+                            )
+                            ExposedDropdownMenu(expanded = modeExpanded, onDismissRequest = { modeExpanded = false }) {
+                                modes.forEach { (mode, label) ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) }, 
+                                        onClick = { onBlockChange(block.copy(mode = mode)); modeExpanded = false }
+                                    )
+                                }
+                            }
+                        }
                         
                         val prefix = if (nodeId.isNotBlank()) "$nodeId." else ""
                         
