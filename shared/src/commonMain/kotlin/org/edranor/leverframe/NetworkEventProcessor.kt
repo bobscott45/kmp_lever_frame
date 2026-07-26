@@ -77,9 +77,16 @@ class NetworkEventProcessor(
 
             // Evaluate auto-reversers (cascade until steady state)
             val mutableLevers = newFrames[tabIdx].levers.toMutableList()
-            if (Interlocking.applyCascades(tabDef, mutableLevers, newFrames[tabIdx].blocks, outgoingEvents)) {
+            val cascadedLeverIndices = Interlocking.applyCascades(tabDef, mutableLevers, newFrames[tabIdx].blocks)
+            if (cascadedLeverIndices.isNotEmpty()) {
                 newFrames[tabIdx] = newFrames[tabIdx].copy(levers = mutableLevers)
                 stateChanged = true
+                cascadedLeverIndices.forEach { leverIdx ->
+                    val lDef = tabDef.levers[leverIdx]
+                    if (lDef.lcc_event_normal.isNotBlank()) {
+                        outgoingEvents.add(lDef.lcc_event_normal)
+                    }
+                }
             }
         } // end forEachIndexed
 

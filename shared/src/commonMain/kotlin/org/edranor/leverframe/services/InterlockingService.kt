@@ -227,7 +227,13 @@ class InterlockingService(
                 val tabDef = configState.tabs[tabIndex].second
                 
                 // Evaluate auto-reversers (cascade until steady state)
-                Interlocking.applyCascades(tabDef, newLevers, newBlocks, outgoingEvents)
+                val cascadedLeverIndices = Interlocking.applyCascades(tabDef, newLevers, newBlocks)
+                cascadedLeverIndices.forEach { leverIdx ->
+                    val lDef = tabDef.levers[leverIdx]
+                    if (lDef.lcc_event_normal.isNotBlank()) {
+                        outgoingEvents.add(lDef.lcc_event_normal)
+                    }
+                }
                 
                 val blockDef = tabDef.blocks[blockIndex]
                 if (blockDef.broadcastToggles) {
