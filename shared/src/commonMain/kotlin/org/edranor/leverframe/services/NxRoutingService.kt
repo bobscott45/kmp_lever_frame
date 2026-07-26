@@ -24,10 +24,14 @@ class NxRoutingService(
         var actualEntrancePos = entrancePos
         val clickedElem = map[entrancePos]
         
+        println("cancelNxRoute: entrancePos=$entrancePos, clickedElem=${clickedElem?.type}")
+        
         val isClickedSignalReversed = clickedElem != null && clickedElem.type.contains("SIGNAL") && clickedElem.linkedLever >= 0 && (
             levers.getOrNull(clickedElem.linkedLever)?.isReversed == true || 
             (clickedElem.type.startsWith("BRACKET_SIGNAL") && clickedElem.linkedLever2 >= 0 && levers.getOrNull(clickedElem.linkedLever2)?.isReversed == true)
         )
+        
+        println("cancelNxRoute: isClickedSignalReversed=$isClickedSignalReversed")
         
         if (!isClickedSignalReversed) {
             val reversedSignals = tabDef.schematicElements.filter { it.type.contains("SIGNAL") && it.linkedLever >= 0 && (
@@ -160,7 +164,9 @@ class NxRoutingService(
                 levers.getOrNull(startElemCheck.linkedLever2)?.isReversed == true
             } else false
             
+            println("setNxRoute: startElemCheck=${startElemCheck.type}, isReversed1=$isReversed1, isReversed2=$isReversed2")
             if (isReversed1 || isReversed2) {
+                println("setNxRoute: delegating to cancelNxRoute")
                 return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
             }
         }
