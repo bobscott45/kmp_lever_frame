@@ -36,6 +36,7 @@ The `AppViewModel` acts as the single source of truth for the application's stat
 The brain of the lever frame.
 *   It evaluates the `LeverDef` rules (locks, conditional "OR" logic, Facing Point Locks) against the current state of all levers AND blocks in real-time.
 *   **Cross-Interlocking**: Levers can interlock not only against other levers but also against digital block states (e.g., TargetType.BLOCK), allowing for prototypical track-circuit locking.
+*   **Rule Validation**: Employs a `RuleValidator` utilizing a hybrid BFS and Dependency Graph trace to detect circular dependencies and illogical lock configurations before they compromise the engine.
 *   When a user attempts to move a lever, the `AppViewModel` queries this engine to determine if the move is legal based on both lever and block occupancies.
 *   The logic aims to exactly replicate physical mechanical tappet locking mechanisms found in prototypical signal boxes, enhanced with electro-mechanical track circuit interactions.
 
