@@ -7,6 +7,8 @@ import org.edranor.openlcb.LccNetworkClient
 import org.edranor.leverframe.LccNode
 import org.edranor.leverframe.AppViewModel
 import org.edranor.leverframe.NetworkEventProcessor
+import org.edranor.leverframe.services.ConfigurationService
+import org.edranor.leverframe.services.InterlockingService
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -15,5 +17,7 @@ val appModule = module {
     single<StatePersistenceRepository> { ConfigManager }
     single<LccNetworkClient> { LccNode }
     single { NetworkEventProcessor(get(), get()) }
+    single { ConfigurationService(get()) }
+    single { InterlockingService(get(), get(), get(), get(), get()) }
     viewModelOf(::AppViewModel)
 }

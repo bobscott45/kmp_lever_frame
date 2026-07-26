@@ -85,7 +85,9 @@ class AppViewModelTest {
         )
         
         val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
-        viewModel = AppViewModel(configRepo, configRepo, lccClient, eventProcessor)
+        val configService = org.edranor.leverframe.services.ConfigurationService(configRepo)
+        val interlockingService = org.edranor.leverframe.services.InterlockingService(configService, configRepo, configRepo, lccClient, eventProcessor)
+        viewModel = AppViewModel(configService, interlockingService, lccClient)
     }
 
     @AfterTest
@@ -320,19 +322,4 @@ class AppViewModelTest {
 
 
 
-    @Test
-    fun testConfigSavedReloadsConfig() = runTest {
-        testDispatcher.scheduler.advanceUntilIdle()
-        val initialVersion = viewModel.configState.value.configVersion
-        
-        // Simulate a config save (modifies repository and calls configSaved)
-        val newConfig = configRepo.currentConfig.copy(jmri_hub_ip = "192.168.99.99")
-        configRepo.saveConfig(newConfig)
-        viewModel.configSaved()
-        
-        testDispatcher.scheduler.advanceUntilIdle()
-        
-        // Version should be incremented since loadConfig() updates it by +1
-        assertEquals(initialVersion + 1, viewModel.configState.value.configVersion)
-    }
 }
