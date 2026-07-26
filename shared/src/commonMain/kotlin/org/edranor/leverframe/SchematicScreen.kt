@@ -120,7 +120,7 @@ fun SchematicScreen(
                             val clickedPos = Pair(clickedX, clickedY)
                             
                             val clickedElem = tabDef.schematicElements.find { it.x == clickedX && it.y == clickedY }
-                            if (clickedElem != null && (clickedElem.nxButton == NxButtonType.ENTRANCE_ONLY || clickedElem.nxButton == NxButtonType.BOTH)) {
+                            if (clickedElem != null && clickedElem.nxButton != NxButtonType.NONE) {
                                 onNxRouteCancel(clickedPos)
                                 activeNxStart = null
                                 reachableRoutes = emptyList()
@@ -138,7 +138,7 @@ fun SchematicScreen(
                             val clickedPos = Pair(clickedX, clickedY)
                             
                             val clickedElem = tabDef.schematicElements.find { it.x == clickedX && it.y == clickedY }
-                            if (clickedElem != null && (clickedElem.nxButton == NxButtonType.ENTRANCE_ONLY || clickedElem.nxButton == NxButtonType.BOTH)) {
+                            if (clickedElem != null && clickedElem.nxButton != NxButtonType.NONE) {
                                 onNxRouteCancel(clickedPos)
                                 activeNxStart = null
                                 reachableRoutes = emptyList()

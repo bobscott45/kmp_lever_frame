@@ -19,9 +19,56 @@ class NxRoutingService(
         val tabDef = configService.configState.value.tabs.getOrNull(tabIndex)?.second ?: return NxRoutingResult.Error("Configuration not found")
         val map = tabDef.schematicElements.associateBy { Pair(it.x, it.y) }
         
-        val startElem = map[entrancePos]
+        val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
+        
+        var actualEntrancePos = entrancePos
+        val clickedElem = map[entrancePos]
+        
+        val isClickedSignalReversed = clickedElem != null && clickedElem.type.contains("SIGNAL") && clickedElem.linkedLever >= 0 && (
+            levers.getOrNull(clickedElem.linkedLever)?.isReversed == true || 
+            (clickedElem.type.startsWith("BRACKET_SIGNAL") && clickedElem.linkedLever2 >= 0 && levers.getOrNull(clickedElem.linkedLever2)?.isReversed == true)
+        )
+        
+        if (!isClickedSignalReversed) {
+            val reversedSignals = tabDef.schematicElements.filter { it.type.contains("SIGNAL") && it.linkedLever >= 0 && (
+                levers.getOrNull(it.linkedLever)?.isReversed == true ||
+                (it.type.startsWith("BRACKET_SIGNAL") && it.linkedLever2 >= 0 && levers.getOrNull(it.linkedLever2)?.isReversed == true)
+            ) }
+            
+            var foundStart: Pair<Int, Int>? = null
+            for (sig in reversedSignals) {
+                var q = listOf(sig)
+                val v = mutableSetOf(Pair(sig.x, sig.y))
+                var reached = false
+                while (q.isNotEmpty()) {
+                    val nq = mutableListOf<org.edranor.leverframe.SchematicElementDef>()
+                    for (e in q) {
+                        if (e.x == entrancePos.first && e.y == entrancePos.second) {
+                            reached = true
+                            break
+                        }
+                        val conns = NxRoutingEngine.getConnections(e, map)
+                        for (c in conns) {
+                            if (v.add(c)) {
+                                map[c]?.let { nq.add(it) }
+                            }
+                        }
+                    }
+                    if (reached) break
+                    q = nq
+                }
+                if (reached) {
+                    foundStart = Pair(sig.x, sig.y)
+                    break
+                }
+            }
+            if (foundStart != null) {
+                actualEntrancePos = foundStart
+            }
+        }
+        
+        val startElem = map[actualEntrancePos]
         if (startElem != null && startElem.type.contains("SIGNAL") && startElem.linkedLever >= 0) {
-            val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
             val isReversed1 = levers.getOrNull(startElem.linkedLever)?.isReversed == true
             val isReversed2 = if (startElem.type.startsWith("BRACKET_SIGNAL") && startElem.linkedLever2 >= 0) {
                 levers.getOrNull(startElem.linkedLever2)?.isReversed == true
@@ -33,7 +80,7 @@ class NxRoutingService(
                 
                 var currentQueue = listOf(startElem)
                 val visited = mutableSetOf<Pair<Int, Int>>()
-                visited.add(entrancePos)
+                visited.add(actualEntrancePos)
                 
                 while (currentQueue.isNotEmpty()) {
                     val nextQueue = mutableListOf<org.edranor.leverframe.SchematicElementDef>()
@@ -77,8 +124,8 @@ class NxRoutingService(
                             org.edranor.leverframe.RestoreOverride.DEFAULT -> tabDef.defaultRestorePointsOnCancel
                         }
                     }
-                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "BROWN" && isRestoring(tabDef.levers[it]) }
-                    val pointLevers = tabDef.levers.indices.filter { (tabDef.levers[it].type.name == "POINTS" || tabDef.levers[it].type.name == "FACING_POINTS") && isRestoring(tabDef.levers[it]) }
+                    val fplLevers = tabDef.levers.indices.filter { (tabDef.levers[it].type.name == "FACING_POINTS" || tabDef.levers[it].type.name == "BROWN") && isRestoring(tabDef.levers[it]) }
+                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" && isRestoring(tabDef.levers[it]) }
                     
                     // Unplunge specific FPLs
                     for (fplIdx in fplLevers) {
@@ -234,8 +281,8 @@ class NxRoutingService(
         }
         
         // Simulate the correct signalman sequence: Unplunge FPLs -> Move Points -> Replunge FPLs
-        val fplLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "BROWN" }
-        val pointLevers = requiredLeverStates.keys.filter { val t = tabDef.levers.getOrNull(it)?.type?.name; t == "POINTS" || t == "FACING_POINTS" }
+        val fplLevers = requiredLeverStates.keys.filter { val t = tabDef.levers.getOrNull(it)?.type?.name; t == "FACING_POINTS" || t == "BROWN" }
+        val pointLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "POINTS" }
         val otherLevers = requiredLeverStates.keys.filter { !fplLevers.contains(it) && !pointLevers.contains(it) }
         
         // 1) Unplunge all FPLs (move to Normal)
