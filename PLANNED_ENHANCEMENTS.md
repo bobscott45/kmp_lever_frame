@@ -7,18 +7,11 @@ This document tracks mid-to-long term architectural goals and planned features f
 ### The Goal
 Extract the OpenLCB/LCC networking layer from `LeverFrame` into a generic, standalone Kotlin Multiplatform (KMP) library (e.g., `kmp-openlcb`). This allows the networking logic to be reused across other model railway or IoT projects.
 
-### The Challenge: Configuration Description Information (CDI)
-To be a truly generic and useful OpenLCB library, the standalone module must support standard node configuration protocols, specifically **CDI (Configuration Description Information)** and **SNIP (Simple Node Information Protocol)**.
-
-Currently, LeverFrame only speaks the CAN "Event" protocol (MTIs like Producer Identified). CDI configuration, however, relies on:
-1. **Datagrams**: Multi-frame messages requiring assembly and Ack/Nak responses.
-2. **Memory Configuration Protocol**: Read/Write commands targeting specific 24-bit memory address spaces.
-
 ### Implementation Strategy
 
-LeverFrame has already implemented the required foundational network protocols natively (SNIP, Datagrams, Memory Configuration). Rather than a static stub, it now dynamically generates and serves a full CDI schema based on its configuration, enabling remote read/write memory mapping for Event IDs and text labels directly from JMRI.
+The required foundational network protocols have already been implemented natively (SNIP, Datagrams, Memory Configuration, and a dynamic CDI XML schema generator).
 
-Therefore, the separation of concerns between the new `kmp-openlcb` library and the `LeverFrame` application should look like this:
+The separation of concerns between the new `kmp-openlcb` library and the `LeverFrame` application should look like this:
 
 #### The Generic Library (`kmp-openlcb`)
 Provides the low-level plumbing:
@@ -34,12 +27,9 @@ Plugs into the library's plumbing:
 
 ### Proposed Roadmap
 
-With the networking logic now fully supporting SNIP, Datagrams, Memory Configuration, and CDI natively within the `LccNode` object, the final step is extraction:
+With the networking logic now fully supporting the required protocols, the final step is extraction:
 
-1. **Phase 1: SNIP Implementation** - *(Completed)*
-2. **Phase 2: Datagram Transport Layer** - *(Completed)*
-3. **Phase 3: Memory Config & Dynamic CDI** - *(Completed: Exceeded original static stub goal)*
-4. **Phase 4: Library Extraction**
+1. **Phase 1: Library Extraction**
    * *Effort: Medium*
    * Decouple the networking code from LeverFrame's business logic and move it into a separate Gradle module (`:openlcb` or similar). This module can then be published for other Kotlin Multiplatform projects.
 
