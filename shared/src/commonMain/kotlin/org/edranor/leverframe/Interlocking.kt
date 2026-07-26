@@ -50,7 +50,8 @@ data class LeverDef(
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
     val autoReverser: Boolean = false,
-    val logic: AstNode? = null
+    val logic: AstNode? = null,
+    val restoreOnCancel: Boolean = false
 )
 
 enum class BlockMode {
@@ -114,7 +115,6 @@ data class TabDef(
     val useShortCodes: Boolean = false,
     val useShortCodesInIndicators: Boolean = false,
     val schematicGridSize: Int = 40,
-    val restorePointsOnCancel: Boolean = false,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

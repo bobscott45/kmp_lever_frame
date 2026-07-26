@@ -716,6 +716,18 @@ fun LeverDetailScreen(
                             modifier = Modifier.fillMaxWidth().padding(12.dp)
                         ) { onLeverChange(lever.copy(auto_reverser = it)) }
                     }
+                    if (lever.type == "POINTS" || lever.type == "FACING_POINTS") {
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                            SettingSwitchRow(
+                                label = "Restore on Route Cancel",
+                                checked = lever.restore_on_cancel,
+                                infoText = "If enabled, this point will automatically be restored to Normal when an NX route that cleared over it is cancelled. This simulates specific local rulebook instructions (e.g., trap points).",
+                                textStyle = MaterialTheme.typography.bodyMedium,
+                                textColor = Color.White,
+                                modifier = Modifier.fillMaxWidth().padding(12.dp)
+                            ) { onLeverChange(lever.copy(restore_on_cancel = it)) }
+                        }
+                    }
                     if (currentTabDef != null) {
                         var validationError by remember { mutableStateOf<String?>(null) }
                         LaunchedEffect(currentTabDef) {

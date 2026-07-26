@@ -82,7 +82,6 @@ data class JsonTab(
     val use_short_codes: Boolean = false,
     val use_short_codes_in_indicators: Boolean = false,
     val schematic_grid_size: Int = 40,
-    val restore_points_on_cancel: Boolean = false,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -118,6 +117,7 @@ data class JsonLever(
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
     val auto_reverser: Boolean = false,
+    val restore_on_cancel: Boolean = false,
     val interlocking: List<JsonInterlocking> = emptyList(),
     val ast_logic: AstNode? = null
 )
@@ -201,6 +201,7 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                     lcc_event_reversed = if (reversedSuffix.isNotBlank()) "${config.node_id}.$reversedSuffix" else "",
                     lcc_enabled = jsonLever.lcc_enabled,
                     autoReverser = jsonLever.auto_reverser,
+                    restoreOnCancel = jsonLever.restore_on_cancel,
                     logic = logicNode
                 )
             }
@@ -248,7 +249,6 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 useShortCodes = jsonTab.use_short_codes,
                 useShortCodesInIndicators = jsonTab.use_short_codes_in_indicators,
                 schematicGridSize = jsonTab.schematic_grid_size,
-                restorePointsOnCancel = jsonTab.restore_points_on_cancel,
                 blocks = blocks,
                 schematicElements = schematicElements
             )

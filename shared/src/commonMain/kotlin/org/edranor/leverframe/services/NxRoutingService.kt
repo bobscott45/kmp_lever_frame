@@ -65,16 +65,15 @@ class NxRoutingService(
                     currentQueue = nextQueue
                 }
                 
-                // Optional enhancement: Attempt to restore all FPLs and Points to Normal.
-                // This simulates resetting the frame to a completely default state.
+                // Optional enhancement: Attempt to restore specific FPLs and Points to Normal.
+                // This simulates specific local rulebook instructions (e.g. trap points).
                 // It will gracefully fail and leave them Reversed if they are locked by another active route.
-                if (tabDef.restorePointsOnCancel) {
-                    val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
+                val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
                 if (postSignalLevers != null) {
-                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" }
-                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" }
+                    val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" && tabDef.levers[it].restoreOnCancel }
+                    val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" && tabDef.levers[it].restoreOnCancel }
                     
-                    // Unplunge all FPLs
+                    // Unplunge specific FPLs
                     for (fplIdx in fplLevers) {
                         val currentLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
                         if (currentLevers[fplIdx].isReversed) {
@@ -82,14 +81,13 @@ class NxRoutingService(
                         }
                     }
                     
-                    // Normalize all Points
+                    // Normalize specific Points
                     for (pointIdx in pointLevers) {
                         val currentLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
                         if (currentLevers[pointIdx].isReversed) {
                             interlockingService.toggleLever(tabIndex, pointIdx, selectedTabIndex)
                         }
                     }
-                }
                 }
             }
         }
