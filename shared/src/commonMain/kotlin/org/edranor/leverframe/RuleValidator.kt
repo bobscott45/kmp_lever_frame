@@ -56,24 +56,59 @@ object RuleValidator {
     }
 
     private fun checkConflict(tab: TabDef, leverStates: List<Boolean>): Boolean {
+        val referencedBlocks = mutableSetOf<Int>()
         for (i in leverStates.indices) {
             if (leverStates[i]) {
                 val logic = tab.levers[i].logic
                 if (logic != null) {
-                    if (!evaluateNode(logic, leverStates)) return true // conflict found
+                    collectBlocks(logic, referencedBlocks)
                 }
             }
         }
-        return false
+        
+        val blockList = referencedBlocks.toList()
+        val numAssignments = 1 shl blockList.size
+        
+        for (assignment in 0 until numAssignments) {
+            val blockStates = mutableMapOf<Int, Boolean>()
+            for (b in blockList.indices) {
+                blockStates[blockList[b]] = (assignment and (1 shl b)) != 0
+            }
+            
+            var allPass = true
+            for (i in leverStates.indices) {
+                if (leverStates[i]) {
+                    val logic = tab.levers[i].logic
+                    if (logic != null) {
+                        if (!evaluateNode(logic, leverStates, blockStates)) {
+                            allPass = false
+                            break
+                        }
+                    }
+                }
+            }
+            if (allPass) return false // valid state found
+        }
+        return true
     }
 
-    private fun evaluateNode(node: AstNode, leverStates: List<Boolean>): Boolean {
+    private fun collectBlocks(node: AstNode, blocks: MutableSet<Int>) {
+        when (node) {
+            is BlockStateNode -> blocks.add(node.blockIndex)
+            is AndNode -> node.children.forEach { collectBlocks(it, blocks) }
+            is OrNode -> node.children.forEach { collectBlocks(it, blocks) }
+            is NotNode -> collectBlocks(node.child, blocks)
+            is LeverStateNode -> {}
+        }
+    }
+
+    private fun evaluateNode(node: AstNode, leverStates: List<Boolean>, blockStates: Map<Int, Boolean>): Boolean {
         return when (node) {
             is LeverStateNode -> leverStates.getOrElse(node.leverIndex) { false } == node.requiredReversed
-            is BlockStateNode -> true // Assume blocks can always be set appropriately by the user
-            is AndNode -> node.children.all { evaluateNode(it, leverStates) }
-            is OrNode -> node.children.isEmpty() || node.children.any { evaluateNode(it, leverStates) }
-            is NotNode -> !evaluateNode(node.child, leverStates)
+            is BlockStateNode -> blockStates[node.blockIndex] == node.requiredOccupied
+            is AndNode -> node.children.all { evaluateNode(it, leverStates, blockStates) }
+            is OrNode -> node.children.isEmpty() || node.children.any { evaluateNode(it, leverStates, blockStates) }
+            is NotNode -> !evaluateNode(node.child, leverStates, blockStates)
         }
     }
 
