@@ -22,6 +22,7 @@ fun FrameSetupView(
     onConfigChange: (JsonConfig) -> Unit,
     onEditLever: (Int) -> Unit,
     onEditBlock: (Int) -> Unit,
+    onEditSchematic: () -> Unit,
     onShowFramesResetWarning: () -> Unit
 ) {
     if (selectedFrameIndex < config.tabs.size) {
@@ -94,6 +95,11 @@ fun FrameSetupView(
                     selected = selectedFrameConfigTab == 2,
                     onClick = { onSelectedFrameConfigTabChange(2) },
                     text = { Text("Blocks (${tab.blocks.size})", fontWeight = FontWeight.Bold) }
+                )
+                Tab(
+                    selected = false,
+                    onClick = { onEditSchematic() },
+                    text = { Text("Schematic", fontWeight = FontWeight.Bold) }
                 )
             }
 

@@ -94,7 +94,10 @@ data class JsonSchematicElement(
     val y: Int,
     val linked_lever: Int = -1,
     val linked_lever_2: Int = -1,
-    val linked_block: Int = -1
+    val linked_block: Int = -1,
+    val nx_button: String = "NONE",
+    val nx_button_placement: String = "DEFAULT",
+    val nx_button_color: String = "BLACK"
 )
 
 @Serializable
@@ -217,13 +220,19 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
             }
             
             val schematicElements = jsonTab.schematic_elements.map { jsonElem ->
+                val nxButtonType = try { NxButtonType.valueOf(jsonElem.nx_button) } catch (e: Exception) { NxButtonType.NONE }
+                val nxPlacement = try { NxButtonPlacement.valueOf(jsonElem.nx_button_placement) } catch (e: Exception) { NxButtonPlacement.DEFAULT }
+                val nxColor = try { NxButtonColor.valueOf(jsonElem.nx_button_color) } catch (e: Exception) { NxButtonColor.BLACK }
                 SchematicElementDef(
                     type = jsonElem.type,
                     x = jsonElem.x,
                     y = jsonElem.y,
                     linkedLever = jsonElem.linked_lever,
                     linkedLever2 = jsonElem.linked_lever_2,
-                    linkedBlock = jsonElem.linked_block
+                    linkedBlock = jsonElem.linked_block,
+                    nxButton = nxButtonType,
+                    nxButtonPlacement = nxPlacement,
+                    nxButtonColor = nxColor
                 )
             }
 

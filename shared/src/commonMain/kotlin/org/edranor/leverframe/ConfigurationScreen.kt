@@ -220,6 +220,7 @@ fun ConfigurationScreen(
                         onConfigChange = { config = it },
                         onEditLever = { editingLeverIndex = it },
                         onEditBlock = { editingBlockIndex = it },
+                        onEditSchematic = { isEditingSchematic = true },
                         onShowFramesResetWarning = { showFramesResetWarning = true }
                     )
                 }

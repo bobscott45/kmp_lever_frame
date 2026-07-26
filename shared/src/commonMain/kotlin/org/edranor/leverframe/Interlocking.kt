@@ -67,13 +67,40 @@ data class BlockDef(
     val mode: BlockMode = BlockMode.LOCAL_ONLY
 )
 
+enum class NxButtonType {
+    NONE,
+    ENTRANCE_ONLY,
+    EXIT_ONLY,
+    BOTH
+}
+
+enum class NxButtonPlacement {
+    DEFAULT,
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM
+}
+
+enum class NxButtonColor {
+    BLACK,
+    WHITE,
+    RED,
+    YELLOW,
+    GREEN,
+    BLUE
+}
+
 data class SchematicElementDef(
     val type: String,
     val x: Int,
     val y: Int,
     val linkedLever: Int = -1,
     val linkedLever2: Int = -1,
-    val linkedBlock: Int = -1
+    val linkedBlock: Int = -1,
+    val nxButton: NxButtonType = NxButtonType.NONE,
+    val nxButtonPlacement: NxButtonPlacement = NxButtonPlacement.DEFAULT,
+    val nxButtonColor: NxButtonColor = NxButtonColor.BLACK
 )
 
 data class TabDef(

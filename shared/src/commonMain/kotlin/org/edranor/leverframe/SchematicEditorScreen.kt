@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
@@ -40,6 +41,9 @@ fun SchematicEditorScreen(
     var editLinkedBlock by remember { mutableStateOf(-1) }
     var editLinkedLever by remember { mutableStateOf(-1) }
     var editLinkedLever2 by remember { mutableStateOf(-1) }
+    var editNxButton by remember { mutableStateOf("NONE") }
+    var editNxPlacement by remember { mutableStateOf("DEFAULT") }
+    var editNxColor by remember { mutableStateOf("BLACK") }
 
     BoxWithConstraints(
         modifier = modifier.background(Color(0xFF1E1E1E)),
@@ -83,6 +87,9 @@ fun SchematicEditorScreen(
                                 editLinkedBlock = existing?.linked_block ?: -1
                                 editLinkedLever = existing?.linked_lever ?: -1
                                 editLinkedLever2 = existing?.linked_lever_2 ?: -1
+                                editNxButton = existing?.nx_button ?: "NONE"
+                                editNxPlacement = existing?.nx_button_placement ?: "DEFAULT"
+                                editNxColor = existing?.nx_button_color ?: "BLACK"
                                 editingCell = Pair(clickedX, clickedY)
                             }
                         }
@@ -267,6 +274,63 @@ fun SchematicEditorScreen(
                             }
                         }
                     }
+                    
+                    val nxBtnStr = element.nx_button ?: "NONE"
+                    val nxPlacement = element.nx_button_placement ?: "DEFAULT"
+                    val nxColorStr = element.nx_button_color ?: "BLACK"
+                    if (nxBtnStr != "NONE") {
+                        val cx = px + when (nxPlacement) {
+                            "LEFT" -> gridSizeX * 0.15f
+                            "RIGHT" -> gridSizeX * 0.85f
+                            "TOP", "BOTTOM" -> gridSizeX * 0.5f
+                            else -> gridSizeX * 0.25f
+                        }
+                        val cy = py + when (nxPlacement) {
+                            "TOP" -> gridSizeY * 0.15f
+                            "BOTTOM" -> gridSizeY * 0.85f
+                            "LEFT", "RIGHT" -> gridSizeY * 0.5f
+                            else -> gridSizeY * 0.25f
+                        }
+                        val r = gridSizeY * 0.15f
+                        
+                        val fillCol = when (nxColorStr) {
+                            "WHITE" -> Color.White
+                            "RED" -> Color.Red
+                            "YELLOW" -> Color.Yellow
+                            "GREEN" -> Color.Green
+                            "BLUE" -> Color.Blue
+                            else -> Color.Black
+                        }
+                        val borderCol = if (fillCol == Color.White || fillCol == Color.Yellow) Color.Black else Color.White
+                        
+                        when (nxBtnStr) {
+                            "ENTRANCE_ONLY" -> {
+                                drawCircle(color = fillCol, radius = r, center = Offset(cx, cy))
+                                drawCircle(color = borderCol, radius = r, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                            }
+                            "EXIT_ONLY" -> {
+                                val path = Path().apply {
+                                    moveTo(cx, cy - r)
+                                    lineTo(cx + r, cy + r)
+                                    lineTo(cx - r, cy + r)
+                                    close()
+                                }
+                                drawPath(path = path, color = fillCol)
+                                drawPath(path = path, color = borderCol, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                            }
+                            "BOTH" -> {
+                                val path = Path().apply {
+                                    moveTo(cx, cy - r)
+                                    lineTo(cx + r, cy)
+                                    lineTo(cx, cy + r)
+                                    lineTo(cx - r, cy)
+                                    close()
+                                }
+                                drawPath(path = path, color = fillCol)
+                                drawPath(path = path, color = borderCol, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                            }
+                        }
+                    }
                 }
 
                 // Draw block names
@@ -330,11 +394,14 @@ fun SchematicEditorScreen(
             initialLinkedLever = editLinkedLever,
             initialLinkedLever2 = editLinkedLever2,
             initialLinkedBlock = editLinkedBlock,
+            initialNxButton = editNxButton,
+            initialNxPlacement = editNxPlacement,
+            initialNxColor = editNxColor,
             onDismiss = { editingCell = null },
-            onSave = { newType, newLever, newLever2, newBlock ->
+            onSave = { newType, newLever, newLever2, newBlock, newNxButton, newNxPlacement, newNxColor ->
                 val elements = tabDef.schematic_elements.toMutableList()
                 elements.removeAll { it.x == cx && it.y == cy }
-                elements.add(JsonSchematicElement(type = newType, x = cx, y = cy, linked_lever = newLever, linked_lever_2 = newLever2, linked_block = newBlock))
+                elements.add(JsonSchematicElement(type = newType, x = cx, y = cy, linked_lever = newLever, linked_lever_2 = newLever2, linked_block = newBlock, nx_button = newNxButton, nx_button_placement = newNxPlacement, nx_button_color = newNxColor))
                 onTabDefChange(tabDef.copy(schematic_elements = elements))
                 editingCell = null
             },
@@ -358,14 +425,20 @@ fun SchematicElementEditorDialog(
     initialLinkedLever: Int,
     initialLinkedLever2: Int,
     initialLinkedBlock: Int,
+    initialNxButton: String,
+    initialNxPlacement: String,
+    initialNxColor: String,
     onDismiss: () -> Unit,
-    onSave: (String, Int, Int, Int) -> Unit,
+    onSave: (String, Int, Int, Int, String, String, String) -> Unit,
     onDelete: () -> Unit
 ) {
     var editType by remember { mutableStateOf(initialEditType) }
     var editLinkedLever by remember { mutableStateOf(initialLinkedLever) }
     var editLinkedLever2 by remember { mutableStateOf(initialLinkedLever2) }
     var editLinkedBlock by remember { mutableStateOf(initialLinkedBlock) }
+    var editNxButton by remember { mutableStateOf(initialNxButton) }
+    var editNxPlacement by remember { mutableStateOf(initialNxPlacement) }
+    var editNxColor by remember { mutableStateOf(initialNxColor) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -452,10 +525,98 @@ fun SchematicElementEditorDialog(
                         }
                     }
                 }
+                
+                // NX Button Type
+                var nxExpanded by remember { mutableStateOf(false) }
+                val nxLabels = mapOf(
+                    "NONE" to "None",
+                    "ENTRANCE_ONLY" to "Entrance Only",
+                    "EXIT_ONLY" to "Exit Only",
+                    "BOTH" to "Entry & Exit"
+                )
+                ExposedDropdownMenuBox(expanded = nxExpanded, onExpandedChange = { nxExpanded = !nxExpanded }) {
+                    OutlinedTextField(
+                        value = nxLabels[editNxButton] ?: "None",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("NX Route Button") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = nxExpanded) },
+                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = nxExpanded, onDismissRequest = { nxExpanded = false }) {
+                        nxLabels.forEach { (key, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) }, 
+                                onClick = { editNxButton = key; nxExpanded = false }
+                            )
+                        }
+                    }
+                }
+
+                // NX Button Placement
+                if (editNxButton != "NONE") {
+                    var placementExpanded by remember { mutableStateOf(false) }
+                    val placementLabels = mapOf(
+                        "DEFAULT" to "Default (Top-Left)",
+                        "LEFT" to "Left Edge",
+                        "RIGHT" to "Right Edge",
+                        "TOP" to "Top Edge",
+                        "BOTTOM" to "Bottom Edge"
+                    )
+                    ExposedDropdownMenuBox(expanded = placementExpanded, onExpandedChange = { placementExpanded = !placementExpanded }) {
+                        OutlinedTextField(
+                            value = placementLabels[editNxPlacement] ?: "Default",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("NX Button Placement") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = placementExpanded) },
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(expanded = placementExpanded, onDismissRequest = { placementExpanded = false }) {
+                            placementLabels.forEach { (key, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) }, 
+                                    onClick = { editNxPlacement = key; placementExpanded = false }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // NX Button Color
+                if (editNxButton != "NONE") {
+                    var colorExpanded by remember { mutableStateOf(false) }
+                    val colorLabels = mapOf(
+                        "BLACK" to "Black",
+                        "WHITE" to "White",
+                        "RED" to "Red (Main Line)",
+                        "YELLOW" to "Yellow (Call-On/Shunt)",
+                        "GREEN" to "Green",
+                        "BLUE" to "Blue"
+                    )
+                    ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
+                        OutlinedTextField(
+                            value = colorLabels[editNxColor] ?: "Black",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("NX Button Color") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = colorExpanded) },
+                            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(expanded = colorExpanded, onDismissRequest = { colorExpanded = false }) {
+                            colorLabels.forEach { (key, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) }, 
+                                    onClick = { editNxColor = key; colorExpanded = false }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(editType, editLinkedLever, editLinkedLever2, editLinkedBlock) }) { Text("Save") }
+            TextButton(onClick = { onSave(editType, editLinkedLever, editLinkedLever2, editLinkedBlock, editNxButton, editNxPlacement, editNxColor) }) { Text("Save") }
         },
         dismissButton = {
             Row {

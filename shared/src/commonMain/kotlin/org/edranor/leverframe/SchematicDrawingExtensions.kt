@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -383,6 +384,61 @@ fun DrawScope.drawSchematicElement(
                 style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
                 topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py + gridSizeY * 1.15f)
             )
+        }
+    }
+
+    if (element.nxButton != NxButtonType.NONE) {
+        val cx = px + when (element.nxButtonPlacement) {
+            NxButtonPlacement.LEFT -> gridSizeX * 0.15f
+            NxButtonPlacement.RIGHT -> gridSizeX * 0.85f
+            NxButtonPlacement.TOP, NxButtonPlacement.BOTTOM -> gridSizeX * 0.5f
+            else -> gridSizeX * 0.25f
+        }
+        val cy = py + when (element.nxButtonPlacement) {
+            NxButtonPlacement.TOP -> gridSizeY * 0.15f
+            NxButtonPlacement.BOTTOM -> gridSizeY * 0.85f
+            NxButtonPlacement.LEFT, NxButtonPlacement.RIGHT -> gridSizeY * 0.5f
+            else -> gridSizeY * 0.25f
+        }
+        val r = gridSizeY * 0.15f
+        
+        val fillCol = when (element.nxButtonColor) {
+            NxButtonColor.WHITE -> Color.White
+            NxButtonColor.RED -> Color.Red
+            NxButtonColor.YELLOW -> Color.Yellow
+            NxButtonColor.GREEN -> Color.Green
+            NxButtonColor.BLUE -> Color.Blue
+            else -> Color.Black
+        }
+        val borderCol = if (fillCol == Color.White || fillCol == Color.Yellow) Color.Black else Color.White
+        
+        when (element.nxButton) {
+            NxButtonType.ENTRANCE_ONLY -> {
+                drawCircle(color = fillCol, radius = r, center = Offset(cx, cy))
+                drawCircle(color = borderCol, radius = r, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+            }
+            NxButtonType.EXIT_ONLY -> {
+                val path = Path().apply {
+                    moveTo(cx, cy - r)
+                    lineTo(cx + r, cy + r)
+                    lineTo(cx - r, cy + r)
+                    close()
+                }
+                drawPath(path = path, color = fillCol)
+                drawPath(path = path, color = borderCol, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+            }
+            NxButtonType.BOTH -> {
+                val path = Path().apply {
+                    moveTo(cx, cy - r)
+                    lineTo(cx + r, cy)
+                    lineTo(cx, cy + r)
+                    lineTo(cx - r, cy)
+                    close()
+                }
+                drawPath(path = path, color = fillCol)
+                drawPath(path = path, color = borderCol, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+            }
+            else -> {}
         }
     }
 }

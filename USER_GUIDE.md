@@ -186,6 +186,11 @@ The application features a built-in visual editor for designing the track schema
     * For a **Turnout**, pulling the linked lever will visually switch the track blades to the diverging route.
     * For a standard **Signal**, pulling the linked lever will visually drop the signal arm to "Clear".
     * For a **Bracket Signal**, you can assign *two* separate linked levers (one for the main arm, one for the diverging arm).
+* **NX Route Buttons**: You can overlay NX (eNtrance-eXit) routing buttons on any track or signal cell. These are used in prototypical signalling to establish routes. 
+    * **Entrance Buttons**: Drawn as a circle. Typically colored **Red** for main line running signals, or **Yellow** for shunting and call-on routes.
+    * **Exit Buttons**: Drawn as a triangle. Typically colored **White** or **Black**.
+    * **Both**: Drawn as a diamond. Used for intermediate signals that act as both an exit for one route and an entrance to another.
+    * You can configure the **Placement** (Top, Bottom, Left, Right) to ensure the button aligns perfectly with the track line and avoids obscuring signals or lever numbers.
 * **Saving**: Press the Save icon in the top right to compile your grid back into the configuration file and return to the frame settings.
 
 ---
