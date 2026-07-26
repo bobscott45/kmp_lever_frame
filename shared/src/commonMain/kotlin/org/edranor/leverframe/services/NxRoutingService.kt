@@ -152,28 +152,7 @@ class NxRoutingService(
         val tabDef = configService.configState.value.tabs.getOrNull(tabIndex)?.second ?: return NxRoutingResult.Error("Configuration not found")
         val map = tabDef.schematicElements.associateBy { Pair(it.x, it.y) }
         
-        val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
-        var isAnySignalReversed = false
-        for (pos in route.pathCells) {
-            val elemCheck = map[pos]
-            if (elemCheck != null && elemCheck.type.contains("SIGNAL") && elemCheck.linkedLever >= 0) {
-                if (levers.getOrNull(elemCheck.linkedLever)?.isReversed == true) {
-                    isAnySignalReversed = true
-                    break
-                }
-                if (elemCheck.type.startsWith("BRACKET_SIGNAL") && elemCheck.linkedLever2 >= 0) {
-                    if (levers.getOrNull(elemCheck.linkedLever2)?.isReversed == true) {
-                        isAnySignalReversed = true
-                        break
-                    }
-                }
-            }
-        }
-        
-        if (isAnySignalReversed) {
-            return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
-        }
-        
+
         val requiredLeverStates = mutableMapOf<Int, Boolean>()
         val primarySignalLeversToPull = mutableListOf<Int>()
         val secondarySignalLeversToPull = mutableListOf<Int>()
@@ -272,6 +251,41 @@ class NxRoutingService(
         }
         
         val allSignalLeversToPull = primarySignalLeversToPull + secondarySignalLeversToPull
+        
+        val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
+        
+        var isPrimaryReversed = false
+        for (leverIdx in primarySignalLeversToPull) {
+            if (levers.getOrNull(leverIdx)?.isReversed == true) {
+                isPrimaryReversed = true
+                break
+            }
+        }
+        
+        if (isPrimaryReversed) {
+            return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
+        }
+        
+        var isAnySignalReversed = false
+        for (pos in route.pathCells) {
+            val elemCheck = map[pos]
+            if (elemCheck != null && elemCheck.type.contains("SIGNAL") && elemCheck.linkedLever >= 0) {
+                if (levers.getOrNull(elemCheck.linkedLever)?.isReversed == true) {
+                    isAnySignalReversed = true
+                    break
+                }
+                if (elemCheck.type.startsWith("BRACKET_SIGNAL") && elemCheck.linkedLever2 >= 0) {
+                    if (levers.getOrNull(elemCheck.linkedLever2)?.isReversed == true) {
+                        isAnySignalReversed = true
+                        break
+                    }
+                }
+            }
+        }
+        
+        if (isAnySignalReversed) {
+            cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
+        }
         
         if (isRouteOccupied) {
             return NxRoutingResult.Error("Cannot set route: Track circuit occupied", occupiedCells)
