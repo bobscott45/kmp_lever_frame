@@ -649,6 +649,51 @@ fun LeverDetailScreen(
 
                         }
                     }
+                    if (lever.type == "POINTS" || lever.type == "FACING_POINTS") {
+                        Card(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                            Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+                                Text("NX Route Cancellation Override", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                Text("Overrides the frame's default behavior for restoring points to Normal.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                var overrideExpanded by remember { mutableStateOf(false) }
+                                val overrideOptions = mapOf(
+                                    "DEFAULT" to "Follow Frame Default",
+                                    "ALWAYS" to "Always Restore to Normal",
+                                    "NEVER" to "Never Restore (Leave As-Is)"
+                                )
+                                val currentOverrideName = overrideOptions[lever.restore_override] ?: "Follow Frame Default"
+                                
+                                ExposedDropdownMenuBox(
+                                    expanded = overrideExpanded,
+                                    onExpandedChange = { overrideExpanded = !overrideExpanded }
+                                ) {
+                                    OutlinedTextField(
+                                        value = currentOverrideName,
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = overrideExpanded) },
+                                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                        colors = brassTextFieldColors()
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = overrideExpanded,
+                                        onDismissRequest = { overrideExpanded = false }
+                                    ) {
+                                        overrideOptions.forEach { (id, name) ->
+                                            DropdownMenuItem(
+                                                text = { Text(name) },
+                                                onClick = {
+                                                    onLeverChange(lever.copy(restore_override = id))
+                                                    overrideExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             
@@ -715,51 +760,6 @@ fun LeverDetailScreen(
                             textColor = Color.White,
                             modifier = Modifier.fillMaxWidth().padding(12.dp)
                         ) { onLeverChange(lever.copy(auto_reverser = it)) }
-                    }
-                    if (lever.type == "POINTS" || lever.type == "FACING_POINTS") {
-                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
-                            Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
-                                Text("NX Route Cancellation Override", style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                                Text("Overrides the frame's default behavior for restoring points to Normal.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                var overrideExpanded by remember { mutableStateOf(false) }
-                                val overrideOptions = mapOf(
-                                    "DEFAULT" to "Follow Frame Default",
-                                    "ALWAYS" to "Always Restore to Normal",
-                                    "NEVER" to "Never Restore (Leave As-Is)"
-                                )
-                                val currentOverrideName = overrideOptions[lever.restore_override] ?: "Follow Frame Default"
-                                
-                                ExposedDropdownMenuBox(
-                                    expanded = overrideExpanded,
-                                    onExpandedChange = { overrideExpanded = !overrideExpanded }
-                                ) {
-                                    OutlinedTextField(
-                                        value = currentOverrideName,
-                                        onValueChange = {},
-                                        readOnly = true,
-                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = overrideExpanded) },
-                                        modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                                        colors = brassTextFieldColors()
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = overrideExpanded,
-                                        onDismissRequest = { overrideExpanded = false }
-                                    ) {
-                                        overrideOptions.forEach { (id, name) ->
-                                            DropdownMenuItem(
-                                                text = { Text(name) },
-                                                onClick = {
-                                                    onLeverChange(lever.copy(restore_override = id))
-                                                    overrideExpanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                     if (currentTabDef != null) {
                         var validationError by remember { mutableStateOf<String?>(null) }
