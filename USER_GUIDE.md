@@ -161,8 +161,8 @@ Similar to levers, existing blocks are listed on the main tab and can be reorder
 
 * **Basic Info**: Configure the block's **Label** (Max 23 characters), which determines the text displayed on the Digital Block Shelf, and its **Short Code** (Max 7 characters) for the Schematic Editor. Both the label and short code must be unique within the frame. You can delete the block by clicking the **✕ Delete** button in the top right corner.
 * **LCC Events**: 
-    * **Broadcast Occupancy Changes**: If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Empty events to the LCC network.
-    * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Empty" when received from the network.
+    * **Broadcast Occupancy Changes**: If enabled, manually toggling this block on the shelf will broadcast the corresponding Occupied/Clear events to the LCC network.
+    * **Event IDs**: Define the specific LCC Event IDs that will trigger this block to show as "Occupied" or "Clear" when received from the network.
 
 ### Schematic Editor
 
@@ -190,7 +190,7 @@ The application features a built-in visual editor for designing the track schema
 
 The Digital Block Shelf is a visual indicator that sits above your levers, showing real-time track occupancy.
 
-<screenshot of the Block Shelf on the main screen showing occupied/empty blocks>
+<screenshot of the Block Shelf on the main screen showing occupied/clear blocks>
 
 As trains move across your physical layout and trigger LCC sensors, the corresponding blocks on this shelf will light up to indicate an "Occupied" state. You can also manually toggle the occupancy state of any block simply by tapping on it. These blocks act as inputs for your interlocking engine, allowing you to physically lock levers (like Home Signals) when a train is sitting in a specific section of track.
 
@@ -263,9 +263,9 @@ Use the last two characters to define the specific lever/block number and its *s
     *   *Lever 14 Reversed* = `8E`
 
 **For Blocks (`XX` = 12, 22):**
-*   `01` to `7F` = Block is **Empty**
+*   `01` to `7F` = Block is **Clear**
 *   `81` to `FF` = Block is **Occupied**
-    *   *Block 1 Empty* = `01`
+    *   *Block 1 Clear* = `01`
     *   *Block 1 Occupied* = `81`
 
 ### Example Full Event IDs

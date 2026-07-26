@@ -81,7 +81,7 @@ data class LeverStateNode(val leverIndex: Int, val requiredReversed: Boolean) : 
 @Serializable
 @SerialName("BLOCK")
 data class BlockStateNode(val blockIndex: Int, val requiredOccupied: Boolean) : AstNode() {
-    override fun toFormulaString(): String = "B${blockIndex + 1}:${if(requiredOccupied) "O" else "E"}"
+    override fun toFormulaString(): String = "B${blockIndex + 1}:${if(requiredOccupied) "O" else "C"}"
     override fun evaluate(levers: List<DomainLever>, blocks: List<DomainBlock>): AstEvaluationResult {
         val isOcc = blocks.getOrNull(blockIndex)?.isOccupied ?: false
         return AstEvaluationResult(isOcc == requiredOccupied)

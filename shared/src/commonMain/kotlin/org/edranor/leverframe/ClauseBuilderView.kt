@@ -227,7 +227,7 @@ private fun BlockStateNodeView(
         var stateExpanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(expanded = stateExpanded, onExpandedChange = { stateExpanded = !stateExpanded }, modifier = Modifier.weight(1f)) {
             OutlinedTextField(
-                value = if (node.requiredOccupied) "OCCUPIED" else "EMPTY",
+                value = if (node.requiredOccupied) "OCCUPIED" else "CLEAR",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = stateExpanded) },
@@ -235,7 +235,7 @@ private fun BlockStateNodeView(
                 colors = brassTextFieldColors()
             )
             ExposedDropdownMenu(expanded = stateExpanded, onDismissRequest = { stateExpanded = false }) {
-                DropdownMenuItem(text = { Text("EMPTY") }, onClick = { onNodeChange(node.copy(requiredOccupied = false)); stateExpanded = false })
+                DropdownMenuItem(text = { Text("CLEAR") }, onClick = { onNodeChange(node.copy(requiredOccupied = false)); stateExpanded = false })
                 DropdownMenuItem(text = { Text("OCCUPIED") }, onClick = { onNodeChange(node.copy(requiredOccupied = true)); stateExpanded = false })
             }
         }

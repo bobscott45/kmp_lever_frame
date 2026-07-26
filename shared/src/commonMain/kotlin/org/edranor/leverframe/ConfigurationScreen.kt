@@ -151,6 +151,11 @@ fun ConfigurationScreen(
                 if (editingLeverIndex != null) {
                     val tab = config.tabs[selectedFrameIndex]
                     val lever = tab.levers[editingLeverIndex!!]
+                    val parsedTabs = try {
+                        ConfigManager.parseConfig(ConfigManager.jsonFormat.encodeToString(JsonConfig.serializer(), config))
+                    } catch (e: Exception) { emptyList() }
+                    val currentTabDef = parsedTabs.getOrNull(selectedFrameIndex)?.second
+
                     LeverDetailScreen(
                         nodeId = config.node_id,
                         leverIndex = editingLeverIndex!!,
@@ -159,6 +164,7 @@ fun ConfigurationScreen(
                         allBlocks = tab.blocks,
                         ruleEditorMode = config.rule_editor_mode,
                         ruleDisplayMode = config.rule_display_mode,
+                        currentTabDef = currentTabDef,
                         onLeverChange = { newLever ->
                             val newTabs = config.tabs.toMutableList()
                             val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
@@ -544,6 +550,7 @@ fun LeverDetailScreen(
     allBlocks: List<JsonBlock>,
     ruleEditorMode: String,
     ruleDisplayMode: String,
+    currentTabDef: TabDef?,
     onLeverChange: (JsonLever) -> Unit,
     onDelete: () -> Unit
 ) {
@@ -701,6 +708,28 @@ fun LeverDetailScreen(
                             textColor = Color.White,
                             modifier = Modifier.fillMaxWidth().padding(12.dp)
                         ) { onLeverChange(lever.copy(auto_reverser = it)) }
+                    }
+                    if (currentTabDef != null) {
+                        var validationError by remember { mutableStateOf<String?>(null) }
+                        LaunchedEffect(currentTabDef) {
+                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                                val result = RuleValidator.validate(currentTabDef)
+                                validationError = result.unreachableLevers[leverIndex]
+                            }
+                        }
+                        
+                        if (validationError != null) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text("⚠️ Unreachable State", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onErrorContainer, fontWeight = FontWeight.Bold)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(validationError!!, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onErrorContainer)
+                                }
+                            }
+                        }
                     }
                     
                     // Interlocking Rules Group Header
@@ -916,7 +945,7 @@ private fun RuleStateDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isBlock = targetType == "BLOCK"
-    val states = if (isBlock) listOf("OCCUPIED", "EMPTY") else listOf("NORMAL", "REVERSED")
+    val states = if (isBlock) listOf("OCCUPIED", "CLEAR") else listOf("NORMAL", "REVERSED")
     val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
     
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {

@@ -22,9 +22,7 @@
           "interlocking": [
             {
               "target": 1,
-              "state": "REVERSED",
-              "alt_target": 4,
-              "alt_state": "REVERSED"
+              "state": "REVERSED"
             }
           ]
         },
@@ -48,7 +46,7 @@
             },
             {
               "target": 5,
-              "state": "EMPTY",
+              "state": "CLEAR",
               "target_type": "BLOCK",
               "alt_target": -1,
               "alt_state": "NORMAL",
@@ -64,7 +62,7 @@
           "interlocking": [
             {
               "target": 1,
-              "state": "EMPTY",
+              "state": "CLEAR",
               "target_type": "BLOCK",
               "alt_target": -1,
               "alt_state": "NORMAL",
@@ -80,7 +78,7 @@
           "interlocking": [
             {
               "target": 1,
-              "state": "EMPTY",
+              "state": "CLEAR",
               "target_type": "BLOCK",
               "alt_target": -1,
               "alt_state": "NORMAL",
@@ -108,7 +106,7 @@
             },
             {
               "target": 1,
-              "state": "EMPTY",
+              "state": "CLEAR",
               "target_type": "BLOCK",
               "alt_target": -1,
               "alt_state": "NORMAL",

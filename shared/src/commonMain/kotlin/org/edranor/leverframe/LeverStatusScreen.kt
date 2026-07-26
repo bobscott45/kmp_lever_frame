@@ -157,7 +157,7 @@ private fun LeverStatusRulesSection(
             Text("Interlocking Rules:", color = LeverFrameTheme.Colors.Brass, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             leverDef.conditions.forEach { rule ->
                 val reqStateStr = if (rule.targetType == TargetType.BLOCK) {
-                    if (rule.requiredState) "OCCUPIED" else "EMPTY"
+                    if (rule.requiredState) "OCCUPIED" else "CLEAR"
                 } else {
                     if (rule.requiredState) "REVERSED" else "NORMAL"
                 }
@@ -165,7 +165,7 @@ private fun LeverStatusRulesSection(
                 
                 val altStr = if (rule.altTargetIndex != -1) {
                     val altStateStr = if (rule.altTargetType == TargetType.BLOCK) {
-                        if (rule.altRequiredState) "OCCUPIED" else "EMPTY"
+                        if (rule.altRequiredState) "OCCUPIED" else "CLEAR"
                     } else {
                         if (rule.altRequiredState) "REVERSED" else "NORMAL"
                     }
@@ -173,10 +173,10 @@ private fun LeverStatusRulesSection(
                     " OR $altTargetLabel ${rule.altTargetIndex + 1} is $altStateStr"
                 } else ""
                 
-                val mainState = if (rule.targetType == TargetType.BLOCK) blocks.getOrNull(rule.targetIndex) ?: false else levers.getOrNull(rule.targetIndex)?.isReversed ?: false
+                val mainState = if (rule.targetType == TargetType.BLOCK) blocks.getOrNull(rule.targetIndex)?.isOccupied ?: false else levers.getOrNull(rule.targetIndex)?.isReversed ?: false
                 val mainSatisfied = mainState == rule.requiredState
                 
-                val altState = if (rule.altTargetType == TargetType.BLOCK) blocks.getOrNull(rule.altTargetIndex) ?: false else levers.getOrNull(rule.altTargetIndex)?.isReversed ?: false
+                val altState = if (rule.altTargetType == TargetType.BLOCK) blocks.getOrNull(rule.altTargetIndex)?.isOccupied ?: false else levers.getOrNull(rule.altTargetIndex)?.isReversed ?: false
                 val altSatisfied = if (rule.altTargetIndex != -1) altState == rule.altRequiredState else false
                 
                 val isSatisfied = mainSatisfied || altSatisfied
