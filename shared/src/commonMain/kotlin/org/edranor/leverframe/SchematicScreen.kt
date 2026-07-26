@@ -108,6 +108,7 @@ fun SchematicScreen(
                                     reachableExits = emptyList()
                                 }
                             }
+                        },
                         onDoubleTap = { offset ->
                             val gridSizeX = gridDpX.toPx()
                             val gridSizeY = tabDef.schematicGridSize.dp.toPx()

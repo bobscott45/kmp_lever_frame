@@ -201,10 +201,43 @@ class NxRoutingService(
             }
         }
         
-        for ((leverIdx, targetReversed) in requiredLeverStates) {
+        // Simulate the correct signalman sequence: Unplunge FPLs -> Move Points -> Replunge FPLs
+        val fplLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "FACING_POINTS" }
+        val pointLevers = requiredLeverStates.keys.filter { tabDef.levers.getOrNull(it)?.type?.name == "POINTS" }
+        val otherLevers = requiredLeverStates.keys.filter { !fplLevers.contains(it) && !pointLevers.contains(it) }
+        
+        // 1) Unplunge all FPLs (move to Normal)
+        for (fplIdx in fplLevers) {
             val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
-            if (freshLevers[leverIdx].isReversed != targetReversed) {
-                interlockingService.toggleLever(tabIndex, leverIdx, selectedTabIndex)
+            if (freshLevers[fplIdx].isReversed) {
+                interlockingService.toggleLever(tabIndex, fplIdx, selectedTabIndex)
+            }
+        }
+        
+        // 2) Move all Points to their target states
+        for (pointIdx in pointLevers) {
+            val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
+            val targetReversed = requiredLeverStates[pointIdx] ?: false
+            if (freshLevers[pointIdx].isReversed != targetReversed) {
+                interlockingService.toggleLever(tabIndex, pointIdx, selectedTabIndex)
+            }
+        }
+        
+        // 3) Move all FPLs to their target states (usually Reversed)
+        for (fplIdx in fplLevers) {
+            val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
+            val targetReversed = requiredLeverStates[fplIdx] ?: false
+            if (freshLevers[fplIdx].isReversed != targetReversed) {
+                interlockingService.toggleLever(tabIndex, fplIdx, selectedTabIndex)
+            }
+        }
+        
+        // 4) Execute any other non-signal levers
+        for (otherIdx in otherLevers) {
+            val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
+            val targetReversed = requiredLeverStates[otherIdx] ?: false
+            if (freshLevers[otherIdx].isReversed != targetReversed) {
+                interlockingService.toggleLever(tabIndex, otherIdx, selectedTabIndex)
             }
         }
         
