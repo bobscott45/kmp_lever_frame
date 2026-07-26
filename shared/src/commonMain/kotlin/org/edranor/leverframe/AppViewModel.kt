@@ -36,7 +36,7 @@ class AppViewModel(
             launch {
                 lccClient.connectionStatus.collect { status ->
                     _uiState.update { it.copy(networkStatus = status) }
-                    if (status == "Connected" && configState.value.config.lcc_master) {
+                    if (status.startsWith("Connected") && configState.value.config.lcc_master) {
                         interlockingService.broadcastCurrentStates()
                     }
                 }
