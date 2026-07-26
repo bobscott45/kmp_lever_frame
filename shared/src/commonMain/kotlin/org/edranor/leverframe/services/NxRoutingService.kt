@@ -227,7 +227,10 @@ class NxRoutingService(
         }
         
         val anyPrimarySignalFailed = primarySignalLeversToPull.any { idx ->
-            interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers?.getOrNull(idx)?.isReversed == false
+            val leverDef = tabDef.levers.getOrNull(idx)
+            val isReversed = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers?.getOrNull(idx)?.isReversed == true
+            // If a Distant signal fails to clear (e.g. because a diverging route is set), this is perfectly normal and shouldn't fail the route.
+            if (leverDef?.type?.name == "DISTANT_SIGNAL") false else !isReversed
         }
         
         if (anyPrimarySignalFailed) {

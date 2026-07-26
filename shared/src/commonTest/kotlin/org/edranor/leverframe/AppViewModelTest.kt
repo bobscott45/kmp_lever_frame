@@ -87,7 +87,8 @@ class AppViewModelTest {
         val eventProcessor = NetworkEventProcessor(lccClient, configRepo)
         val configService = org.edranor.leverframe.services.ConfigurationService(configRepo)
         val interlockingService = org.edranor.leverframe.services.InterlockingService(configService, configRepo, configRepo, lccClient, eventProcessor)
-        viewModel = AppViewModel(configService, interlockingService, lccClient)
+        val nxRoutingService = org.edranor.leverframe.services.NxRoutingService(configService, interlockingService)
+        viewModel = AppViewModel(configService, interlockingService, nxRoutingService, FakeLccClient())
     }
 
     @AfterTest
