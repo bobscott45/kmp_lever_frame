@@ -19,5 +19,6 @@ val appModule = module {
     single { NetworkEventProcessor(get(), get()) }
     single { ConfigurationService(get()) }
     single { InterlockingService(get(), get(), get(), get(), get()) }
+    single { org.edranor.leverframe.services.NxRoutingService(get(), get()) }
     viewModelOf(::AppViewModel)
 }
