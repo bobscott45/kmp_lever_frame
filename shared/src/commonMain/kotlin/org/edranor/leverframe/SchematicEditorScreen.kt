@@ -129,25 +129,33 @@ fun SchematicEditorScreen(
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
-                                drawText(
-                                    textMeasurer = textMeasurer,
-                                    text = "${element.linked_lever + 1}",
-                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f)
-                                )
+                                drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f))
                             }
                         }
                         "TURNOUT_RIGHT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
-                                drawText(
-                                    textMeasurer = textMeasurer,
-                                    text = "${element.linked_lever + 1}",
-                                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f)
-                                )
+                                drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f))
                             }
+                        }
+                        "TURNOUT_LEFT_TRAILING" -> {
+                            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py - gridSizeY / 2), strokeWidth = 4f)
+                            if (element.linked_lever >= 0) {
+                                drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.15f))
+                            }
+                        }
+                        "TURNOUT_RIGHT_TRAILING" -> {
+                            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py + gridSizeY * 1.5f), strokeWidth = 4f)
+                            if (element.linked_lever >= 0) {
+                                drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.85f))
+                            }
+                        }
+                        "DIAMOND_CROSSING" -> {
+                            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                            drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
                         }
                         "SIGNAL_LEFT" -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)

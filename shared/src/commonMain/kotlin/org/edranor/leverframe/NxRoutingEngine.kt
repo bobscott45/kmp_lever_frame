@@ -50,6 +50,28 @@ object NxRoutingEngine {
                 conns.add(Pair(x + 1, y))
                 conns.add(Pair(x + 1, y + 1))
             }
+            "TURNOUT_LEFT_TRAILING" -> {
+                conns.add(Pair(x - 1, y))
+                conns.add(Pair(x + 1, y))
+                conns.add(Pair(x - 1, y - 1))
+            }
+            "TURNOUT_RIGHT_TRAILING" -> {
+                conns.add(Pair(x - 1, y))
+                conns.add(Pair(x + 1, y))
+                conns.add(Pair(x - 1, y + 1))
+            }
+            "DIAMOND_CROSSING" -> {
+                // Connects the straights
+                conns.add(Pair(x - 1, y))
+                conns.add(Pair(x + 1, y))
+                // And maybe it connects the diagonals?
+                // A true diamond crossing typically connects top-left to bottom-right, and bottom-left to top-right.
+                // However, in our grid, it's usually just two straight tracks crossing.
+                // We'll connect all 4 adjacent cells for now if they are on a straight line.
+                // Wait, if it's two straight tracks crossing, one is horizontal, one is vertical.
+                conns.add(Pair(x, y - 1))
+                conns.add(Pair(x, y + 1))
+            }
         }
         return conns.distinct()
     }

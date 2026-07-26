@@ -46,80 +46,36 @@ fun DrawScope.drawSchematicElement(
             strokeWidth = 4f
         )
         "TURNOUT_LEFT" -> {
-            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
-            val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
-            val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
-
-            // Draw left half of main line
-            drawLine(
-                color = trackColor,
-                start = Offset(px, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                strokeWidth = 4f
-            )
-            // Draw right half of main line
-            drawLine(
-                color = mainRightColor,
-                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
-            )
-            // Draw diverging line
-            val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y - 1 }
-            val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
-            val divergeColor = if (isReversed) Color.Green else divergeBlockColor
-            drawLine(
-                color = divergeColor,
-                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX, py - gridSizeY / 2),
-                strokeWidth = 4f
-            )
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
             if (element.linkedLever >= 0) {
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = "${element.linkedLever + 1}",
-                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f)
-                )
+                drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f))
             }
         }
         "TURNOUT_RIGHT" -> {
-            val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
-            val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
-            val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
-
-            // Draw left half of main line
-            drawLine(
-                color = trackColor,
-                start = Offset(px, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                strokeWidth = 4f
-            )
-            // Draw right half of main line
-            drawLine(
-                color = mainRightColor,
-                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
-            )
-            // Draw diverging line
-            val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y + 1 }
-            val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
-            val divergeColor = if (isReversed) Color.Green else divergeBlockColor
-            drawLine(
-                color = divergeColor,
-                start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                end = Offset(px + gridSizeX, py + gridSizeY * 1.5f),
-                strokeWidth = 4f
-            )
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 4f)
             if (element.linkedLever >= 0) {
-                drawText(
-                    textMeasurer = textMeasurer,
-                    text = "${element.linkedLever + 1}",
-                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                    topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f)
-                )
+                drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f))
             }
+        }
+        "TURNOUT_LEFT_TRAILING" -> {
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py - gridSizeY / 2), strokeWidth = 4f)
+            if (element.linkedLever >= 0) {
+                drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.15f))
+            }
+        }
+        "TURNOUT_RIGHT_TRAILING" -> {
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py + gridSizeY * 1.5f), strokeWidth = 4f)
+            if (element.linkedLever >= 0) {
+                drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.85f))
+            }
+        }
+        "DIAMOND_CROSSING" -> {
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
         }
         "SIGNAL_LEFT" -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
