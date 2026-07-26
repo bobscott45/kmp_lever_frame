@@ -229,6 +229,8 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameGeneralSettingsT
                             Checkbox(checked = tab.use_short_codes_in_indicators, onCheckedChange = updateUseShortCodesInIndicators)
                             Text("Use Short Codes in Block Indicators")
                         }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth()) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Checkbox(checked = tab.default_restore_points, onCheckedChange = updateDefaultRestorePoints)
                             Text("Default Restore Points to Normal on Cancel")
