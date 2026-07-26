@@ -114,6 +114,7 @@ data class TabDef(
     val useShortCodes: Boolean = false,
     val useShortCodesInIndicators: Boolean = false,
     val schematicGridSize: Int = 40,
+    val restorePointsOnCancel: Boolean = false,
     val blocks: List<BlockDef> = emptyList(),
     val schematicElements: List<SchematicElementDef> = emptyList()
 )

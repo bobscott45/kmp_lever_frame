@@ -68,7 +68,8 @@ class NxRoutingService(
                 // Optional enhancement: Attempt to restore all FPLs and Points to Normal.
                 // This simulates resetting the frame to a completely default state.
                 // It will gracefully fail and leave them Reversed if they are locked by another active route.
-                val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
+                if (tabDef.restorePointsOnCancel) {
+                    val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
                 if (postSignalLevers != null) {
                     val fplLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "FACING_POINTS" }
                     val pointLevers = tabDef.levers.indices.filter { tabDef.levers[it].type.name == "POINTS" }
@@ -88,6 +89,7 @@ class NxRoutingService(
                             interlockingService.toggleLever(tabIndex, pointIdx, selectedTabIndex)
                         }
                     }
+                }
                 }
             }
         }

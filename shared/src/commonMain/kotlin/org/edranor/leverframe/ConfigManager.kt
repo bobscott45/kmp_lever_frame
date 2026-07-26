@@ -82,6 +82,7 @@ data class JsonTab(
     val use_short_codes: Boolean = false,
     val use_short_codes_in_indicators: Boolean = false,
     val schematic_grid_size: Int = 40,
+    val restore_points_on_cancel: Boolean = false,
     val levers: List<JsonLever> = emptyList(),
     val blocks: List<JsonBlock> = emptyList(),
     val schematic_elements: List<JsonSchematicElement> = emptyList()
@@ -247,6 +248,7 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 useShortCodes = jsonTab.use_short_codes,
                 useShortCodesInIndicators = jsonTab.use_short_codes_in_indicators,
                 schematicGridSize = jsonTab.schematic_grid_size,
+                restorePointsOnCancel = jsonTab.restore_points_on_cancel,
                 blocks = blocks,
                 schematicElements = schematicElements
             )
