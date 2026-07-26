@@ -136,7 +136,7 @@ class InterlockingService(
             val configState = configService.configState.value
             val conflicts = if (configState.tabs.isNotEmpty() && selectedTabIndex in currentDomain.frames.indices) {
                 Interlocking.getConflictingLevers(
-                    configState.tabs[selectedTabIndex].second,
+                    configState.tabs[selectedTabIndex].second.toInterlockingGraph(),
                     currentDomain.frames[selectedTabIndex].levers,
                     currentDomain.frames[selectedTabIndex].blocks
                 )
@@ -166,7 +166,7 @@ class InterlockingService(
                 
                 val conflicts = if (configState.tabs.isNotEmpty() && selectedTabIndex in updatedFrames.indices) {
                     Interlocking.getConflictingLevers(
-                        configState.tabs[selectedTabIndex].second,
+                        configState.tabs[selectedTabIndex].second.toInterlockingGraph(),
                         updatedFrames[selectedTabIndex].levers,
                         updatedFrames[selectedTabIndex].blocks
                     )
@@ -227,7 +227,7 @@ class InterlockingService(
                 val tabDef = configState.tabs[tabIndex].second
                 
                 // Evaluate auto-reversers (cascade until steady state)
-                val cascadedLeverIndices = Interlocking.applyCascades(tabDef, newLevers, newBlocks)
+                val cascadedLeverIndices = Interlocking.applyCascades(tabDef.toInterlockingGraph(), newLevers, newBlocks)
                 cascadedLeverIndices.forEach { leverIdx ->
                     val lDef = tabDef.levers[leverIdx]
                     if (lDef.lcc_event_normal.isNotBlank()) {
@@ -248,7 +248,7 @@ class InterlockingService(
                 
                 val conflicts = if (configState.tabs.isNotEmpty() && selectedTabIndex in updatedFrames.indices) {
                     Interlocking.getConflictingLevers(
-                        configState.tabs[selectedTabIndex].second,
+                        configState.tabs[selectedTabIndex].second.toInterlockingGraph(),
                         updatedFrames[selectedTabIndex].levers,
                         updatedFrames[selectedTabIndex].blocks
                     )

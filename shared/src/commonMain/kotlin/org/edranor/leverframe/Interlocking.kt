@@ -85,12 +85,34 @@ data class TabDef(
     val schematicElements: List<SchematicElementDef> = emptyList()
 )
 
+data class LeverRule(
+    val logic: AstNode?,
+    val conditions: List<InterlockingCondition>,
+    val autoReverser: Boolean
+)
+
+data class InterlockingGraph(
+    val levers: List<LeverRule>
+)
+
+fun TabDef.toInterlockingGraph(): InterlockingGraph {
+    return InterlockingGraph(
+        levers = this.levers.map {
+            LeverRule(
+                logic = it.logic,
+                conditions = it.conditions,
+                autoReverser = it.autoReverser
+            )
+        }
+    )
+}
+
 object Interlocking {
     /**
      * Evaluates whether a lever can be thrown to the new state based on interlocking rules.
      */
     fun evaluate(
-        tab: TabDef,
+        graph: InterlockingGraph,
         levers: List<DomainLever>,
         blocks: List<DomainBlock>,
         leverIndex: Int,
@@ -99,8 +121,8 @@ object Interlocking {
         // Create the new hypothetical state
         val newLevers = levers.map { if (it.id == leverIndex) it.copy(isReversed = attemptingState) else it }
 
-        val currentConflicts = getConflictingLevers(tab, levers, blocks).toSet()
-        val newConflicts = getConflictingLevers(tab, newLevers, blocks).toSet()
+        val currentConflicts = getConflictingLevers(graph, levers, blocks).toSet()
+        val newConflicts = getConflictingLevers(graph, newLevers, blocks).toSet()
 
         // The move is valid if it doesn't introduce any new conflicts.
         // i.e., newConflicts must be a subset of currentConflicts.
@@ -110,20 +132,20 @@ object Interlocking {
     /**
      * Returns a list of lever indices that are involved in an interlocking conflict.
      */
-    fun getConflictingLevers(tab: TabDef, levers: List<DomainLever>, blocks: List<DomainBlock>): List<Int> {
+    fun getConflictingLevers(graph: InterlockingGraph, levers: List<DomainLever>, blocks: List<DomainBlock>): List<Int> {
         val conflicts = mutableSetOf<Int>()
-        for (i in tab.levers.indices) {
-            if (levers[i].isReversed) {
-                val leverDef = tab.levers[i]
-                if (leverDef.logic != null) {
-                    val result = leverDef.logic.evaluate(levers, blocks)
+        for (i in graph.levers.indices) {
+            if (i < levers.size && levers[i].isReversed) {
+                val leverRule = graph.levers[i]
+                if (leverRule.logic != null) {
+                    val result = leverRule.logic.evaluate(levers, blocks)
                     if (!result.isSatisfied) {
                         conflicts.add(i)
                         conflicts.addAll(result.involvedLevers)
                     }
                 } else {
                     // Fallback to legacy processing just in case logic is null (e.g. from tests)
-                    for (condition in leverDef.conditions) {
+                    for (condition in leverRule.conditions) {
                         if (condition.targetIndex != -1) {
                             val primaryTargetState = if (condition.targetType == TargetType.BLOCK) {
                                 blocks.getOrNull(condition.targetIndex)?.isOccupied ?: false
@@ -157,7 +179,7 @@ object Interlocking {
     }
 
     fun applyCascades(
-        tab: TabDef,
+        graph: InterlockingGraph,
         levers: MutableList<DomainLever>,
         blocks: List<DomainBlock>
     ): List<Int> {
@@ -165,10 +187,10 @@ object Interlocking {
         var reverserChanged: Boolean
         do {
             reverserChanged = false
-            val currentConflicts = getConflictingLevers(tab, levers, blocks)
+            val currentConflicts = getConflictingLevers(graph, levers, blocks)
 
-            tab.levers.forEachIndexed { leverIdx, leverDef ->
-                if (leverDef.autoReverser && levers[leverIdx].isReversed) {
+            graph.levers.forEachIndexed { leverIdx, leverRule ->
+                if (leverRule.autoReverser && leverIdx < levers.size && levers[leverIdx].isReversed) {
                     if (leverIdx in currentConflicts) {
                         levers[leverIdx] = levers[leverIdx].copy(isReversed = false) // Force to NORMAL
                         reverserChanged = true

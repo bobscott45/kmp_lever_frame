@@ -19,7 +19,7 @@ Split `AppViewModel` into distinct, single-purpose components:
 2. **`ConfigViewModel`:** Dedicated to handling the Schematic Editor and JSON configuration tabs.
 3. **`FrameViewModel`:** A lightweight ViewModel that only bridges the `InterlockingService` to the Compose UI for rendering the physical levers.
 
-## 2. Decoupling Interlocking from Serialization Models
+## 2. Decoupling Interlocking from Serialization Models (COMPLETED)
 
 ### The Problem
 In `Interlocking.kt`, core evaluation functions like `getConflictingLevers` are tightly coupled to `TabDef`, `LeverDef`, and `BlockDef`. These classes are fundamentally Data Transfer Objects (DTOs) tailored for `kotlinx.serialization` (JSON parsing).
@@ -43,7 +43,7 @@ Implement an **Event Bus** or **Domain Event Flow**:
 - A separate `NetworkStateObserver` listens to these generic domain events, looks up the configured LCC strings in the configuration, and pushes them to the `OpenLcbEngine`.
 - This fully restores the Single Responsibility Principle to the interlocking engine.
 
-## 4. Abstracting Network Transports
+## 4. Abstracting Network Transports (COMPLETED)
 
 ### The Problem
 The newly extracted `:openlcb` module's `OpenLcbEngine` directly invokes `GridConnectNetwork.sendMessage()`, which is a concrete singleton explicitly tied to Ktor TCP sockets.

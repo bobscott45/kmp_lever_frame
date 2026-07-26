@@ -40,13 +40,13 @@ class InterlockingTest {
         val tab = TabDef(leverDefs)
         val levers = createLevers(false, false)
 
-        assertTrue(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers, emptyList(), 0, true))
 
         val leversMod = createLevers(true, false)
 
-        assertFalse(Interlocking.evaluate(tab, leversMod, emptyList(), 1, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), leversMod, emptyList(), 1, true))
 
-        assertTrue(Interlocking.evaluate(tab, leversMod, emptyList(), 0, false))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), leversMod, emptyList(), 0, false))
     }
 
     @Test
@@ -63,10 +63,10 @@ class InterlockingTest {
         val tab = TabDef(leverDefs)
         
         val levers1 = createLevers(false, false, false)
-        assertTrue(Interlocking.evaluate(tab, levers1, emptyList(), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers1, emptyList(), 0, true))
         
         val levers2 = createLevers(false, true, false)
-        assertFalse(Interlocking.evaluate(tab, levers2, emptyList(), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers2, emptyList(), 0, true))
     }
 
     @Test
@@ -79,7 +79,7 @@ class InterlockingTest {
         val tab = TabDef(leverDefs)
         val levers = createLevers(false, true)
 
-        assertFalse(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers, emptyList(), 0, true))
     }
 
     @Test
@@ -92,11 +92,11 @@ class InterlockingTest {
         val tab = TabDef(leverDefs)
         val levers = createLevers(false, false)
 
-        assertTrue(Interlocking.evaluate(tab, levers, emptyList(), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers, emptyList(), 0, true))
         
         val leversMod = createLevers(true, false)
         
-        assertFalse(Interlocking.evaluate(tab, leversMod, emptyList(), 1, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), leversMod, emptyList(), 1, true))
     }
 
     @Test
@@ -113,13 +113,13 @@ class InterlockingTest {
         val tab = TabDef(leverDefs)
         
         val levers1 = createLevers(false, false, false)
-        assertFalse(Interlocking.evaluate(tab, levers1, emptyList(), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers1, emptyList(), 0, true))
 
         val levers2 = createLevers(false, true, true)
-        assertFalse(Interlocking.evaluate(tab, levers2, emptyList(), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers2, emptyList(), 0, true))
 
         val levers3 = createLevers(false, false, true)
-        assertTrue(Interlocking.evaluate(tab, levers3, emptyList(), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers3, emptyList(), 0, true))
     }
 
     @Test
@@ -137,8 +137,8 @@ class InterlockingTest {
         val blocksEmpty = createBlocks(false)
         val blocksOccupied = createBlocks(true)
 
-        assertTrue(Interlocking.evaluate(tab, levers, blocksEmpty, 0, true))
-        assertFalse(Interlocking.evaluate(tab, levers, blocksOccupied, 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers, blocksEmpty, 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers, blocksOccupied, 0, true))
     }
 
     @Test
@@ -162,18 +162,18 @@ class InterlockingTest {
         
         // Both conditions met: L1 is Normal, L2 is Normal
         val levers1 = createLevers(false, false, false)
-        assertTrue(Interlocking.evaluate(tab, levers1, createBlocks(false), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers1, createBlocks(false), 0, true))
 
         // Fails AND condition: L2 is Reversed
         val levers2 = createLevers(false, false, true)
-        assertFalse(Interlocking.evaluate(tab, levers2, createBlocks(false), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers2, createBlocks(false), 0, true))
         
         // Fails OR condition: L1 is Reversed, Block0 is Empty
         val levers3 = createLevers(false, true, false)
-        assertFalse(Interlocking.evaluate(tab, levers3, createBlocks(false), 0, true))
+        assertFalse(Interlocking.evaluate(tab.toInterlockingGraph(), levers3, createBlocks(false), 0, true))
 
         // Passes OR condition (Block0 is Occupied, despite L1 Reversed), AND passes (L2 Normal)
         val levers4 = createLevers(false, true, false)
-        assertTrue(Interlocking.evaluate(tab, levers4, createBlocks(true), 0, true))
+        assertTrue(Interlocking.evaluate(tab.toInterlockingGraph(), levers4, createBlocks(true), 0, true))
     }
 }

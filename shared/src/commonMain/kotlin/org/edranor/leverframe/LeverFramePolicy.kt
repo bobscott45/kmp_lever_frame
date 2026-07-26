@@ -47,7 +47,7 @@ object LeverFramePolicy {
      * is valid according to Interlocking rules, or null if it violates the rules.
      */
     fun attemptToggle(tabDef: TabDef, levers: List<DomainLever>, blocks: List<DomainBlock>, leverIndex: Int, target: Boolean): List<DomainLever>? {
-        val isValid = Interlocking.evaluate(tabDef, levers, blocks, leverIndex, target)
+        val isValid = Interlocking.evaluate(tabDef.toInterlockingGraph(), levers, blocks, leverIndex, target)
         if (isValid) {
             val newLevers = levers.toMutableList()
             newLevers[leverIndex] = newLevers[leverIndex].copy(isReversed = target)

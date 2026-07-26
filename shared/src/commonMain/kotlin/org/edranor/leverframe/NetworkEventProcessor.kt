@@ -42,7 +42,7 @@ class NetworkEventProcessor(
                     val frame = newFrames[tabIdx]
                     val currState = frame.levers[leverIdx].isReversed
                     if (currState != attemptState) {
-                        val isValid = Interlocking.evaluate(tabDef, frame.levers, frame.blocks, leverIdx, attemptState)
+                        val isValid = Interlocking.evaluate(tabDef.toInterlockingGraph(), frame.levers, frame.blocks, leverIdx, attemptState)
                         if (LeverFramePolicy.shouldApplyExternalEvent(policy, isValid)) {
                             val newLevers = frame.levers.toMutableList()
                             newLevers[leverIdx] = newLevers[leverIdx].copy(isReversed = attemptState)
@@ -77,7 +77,7 @@ class NetworkEventProcessor(
 
             // Evaluate auto-reversers (cascade until steady state)
             val mutableLevers = newFrames[tabIdx].levers.toMutableList()
-            val cascadedLeverIndices = Interlocking.applyCascades(tabDef, mutableLevers, newFrames[tabIdx].blocks)
+            val cascadedLeverIndices = Interlocking.applyCascades(tabDef.toInterlockingGraph(), mutableLevers, newFrames[tabIdx].blocks)
             if (cascadedLeverIndices.isNotEmpty()) {
                 newFrames[tabIdx] = newFrames[tabIdx].copy(levers = mutableLevers)
                 stateChanged = true
@@ -93,7 +93,7 @@ class NetworkEventProcessor(
         if (stateChanged) {
             val conflicts = if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex in newFrames.indices) {
                 Interlocking.getConflictingLevers(
-                    configState.tabs[uiState.selectedTabIndex].second,
+                    configState.tabs[uiState.selectedTabIndex].second.toInterlockingGraph(),
                     newFrames[uiState.selectedTabIndex].levers,
                     newFrames[uiState.selectedTabIndex].blocks
                 )

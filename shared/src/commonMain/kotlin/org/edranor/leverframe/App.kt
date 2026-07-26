@@ -473,7 +473,7 @@ fun ColumnScope.LeverTrackGroup(
                         val isReversed = levers[index].isReversed
                         val isManuallyLocked = levers[index].isManuallyLocked
                         val blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList()
-                        val isSystemLocked = !Interlocking.evaluate(currentTabDef, levers, blocks, index, !isReversed)
+                        val isSystemLocked = !Interlocking.evaluate(currentTabDef.toInterlockingGraph(), levers, blocks, index, !isReversed)
                         val isAlarmed = index in domainState.conflictingLevers
     
                         LeverComponent(
