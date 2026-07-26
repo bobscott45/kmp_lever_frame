@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 1.2.0-dev
 
 ### Added
+- **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
+- **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
 - **UI/UX**: Implemented a complete "Entrance-Exit" (NX) Routing Engine. Users can now tap an Entrance signal and an Exit signal on the active schematic to automatically establish complex routes.
 - **Logic**: The NX Routing Engine automatically traces track connections, determines the correct required states for all turnouts (straight or diverging), and throws the physical levers in sequence.
 - **Logic**: NX Routing automatically parses mathematical AST interlocking logic for requested signals to seamlessly resolve and pull out-of-path prerequisites like Facing Point Locks (FPLs), trap points, and flank protection turnouts.
@@ -88,6 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2026-07-20
 
 ### Added
+- **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
+- **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
 - **Documentation**: Completely rewrote the `README.md` to use neutral language and extracted all detailed configuration and operational instructions into a newly created `USER_GUIDE.md` (which now includes documentation for the Save feature and a refined structural flow).
 - **Documentation**: Updated the main README with explicit documentation covering the default configurations for the Yard block (South Box) and provided a step-by-step example on how block states affect interlocking and the Auto-Reverser.
 - **Digital Block Shelf**: A new visual shelf above the levers to track and toggle digital block occupancies.
@@ -111,6 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.3] - 2026-07-19
 
 ### Added
+- **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
+- **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
 - **Documentation**: Added day-to-day Tag and Bump versioning workflow guidelines and Xcode configuration steps (`04a7df3`).
 
 ### Changed
@@ -143,6 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - Initial Public Release Candidates
 
 ### Added
+- **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
+- **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
 - **Native Android & Desktop Apps**: Completely rebuilt the ESP32 Lever Frame concept as a native Kotlin Multiplatform app.
 - **In-App Configuration**: Added a fully functional Compose UI for editing LCC events, conflict policies, and networking config directly on the device.
 - **Android Display Features**: Implemented automatic `KeepScreenOn` and a touch-debounce mechanism that prevents accidental lever throws immediately after waking the screen from sleep.
