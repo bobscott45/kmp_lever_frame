@@ -78,7 +78,8 @@ class NxRoutingService(
         }
         
         val requiredLeverStates = mutableMapOf<Int, Boolean>()
-        val signalLeversToPull = mutableListOf<Int>()
+        val primarySignalLeversToPull = mutableListOf<Int>()
+        val secondarySignalLeversToPull = mutableListOf<Int>()
         
         val blocks = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.blocks ?: return NxRoutingResult.Error("State not found")
         var isRouteOccupied = false
@@ -125,11 +126,11 @@ class NxRoutingService(
                     }
                     val leverToPull = if (nextTurnoutDiverging) elem.linkedLever2 else elem.linkedLever
                     if (leverToPull >= 0) {
-                        signalLeversToPull.add(leverToPull)
+                        primarySignalLeversToPull.add(leverToPull)
                     }
                 } else {
                     if (elem.linkedLever >= 0) {
-                        signalLeversToPull.add(elem.linkedLever)
+                        primarySignalLeversToPull.add(elem.linkedLever)
                     }
                 }
             }
@@ -165,19 +166,21 @@ class NxRoutingService(
                         } else {
                             behindElem.linkedLever
                         }
-                        if (leverToPull >= 0 && !signalLeversToPull.contains(leverToPull)) {
-                            signalLeversToPull.add(leverToPull)
+                        if (leverToPull >= 0 && !primarySignalLeversToPull.contains(leverToPull)) {
+                            secondarySignalLeversToPull.add(leverToPull)
                         }
                     }
                 }
             }
         }
         
+        val allSignalLeversToPull = primarySignalLeversToPull + secondarySignalLeversToPull
+        
         if (isRouteOccupied) {
             return NxRoutingResult.Error("Cannot set route: Track circuit occupied", occupiedCells)
         }
         
-        for (signalLeverIdx in signalLeversToPull) {
+        for (signalLeverIdx in allSignalLeversToPull) {
             val leverDef = tabDef.levers.getOrNull(signalLeverIdx) ?: continue
             val ast = leverDef.logic ?: leverDef.conditions.toAstNode()
             if (ast != null) {
@@ -207,13 +210,15 @@ class NxRoutingService(
         while (madeProgress && loops < 5) {
             madeProgress = false
             val currentLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
-            for (signalLeverIdx in signalLeversToPull) {
+            for (signalLeverIdx in allSignalLeversToPull) {
                 if (!currentLevers[signalLeverIdx].isReversed) {
                     val result = interlockingService.toggleLever(tabIndex, signalLeverIdx, selectedTabIndex)
                     if (result.didChange) {
                         madeProgress = true
-                        lastErrorMsg = null
-                    } else if (result.errorMessage != null) {
+                        if (primarySignalLeversToPull.contains(signalLeverIdx)) {
+                            lastErrorMsg = null
+                        }
+                    } else if (result.errorMessage != null && primarySignalLeversToPull.contains(signalLeverIdx)) {
                         lastErrorMsg = result.errorMessage
                     }
                 }
@@ -221,11 +226,11 @@ class NxRoutingService(
             loops++
         }
         
-        val anySignalFailed = signalLeversToPull.any { idx ->
+        val anyPrimarySignalFailed = primarySignalLeversToPull.any { idx ->
             interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers?.getOrNull(idx)?.isReversed == false
         }
         
-        if (anySignalFailed) {
+        if (anyPrimarySignalFailed) {
             val msg = lastErrorMsg ?: "Interlocking rejected route"
             return NxRoutingResult.Error(msg, emptyList())
         }
