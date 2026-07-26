@@ -76,13 +76,12 @@ class NxRoutingService(
                 levers.getOrNull(startElem.linkedLever2)?.isReversed == true
             } else false
             
-            if (isReversed1 || isReversed2) {
-                if (isReversed1) interlockingService.toggleLever(tabIndex, startElem.linkedLever, selectedTabIndex)
-                if (isReversed2) interlockingService.toggleLever(tabIndex, startElem.linkedLever2, selectedTabIndex)
-                
-                var currentQueue = listOf(startElem)
-                val visited = mutableSetOf<Pair<Int, Int>>()
-                visited.add(actualEntrancePos)
+            if (isReversed1) interlockingService.toggleLever(tabIndex, startElem.linkedLever, selectedTabIndex)
+            if (isReversed2) interlockingService.toggleLever(tabIndex, startElem.linkedLever2, selectedTabIndex)
+            
+            var currentQueue = listOf(startElem)
+            val visited = mutableSetOf<Pair<Int, Int>>()
+            visited.add(actualEntrancePos)
                 
                 while (currentQueue.isNotEmpty()) {
                     val nextQueue = mutableListOf<org.edranor.leverframe.SchematicElementDef>()
@@ -145,7 +144,6 @@ class NxRoutingService(
                         }
                     }
                 }
-            }
         }
         return NxRoutingResult.Success
     }
@@ -154,17 +152,26 @@ class NxRoutingService(
         val tabDef = configService.configState.value.tabs.getOrNull(tabIndex)?.second ?: return NxRoutingResult.Error("Configuration not found")
         val map = tabDef.schematicElements.associateBy { Pair(it.x, it.y) }
         
-        val startElemCheck = map[route.pathCells.firstOrNull()]
-        if (startElemCheck != null && startElemCheck.type.contains("SIGNAL") && startElemCheck.linkedLever >= 0) {
-            val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
-            val isReversed1 = levers.getOrNull(startElemCheck.linkedLever)?.isReversed == true
-            val isReversed2 = if (startElemCheck.type.startsWith("BRACKET_SIGNAL") && startElemCheck.linkedLever2 >= 0) {
-                levers.getOrNull(startElemCheck.linkedLever2)?.isReversed == true
-            } else false
-            
-            if (isReversed1 || isReversed2) {
-                return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
+        val levers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: return NxRoutingResult.Error("State not found")
+        var isAnySignalReversed = false
+        for (pos in route.pathCells) {
+            val elemCheck = map[pos]
+            if (elemCheck != null && elemCheck.type.contains("SIGNAL") && elemCheck.linkedLever >= 0) {
+                if (levers.getOrNull(elemCheck.linkedLever)?.isReversed == true) {
+                    isAnySignalReversed = true
+                    break
+                }
+                if (elemCheck.type.startsWith("BRACKET_SIGNAL") && elemCheck.linkedLever2 >= 0) {
+                    if (levers.getOrNull(elemCheck.linkedLever2)?.isReversed == true) {
+                        isAnySignalReversed = true
+                        break
+                    }
+                }
             }
+        }
+        
+        if (isAnySignalReversed) {
+            return cancelNxRoute(tabIndex, route.pathCells.first(), selectedTabIndex)
         }
         
         val requiredLeverStates = mutableMapOf<Int, Boolean>()
