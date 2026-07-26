@@ -33,16 +33,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-object GridConnectNetwork {
+object GridConnectNetwork : NetworkTransport {
 
     private val _incomingMessages = MutableSharedFlow<String>(extraBufferCapacity = 100)
-    val incomingMessages: SharedFlow<String> = _incomingMessages.asSharedFlow()
+    override val incomingMessages: SharedFlow<String> = _incomingMessages.asSharedFlow()
 
     private val _connectionStatus = MutableStateFlow("Disconnected")
-    val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
+    override val connectionStatus: StateFlow<String> = _connectionStatus.asStateFlow()
 
     private val _connectionErrors = MutableSharedFlow<String>(extraBufferCapacity = 10)
-    val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
+    override val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
 
     private var activeSocket: Socket? = null
     private var activeServerSocket: ServerSocket? = null
@@ -56,7 +56,19 @@ object GridConnectNetwork {
     private val selectorManager = SelectorManager(Dispatchers.IO)
     private val sendQueue = Channel<String>(Channel.UNLIMITED)
     
-    var onClientConnected: (() -> Unit)? = null
+    override var onClientConnected: (() -> Unit)? = null
+
+    override fun connect(hubIp: String) {
+        if (hubIp.isBlank()) {
+            startServer()
+        } else {
+            startClient(hubIp)
+        }
+    }
+    
+    override fun disconnect() {
+        stop()
+    }
 
     /**
      * Starts listening as a TCP Server on port 12021 (Standard OpenLCB GridConnect Port).
@@ -177,7 +189,7 @@ object GridConnectNetwork {
     /**
      * Sends a GridConnect message (e.g. ":X195B4000N;") to the connected socket.
      */
-    fun sendMessage(msg: String) {
+    override fun sendMessage(msg: String) {
         if (writeChannel != null) {
             sendQueue.trySend(msg)
         } else {

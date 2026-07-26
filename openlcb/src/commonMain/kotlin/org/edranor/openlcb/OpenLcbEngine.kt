@@ -5,7 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 
 interface LccNetworkClient {
@@ -29,25 +31,32 @@ object OpenLcbEngine : LccNetworkClient {
     private var memoryHandler: MemorySpaceHandler? = null
     private var eventProvider: EventProducerProvider? = null
 
+    private var transport: NetworkTransport? = null
+
     fun configure(
         config: OpenLcbConfig,
         memoryHandler: MemorySpaceHandler,
-        eventProvider: EventProducerProvider
+        eventProvider: EventProducerProvider,
+        transport: NetworkTransport = GridConnectNetwork
     ) {
         this.config = config
         this.memoryHandler = memoryHandler
         this.eventProvider = eventProvider
+        this.transport = transport
     }
 
     private val _externalEvents = MutableSharedFlow<String>(extraBufferCapacity = 100)
     override val externalEvents = _externalEvents.asSharedFlow()
 
-    override val connectionStatus = GridConnectNetwork.connectionStatus
-    override val connectionErrors = GridConnectNetwork.connectionErrors
+    private val _connectionStatus = kotlinx.coroutines.flow.MutableStateFlow("Disconnected")
+    override val connectionStatus = _connectionStatus.asStateFlow()
+
+    private val _connectionErrors = MutableSharedFlow<String>(extraBufferCapacity = 10)
+    override val connectionErrors = _connectionErrors.asSharedFlow()
 
     override fun disconnect() {
         lccJob?.cancel()
-        GridConnectNetwork.stop()
+        transport?.disconnect()
     }
 
     override fun initialize() {
@@ -57,7 +66,9 @@ object OpenLcbEngine : LccNetworkClient {
         // Generate pseudo-random alias to avoid JMRI collisions
         NODE_ALIAS = kotlin.random.Random.nextInt(1, 4096).toString(16).padStart(3, '0').uppercase()
 
-        GridConnectNetwork.onClientConnected = {
+        val tr = transport ?: GridConnectNetwork
+        
+        tr.onClientConnected = {
             CoroutineScope(Dispatchers.Default).launch {
                 kotlinx.coroutines.delay(500) // Give network time to settle
                 sendAliasMapDefinition()
@@ -66,15 +77,18 @@ object OpenLcbEngine : LccNetworkClient {
             }
         }
 
-        if (hubIp.isEmpty()) {
-            GridConnectNetwork.startServer()
-        } else {
-            GridConnectNetwork.startClient(hubIp)
+        tr.connect(hubIp)
+
+        CoroutineScope(Dispatchers.Default).launch {
+            tr.connectionStatus.collect { _connectionStatus.value = it }
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            tr.connectionErrors.collect { _connectionErrors.emit(it) }
         }
         
         lccJob?.cancel()
         lccJob = CoroutineScope(Dispatchers.Default).launch {
-            GridConnectNetwork.incomingMessages.collect { msgRaw ->
+            tr.incomingMessages.collect { msgRaw ->
                 val msg = msgRaw.uppercase()
                 if (msg.contains("X18490") || msg.contains("X19490")) { // Verify Node ID (Global)
                     sendVerifiedNodeId()
@@ -208,17 +222,17 @@ object OpenLcbEngine : LccNetworkClient {
         try {
             if (payload.size <= 8) {
                 val hexData = payload.joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
-                GridConnectNetwork.sendMessage(":X1A${destAlias}${NODE_ALIAS}N${hexData};")
+                transport?.sendMessage(":X1A${destAlias}${NODE_ALIAS}N${hexData};")
             } else {
                 val chunks = payload.chunked(8)
                 for ((index, chunk) in chunks.withIndex()) {
                     val hexData = chunk.joinToString("") { it.toUByte().toString(16).padStart(2, '0').uppercase() }
                     if (index == 0) {
-                        GridConnectNetwork.sendMessage(":X1B${destAlias}${NODE_ALIAS}N${hexData};")
+                        transport?.sendMessage(":X1B${destAlias}${NODE_ALIAS}N${hexData};")
                     } else if (index == chunks.lastIndex) {
-                        GridConnectNetwork.sendMessage(":X1D${destAlias}${NODE_ALIAS}N${hexData};")
+                        transport?.sendMessage(":X1D${destAlias}${NODE_ALIAS}N${hexData};")
                     } else {
-                        GridConnectNetwork.sendMessage(":X1C${destAlias}${NODE_ALIAS}N${hexData};")
+                        transport?.sendMessage(":X1C${destAlias}${NODE_ALIAS}N${hexData};")
                     }
                 }
             }
@@ -230,7 +244,7 @@ object OpenLcbEngine : LccNetworkClient {
     private fun sendDatagramReceivedOk(destAlias: String) {
         try {
             val msg = ":X19A28${NODE_ALIAS}N0${destAlias};"
-            GridConnectNetwork.sendMessage(msg)
+            transport?.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send Datagram Received OK: ${e.message}")
         }
@@ -239,7 +253,7 @@ object OpenLcbEngine : LccNetworkClient {
     private fun sendProtocolSupportReply(destAlias: String) {
         try {
             val msg = ":X19668${NODE_ALIAS}N0${destAlias}D41800000000;"
-            GridConnectNetwork.sendMessage(msg)
+            transport?.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send Protocol Support Reply: ${e.message}")
         }
@@ -249,7 +263,7 @@ object OpenLcbEngine : LccNetworkClient {
         try {
             val nodeId = getCleanNodeId()
             val msg = ":X10700${NODE_ALIAS}N${nodeId};"
-            GridConnectNetwork.sendMessage(msg)
+            transport?.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send AMD: ${e.message}")
         }
@@ -259,7 +273,7 @@ object OpenLcbEngine : LccNetworkClient {
         try {
             val nodeId = getCleanNodeId()
             val msg = ":X19087${NODE_ALIAS}N${nodeId};"
-            GridConnectNetwork.sendMessage(msg)
+            transport?.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send Initialization Complete: ${e.message}")
         }
@@ -269,7 +283,7 @@ object OpenLcbEngine : LccNetworkClient {
         try {
             val nodeId = getCleanNodeId()
             val msg = ":X19170${NODE_ALIAS}N${nodeId};"
-            GridConnectNetwork.sendMessage(msg)
+            transport?.sendMessage(msg)
         } catch (e: Exception) {
             println("Failed to send Verified Node ID: ${e.message}")
         }
@@ -302,7 +316,7 @@ object OpenLcbEngine : LccNetworkClient {
                     hexData.append(b.toUByte().toString(16).padStart(2, '0').uppercase())
                 }
                 val msg = ":X19A08${NODE_ALIAS}N${hexData};"
-                GridConnectNetwork.sendMessage(msg)
+                transport?.sendMessage(msg)
             }
         } catch (e: Exception) {
             println("Failed to send SNIP Reply: ${e.message}")
@@ -337,7 +351,7 @@ object OpenLcbEngine : LccNetworkClient {
             val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
                 val msg = ":X19544${NODE_ALIAS}N$cleanHex;"
-                GridConnectNetwork.sendMessage(msg)
+                transport?.sendMessage(msg)
             }
         } catch (e: Exception) {
             println("Failed to send Producer Identified for $eventIdStr: ${e.message}")
@@ -350,7 +364,7 @@ object OpenLcbEngine : LccNetworkClient {
             val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
                 val msg = ":X19914${NODE_ALIAS}N$cleanHex;"
-                GridConnectNetwork.sendMessage(msg)
+                transport?.sendMessage(msg)
             }
         } catch (e: Exception) {
             println("Failed to send Identify Producer for $eventIdStr: ${e.message}")
@@ -363,7 +377,7 @@ object OpenLcbEngine : LccNetworkClient {
             val cleanHex = parseEventId(eventIdStr)
             if (cleanHex.length == 16) {
                 val gridConnectMsg = ":X195B4${NODE_ALIAS}N$cleanHex;"
-                GridConnectNetwork.sendMessage(gridConnectMsg)
+                transport?.sendMessage(gridConnectMsg)
             }
         } catch (e: Exception) {
             println("Failed to produce event $eventIdStr: ${e.message}")
