@@ -94,4 +94,14 @@ object NxRoutingEngine {
         }
         return routes
     }
+    fun getRequiredLeverStatesFromAst(node: AstNode, inNot: Boolean = false): Map<Int, Boolean> {
+        val res = mutableMapOf<Int, Boolean>()
+        when (node) {
+            is AndNode -> node.children.forEach { res.putAll(getRequiredLeverStatesFromAst(it, inNot)) }
+            is NotNode -> res.putAll(getRequiredLeverStatesFromAst(node.child, !inNot))
+            is LeverStateNode -> res[node.leverIndex] = if (inNot) !node.requiredReversed else node.requiredReversed
+            else -> {}
+        }
+        return res
+    }
 }

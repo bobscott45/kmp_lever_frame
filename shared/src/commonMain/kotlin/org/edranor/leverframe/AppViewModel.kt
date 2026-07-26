@@ -215,22 +215,11 @@ class AppViewModel(
         }
         
         // Resolve out-of-path prerequisites (like FPLs, Trap Points, Flank Turnouts)
-        fun getRequiredLeverStatesFromAst(node: AstNode, inNot: Boolean = false): Map<Int, Boolean> {
-            val res = mutableMapOf<Int, Boolean>()
-            when (node) {
-                is AndNode -> node.children.forEach { res.putAll(getRequiredLeverStatesFromAst(it, inNot)) }
-                is NotNode -> res.putAll(getRequiredLeverStatesFromAst(node.child, !inNot))
-                is LeverStateNode -> res[node.leverIndex] = if (inNot) !node.requiredReversed else node.requiredReversed
-                else -> {}
-            }
-            return res
-        }
-        
         for (signalLeverIdx in signalLeversToPull) {
             val leverDef = tabDef.levers.getOrNull(signalLeverIdx) ?: continue
             val ast = leverDef.logic ?: leverDef.conditions.toAstNode()
             if (ast != null) {
-                val reqs = getRequiredLeverStatesFromAst(ast)
+                val reqs = NxRoutingEngine.getRequiredLeverStatesFromAst(ast)
                 for ((reqLeverIdx, reqState) in reqs) {
                     if (!requiredLeverStates.containsKey(reqLeverIdx)) {
                         val reqDef = tabDef.levers.getOrNull(reqLeverIdx)
