@@ -56,6 +56,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
+            implementation(project(":openlcb"))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -21,6 +21,8 @@
  */
 package org.edranor.leverframe
 
+import org.edranor.openlcb.GridConnectNetwork
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
