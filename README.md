@@ -11,14 +11,14 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 ## Key Features
 
 * **Cross-Platform**: Run the same lever frame logic and UI on an Android tablet, an iPad, or a Desktop PC (Windows/MacOS/Linux).
-* **Standalone Simulator Mode**: No physical layout, network, or hardware required. The application functions perfectly offline as a virtual signalling simulator. You can tap the digital blocks on screen to manually simulate train movements and test complex interlocking logic.
-* **Native Kotlin OpenLCB / LCC Integration**: Comprehensive, 100% native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
+* **Standalone Simulator Mode**: No physical layout, network, or hardware required. The application functions offline as a virtual signalling simulator. You can tap the digital blocks on screen to manually simulate train movements and test complex interlocking logic.
+* **Native Kotlin OpenLCB / LCC Integration**: Native Kotlin Multiplatform support for Layout Command Control protocols. Operates exclusively via **GridConnect TCP over Wi-Fi**, handling two-way event parsing and dynamic lever state synchronization without requiring a physical CAN bus connection or any external C/C++ libraries.
 * **In-App Configuration**: No web server needed. Configure LCC events, network settings, and conflict policies natively within the app. Configurations can be exported and imported as JSON (via native file dialogs on Desktop, and via the system clipboard on mobile devices).
 * **Remote CDI Configuration**: If bridged to a physical layout, virtually all network settings, Event IDs, and text labels (Lever Names, Block Names, and Short Codes) can be edited directly from JMRI via standard OpenLCB Memory Configuration (CDI).
-* **Prototypical Interlocking Engine**: A robust interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
+* **Prototypical Interlocking Engine**: An interlocking engine that bidirectionally models physical mechanical tappet locking, preventing deadlocks and supporting complex route dependencies like Facing Point Locks (FPLs) and conditional "OR" logic.
 * **Digital Block Shelf**: Define and monitor track occupancy blocks directly above the lever frame. 
 * **Live Track Schematic**: A reactive, grid-based panel diagram that dynamically renders live block occupancies and point positions, complete with a built-in visual layout editor.
-* **NX (Entrance-Exit) Routing**: Prototypical relay-style route setting! Simply tap an Entrance signal and an Exit signal on the live schematic, and the NX Routing Engine will automatically trace the track, calculate the required diverging points, throw the physical levers, and sequentially clear all required signals (and their dependencies like FPLs) with full interlocking safety checks.
+* **NX (Entrance-Exit) Routing**: Prototypical relay-style route setting. Tap an Entrance signal and an Exit signal on the live schematic, and the NX Routing Engine will trace the track, calculate the required diverging points, throw the physical levers, and sequentially clear all required signals (and their dependencies like FPLs) with interlocking safety checks.
 * **Cross-Interlocking & Auto-Reversers**: Interlock mechanical levers directly to digital block occupancies. Signals can be configured as "Auto-Reversers", automatically snapping back to Danger when a train enters a block, mimicking prototypical track-circuit interlocking.
 * **Touch UI**: Built with Compose Multiplatform, featuring dark modes and gesture-based lever pulling.
 * **Optional Sounds**: Configurable auditory feedback mimicking the physical clunks of mechanical levers, tappet locking, and block instrument bells.
@@ -61,6 +61,18 @@ To package the app for the current operating system (creates `.deb`, `.dmg`, or 
 ./gradlew :desktopApp:packageDistributionForCurrentOS
 ```
 
+### Raspberry Pi (Raspbian / Linux ARM64)
+To build a fat JAR (UberJar) that includes all necessary native dependencies (such as the `linux-arm64` Skiko libraries) to run natively on a Raspberry Pi using a Wayland kiosk compositor like Cage:
+```bash
+./gradlew :desktopApp:packageUberJarForCurrentOS
+```
+*(Note: This outputs a file in `desktopApp/build/compose/jars/` named after the host OS building it, e.g., `LeverFrame-linux-x64-X.X.X.jar`, but it contains the fat JAR with ARM64 binaries and will run on a 64-bit Raspbian device).*
+
+To run it on the Pi with Cage:
+```bash
+cage -- java -jar LeverFrame-linux-x64-X.X.X.jar
+```
+
 ### iOS (Experimental)
 Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or simulator, and run the project. 
 
@@ -90,7 +102,7 @@ This frame protects a junction where a branch line diverges from a main line. It
 ### South Box (Yard Frame)
 This frame controls a small yard crossover, serving as the continuation of the "TO YARD" line from North Junction. It includes a Digital Block Shelf monitoring "YARD APPROACH", "THROAT", "YARD", and "SIDING".
 
-*(Note: In a real-world prototypical setup, a small yard like this would generally use ground position light signals or shunting discs rather than full-sized semaphore Home and Distant signals. This configuration is deliberately "over-signalled" to demonstrate the application's advanced bracket signal and cascading distant signal capabilities in a compact space).*
+*(Note: In a real-world prototypical setup, a small yard like this would generally use ground position light signals or shunting discs rather than full-sized semaphore Home and Distant signals. This configuration is "over-signalled" to demonstrate bracket signal and cascading distant signal capabilities in a compact space).*
 - **Lever 1 (YARD DISTANT)**: The distant signal providing advance warning for the Yard Home. *Locks Lever 2 REVERSED*.
 - **Lever 2 (YARD HOME)**: The main arm of the bracket signal controlling entry into the yard. *Locks Lever 4 NORMAL*.
 - **Lever 3 (SIDING HOME)**: The diverging arm of the bracket signal controlling entry into the siding. *Locks Lever 4 REVERSED*.

@@ -17,11 +17,17 @@ The interface is divided into several key sections:
 
 ---
 
+## Building and Installation
+
+This user guide primarily covers the configuration and operation of Lever Frame. For complete instructions on how to compile, package, and run the application across its supported platforms (Android, Desktop, iOS, and Raspberry Pi), please refer to the **[Building and Running](README.md#building-and-running)** section in the main project `README.md`.
+
+---
+
 ## Getting Started & Recommended Workflow
 
 Before diving into the configuration menus, it's helpful to understand the two ways you can use this application:
 
-1. **Standalone Simulator Mode**: You do **not** need a physical model railway, a network, or any hardware to use this app. You can simply define your blocks, levers, and schematic, and then tap the digital blocks on your screen to manually simulate train movements. The app's internal mechanical interlocking engine will lock and release levers exactly as it would in real life. *(Note: When using the app as a standalone simulator, it is highly recommended to turn **LCC Enabled** OFF in the System Settings to prevent unnecessary network transmission attempts).*
+1. **Standalone Simulator Mode**: You do **not** need a physical model railway, a network, or any hardware to use this app. You can define your blocks, levers, and schematic, and then tap the digital blocks on your screen to manually simulate train movements. The app's internal mechanical interlocking engine will lock and release levers based on the interlocking rules. *(Note: When using the app as a standalone simulator, it is recommended to turn **LCC Enabled** OFF in the System Settings to prevent unnecessary network transmission attempts).*
 2. **Hardware Mode**: If you have a physical layout with LCC hardware (via a JMRI hub), the app acts as a live control panel. You configure the network settings, and the app will respond to physical trains triggering LCC sensors on your layout.
 
 ### Scalable Complexity
@@ -30,11 +36,11 @@ Lever Frame is designed as a sandbox. It supports highly complex prototypical op
 
 * **Simple "Point Motor Switchboard"**: You can define a frame with just a few `POINTS` levers. You don't need to define any signals, blocks, or interlocking rules. You don't even need to draw a schematic—you can just use the app as a row of switches.
 * **Gradual Expansion**: You might start with standalone point levers, then later add a few signals and basic interlocking rules (e.g., ensuring a signal cannot be cleared if the points are set against it).
-* **Full Prototypical Operation**: You can wire up physical track occupancy sensors, add facing point locks, complex conditional "OR" logic, and cross-interlock mechanical levers to digital blocks.
+* **Full Prototypical Operation**: You can wire up physical track occupancy sensors, add facing point locks, conditional "OR" logic, and cross-interlock mechanical levers to digital blocks.
 
 ### Recommended Configuration Sequence
 
-Because the application is built as an inter-dependent system, we highly recommend following this specific sequence when building a new setup from scratch:
+Because the application is built as an inter-dependent system, we recommend following this specific sequence when building a new setup from scratch:
 
 1. **Hardware / Network (Optional)**: If using real hardware, go to **System Settings** and define your Node IDs, JMRI IP, and Wi-Fi configuration.
 2. **Define Blocks**: Go to **Frame Configuration > Blocks**. Define all your track occupancy sections first (and their LCC Event IDs if using hardware). 
@@ -60,7 +66,7 @@ Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown wi
 
 <screenshot of the System Status screen>
 
-The System Status overlay provides crucial read-only information at a glance:
+The System Status overlay provides read-only information at a glance:
 *   **Network & Connection Status**: Verify your IP address, TCP Port, and current LCC connection state.
 *   **Current Settings**: View the active External Event Policy, LCC network status, and Master behavior.
 
@@ -146,13 +152,13 @@ The Rules tab displays the interlocking rules based on your **Default Rule Displ
    * Click **+ Add Rule** to create a new interlocking rule.
    * For each rule, select a **Primary Condition** (the target Lever or Block and its required state).
    * Check the **OR Alternate Condition** box to add a secondary target. If the Primary Condition fails, the lever can still be pulled if this Alternate Condition is met.
-3. **Text Formula Mode**: An advanced, raw text-based syntax editor for writing complex boolean logic (e.g., `(L4_R | B1_O) & L2_N & !(L3_R)`). Like the Clause Builder, if set as your default display mode, it opens directly ready for editing.
+3. **Text Formula Mode**: A raw text-based syntax editor for writing boolean logic (e.g., `(L4_R | B1_O) & L2_N & !(L3_R)`). Like the Clause Builder, if set as your default display mode, it opens directly ready for editing.
 
 <screenshot of adding/editing an interlocking condition dialog>
 
 ### Silent Updates (Hot-Reloading)
 
-When you edit *only* the **Interlocking Rules** (adding, removing, or changing targets) or **LCC Settings** (event IDs, broadcast toggles, enabling/disabling LCC for a lever) and click **Save**, the application will perform a **Silent Update** (Hot-Reload). This smoothly applies the new logic or network configuration in the background without dropping your overall network connection, without triggering a warning dialog, and without resetting the current positions of your levers.
+When you edit *only* the **Interlocking Rules** (adding, removing, or changing targets) or **LCC Settings** (event IDs, broadcast toggles, enabling/disabling LCC for a lever) and click **Save**, the application will perform a **Silent Update** (Hot-Reload). This applies the new logic or network configuration in the background without dropping your overall network connection, without triggering a warning dialog, and without resetting the current positions of your levers.
 
 If you modify structural elements—such as adding/deleting a lever or block, or changing a label—the app will fall back to a standard **Save & Reset**, returning all levers to NORMAL and restarting the network connection to ensure system consistency.
 
@@ -225,8 +231,8 @@ Every lever is composed of several distinct visual and interactive parts:
 <screenshot highlighting parts of an individual lever>
 
 *   **Brass Nameplate (Header)**: Located at the top. Displays the lever's custom label and a colored bar denoting its type (e.g., Red for Home Signal, Black for Points).
-    *   *Tip: Clicking or tapping the brass nameplate opens the **Lever Status Screen**—an overlay showing exactly which interlocking rule is failing (❌) or satisfied (✅) for that specific lever.*
-    *   *Tip: From the Status Screen, you can click **Edit Configuration** to instantly jump into configuring that specific lever. When you close the configuration, you will be smoothly dropped right back into the status screen!*
+    *   *Tip: Clicking or tapping the brass nameplate opens the **Lever Status Screen**—an overlay showing which interlocking rule is failing (❌) or satisfied (✅) for that specific lever.*
+    *   *Tip: From the Status Screen, you can click **Edit Configuration** to jump into configuring that specific lever. When you close the configuration, you will be returned to the status screen.*
 *   **State Indicators**: Text such as "ON / OFF" or "NORMAL / THROWN" appears above and below the lever track, showing the current operational state.
 *   **Track & Handle (Knob)**: The main interactive component. Slide the handle downwards to pull the lever (`REVERSED`), or push it upwards to return it (`NORMAL`). If the handle displays an "**A**", it means the **Auto-Reverser** feature is active, and the lever will snap back to Normal automatically when a train enters an interlocked block.
 *   **Locking Pin**: If the lever is mechanically locked, a physical pin visually obstructs the handle track, preventing movement.
@@ -291,4 +297,4 @@ If your Node ID is `02.01.57.11.22.33`:
 *   **Lever 2 is pulled (Reversed) on North Junction:** `02.01.57.11.22.33.11.82`
 *   **Block 4 becomes Occupied on North Junction:** `02.01.57.11.22.33.12.84`
 
-This structure prevents collisions entirely, scales to hundreds of levers/blocks without changing the pattern, and is incredibly easy to parse visually when debugging your JMRI routing tables!
+This structure prevents collisions, scales to hundreds of levers/blocks without changing the pattern, and is easy to parse visually when debugging your JMRI routing tables.
