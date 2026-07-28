@@ -76,6 +76,60 @@ cage -- java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
 ```
 *(Tip: High-DPI screens, like a 10.5" 1080p display, may render the interface extremely small on a bare X11/Wayland server. You can scale up the entire UI by passing the `--ui-scale` argument as shown above. You can also configure this persistently in the app's System Settings menu).*
 
+#### Dedicated Kiosk Mode (Systemd)
+For a permanent physical interlocking frame, it is highly recommended to run LeverFrame on **Raspberry Pi OS Lite (64-bit)** (which has no desktop GUI overhead). You can create a `systemd` service to boot directly into the app using Cage without requiring a login.
+
+1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre cage`
+2. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
+3. Paste the following robust configuration (assuming your username is `robert` with UID `1000`):
+
+```ini
+[Unit]
+Description=LeverFrame Kiosk
+After=network.target systemd-user-sessions.service systemd-logind.service
+
+[Service]
+User=robert
+Group=robert
+WorkingDirectory=/home/robert
+
+# CRITICAL: Force a logind session to grant Cage access to the GPU/DRM
+PAMName=login
+
+# CRITICAL: Tell Cage where to place the Wayland socket (usually /run/user/<UID>)
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Prevent wlroots from crashing if no keyboard/mouse is plugged in during boot
+Environment=WLR_LIBINPUT_NO_DEVICES=1
+
+TTYPath=/dev/tty7
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+
+# Wait a few seconds for graphics hardware to settle, then switch monitor to tty7
+ExecStartPre=/bin/sleep 3
+ExecStartPre=/usr/bin/chvt 7
+
+# Launch LeverFrame natively without decorations
+ExecStart=/usr/bin/cage -- java -jar /home/robert/LeverFrame.jar --ui-scale 1.5
+
+# Automatically restart if the app crashes (but not if it exits cleanly via ESC, thanks to on-failure)
+Restart=on-failure
+RestartSec=3
+
+[Install]
+# CRITICAL for Pi OS Lite: Must hook into multi-user.target, not graphical.target
+WantedBy=multi-user.target
+```
+
+4. Enable and start the service:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable leverframe.service
+sudo systemctl start leverframe.service
+```
+
 ### iOS (Experimental)
 Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or simulator, and run the project. 
 
