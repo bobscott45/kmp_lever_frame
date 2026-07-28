@@ -77,7 +77,11 @@ cage -- java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
 *(Tip: High-DPI screens, like a 10.5" 1080p display, may render the interface extremely small on a bare X11/Wayland server. You can scale up the entire UI by passing the `--ui-scale` argument as shown above. You can also configure this persistently in the app's System Settings menu).*
 
 #### Dedicated Kiosk Mode (Systemd)
-For a permanent physical interlocking frame, it is highly recommended to run LeverFrame on **Raspberry Pi OS Lite (64-bit)** (which has no desktop GUI overhead). You can create a `systemd` service to boot directly into the app using Cage without requiring a login.
+For a permanent physical interlocking frame, it is highly recommended to run LeverFrame on **Raspberry Pi OS Lite (64-bit)** (which has no desktop GUI overhead). 
+
+**Hardware Note:** The application has been verified to run successfully on a basic **Raspberry Pi 4 (2GB RAM)**. Because LeverFrame is lightweight and runs without a heavy desktop environment, 2GB of RAM is perfectly sufficient. However, upgrading to a **Raspberry Pi 5 (2GB RAM)** is recommended for much faster JVM load times and a noticeably snappier, smoother UI due to its superior CPU and GPU architecture.
+
+You can create a `systemd` service to boot directly into the app using Cage without requiring a login.
 
 1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre cage`
 2. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
