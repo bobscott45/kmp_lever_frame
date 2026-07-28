@@ -67,6 +67,7 @@ data class JsonConfig(
     val rule_editor_mode: String = "CLAUSE_BUILDER",
     val rule_display_mode: String = "LOCKING_TABLE",
     val sim_mode: Boolean = false,
+    val ui_scale: Float = 0.0f,
     val tabs: List<JsonTab> = emptyList()
 )
 

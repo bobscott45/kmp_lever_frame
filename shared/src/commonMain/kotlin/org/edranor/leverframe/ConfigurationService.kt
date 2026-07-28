@@ -26,6 +26,7 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
         lcc_enabled = false,
         lcc_master = false,
         enable_sound = false,
+        ui_scale = 0.0f,
         rule_editor_mode = "",
         rule_display_mode = "",
         tabs = this.tabs.map { tab ->

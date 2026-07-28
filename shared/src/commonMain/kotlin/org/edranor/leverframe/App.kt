@@ -41,6 +41,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +73,7 @@ var koinStarted = false
 
 @Composable
 @Preview
-fun App() {
+fun App(runtimeUiScale: Float = 1.0f) {
     if (!koinStarted) {
         startKoin {
             modules(appModule)
@@ -79,12 +81,12 @@ fun App() {
         koinStarted = true
     }
     KoinContext {
-        AppContent()
+        AppContent(runtimeUiScale)
     }
 }
 
 @Composable
-fun AppContent() {
+fun AppContent(runtimeUiScale: Float) {
     KeepScreenOn(keepOn = true)
     
     var isInputBlocked by remember { mutableStateOf(false) }
@@ -143,9 +145,17 @@ fun AppContent() {
                     override fun playDoubleDing() { if (configState.config.enable_sound) actualSoundPlayer.playDoubleDing() }
                 }
             }
-
-            if (uiState.configMode != ConfigMode.NONE) {
-                ConfigurationScreen(
+            
+            val currentDensity = LocalDensity.current
+            val scale = if (configState.config.ui_scale > 0.0f) configState.config.ui_scale else runtimeUiScale
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = currentDensity.density * scale,
+                    fontScale = currentDensity.fontScale
+                )
+            ) {
+                if (uiState.configMode != ConfigMode.NONE) {
+                    ConfigurationScreen(
                     initialConfig = configState.config,
                     initialMode = uiState.configMode,
                     initialSelectedFrameIndex = uiState.initialEditFrameIndex ?: 0,
@@ -196,7 +206,8 @@ fun AppContent() {
                         }
                     }
                 }
-            }
+                }
+            } // Close CompositionLocalProvider
 
             // Input blocking overlay
             if (isInputBlocked) {

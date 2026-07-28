@@ -22,19 +22,47 @@
 package org.edranor.leverframe
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
 import androidx.compose.ui.res.painterResource
 
-fun main() = application {
+fun main(args: Array<String>) = application {
+    var runtimeUiScale = 1.0f
+    for (i in args.indices) {
+        if (args[i] == "--ui-scale" && i + 1 < args.size) {
+            runtimeUiScale = args[i + 1].toFloatOrNull() ?: 1.0f
+        }
+    }
+    val isRaspberryPi = System.getProperty("os.name").contains("Linux", ignoreCase = true) &&
+            (System.getProperty("os.arch").contains("arm", ignoreCase = true) || System.getProperty("os.arch").contains("aarch64", ignoreCase = true))
+
+    val windowState = if (isRaspberryPi) {
+        rememberWindowState(placement = WindowPlacement.Fullscreen)
+    } else {
+        rememberWindowState(width = 1000.dp, height = 700.dp)
+    }
+
     Window(
         onCloseRequest = ::exitApplication,
         title = "LeverFrame",
-        state = rememberWindowState(width = 1000.dp, height = 700.dp),
-        icon = painterResource("icon.png")
+        state = windowState,
+        icon = painterResource("icon.png"),
+        onKeyEvent = {
+            if (isRaspberryPi && it.key == Key.Escape && it.type == KeyEventType.KeyDown) {
+                exitApplication()
+                true
+            } else {
+                false
+            }
+        }
     ) {
-        App()
+        App(runtimeUiScale = runtimeUiScale)
     }
 }

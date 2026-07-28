@@ -62,16 +62,19 @@ To package the app for the current operating system (creates `.deb`, `.dmg`, or 
 ```
 
 ### Raspberry Pi (Raspbian / Linux ARM64)
-To build a fat JAR (UberJar) that includes all necessary native dependencies (such as the `linux-arm64` Skiko libraries) to run natively on a Raspberry Pi using a Wayland kiosk compositor like Cage:
+You do **not** need to compile the application on the Raspberry Pi itself, which can be very slow. You can run the following build command directly on your standard desktop machine (Windows, macOS, or Linux x64) to build the app, and then copy the resulting JAR over to the Pi.
+
+To build a fat JAR (UberJar) that includes all necessary native dependencies (such as the `linux-arm64` Skiko libraries) to run natively on a Raspberry Pi:
 ```bash
 ./gradlew :desktopApp:packageUberJarForCurrentOS
 ```
-*(Note: This outputs a file in `desktopApp/build/compose/jars/` named after the host OS building it, e.g., `LeverFrame-linux-x64-X.X.X.jar`, but it contains the fat JAR with ARM64 binaries and will run on a 64-bit Raspbian device).*
+*(Note: Because this is an UberJar, it bundles native binaries for multiple architectures including ARM64. Even if it outputs a file named after your desktop's host OS like `desktopApp/build/compose/jars/LeverFrame-linux-x64-X.X.X.jar`, you can simply copy this file to your Raspberry Pi and it will run perfectly).*
 
 To run it on the Pi with Cage:
 ```bash
-cage -- java -jar LeverFrame-linux-x64-X.X.X.jar
+cage -- java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
 ```
+*(Tip: High-DPI screens, like a 10.5" 1080p display, may render the interface extremely small on a bare X11/Wayland server. You can scale up the entire UI by passing the `--ui-scale` argument as shown above. You can also configure this persistently in the app's System Settings menu).*
 
 ### iOS (Experimental)
 Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or simulator, and run the project. 

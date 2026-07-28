@@ -409,6 +409,24 @@ private fun BehaviorSettings(config: JsonConfig, onConfigChange: (JsonConfig) ->
     ) { onConfigChange(config.copy(lcc_master = it)) }
     SettingSwitchRow("Enable Sound", config.enable_sound) { onConfigChange(config.copy(enable_sound = it)) }
     
+    var uiScaleText by remember { mutableStateOf(if (config.ui_scale <= 0.0f) "" else config.ui_scale.toString()) }
+    
+    OutlinedTextField(
+        value = uiScaleText,
+        onValueChange = { 
+            uiScaleText = it
+            val parsed = it.toFloatOrNull()
+            if (parsed != null) {
+                onConfigChange(config.copy(ui_scale = parsed))
+            } else if (it.isEmpty()) {
+                onConfigChange(config.copy(ui_scale = 0.0f))
+            }
+        },
+        label = { Text("UI Scale (0 or empty for Auto/Runtime default)") },
+        modifier = Modifier.fillMaxWidth(),
+        colors = brassTextFieldColors()
+    )
+    
     var policyExpanded by remember { mutableStateOf(false) }
     val policies = mapOf(1 to "Strict Local", 2 to "Override Allowed", 3 to "Accept & Warn")
     val currentPolicyName = policies[config.conflict_policy] ?: "Override Allowed"
