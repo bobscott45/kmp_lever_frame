@@ -91,7 +91,7 @@ class AppViewModelTest {
         val configService = org.edranor.leverframe.services.ConfigurationService(configRepo)
         val interlockingService = org.edranor.leverframe.services.InterlockingService(configService, configRepo, configRepo, lccClient, eventProcessor)
         val nxRoutingService = org.edranor.leverframe.services.NxRoutingService(configService, interlockingService)
-        viewModel = AppViewModel(configService, interlockingService, nxRoutingService, FakeLccClient())
+        viewModel = AppViewModel(configService, interlockingService, nxRoutingService, lccClient)
     }
 
     @AfterTest
@@ -136,9 +136,9 @@ class AppViewModelTest {
         
         // Now try to reverse points, but signal is REVERSED, which violates interlocking (target = 0, state = NORMAL)
         viewModel.toggleLever(tabIndex = 0, leverIndex = 1)
-        testDispatcher.scheduler.advanceUntilIdle()
+        testDispatcher.scheduler.runCurrent()
         
-                assertFalse(viewModel.domainState.value.frames[0].levers[1].isReversed, "Points lever should NOT be reversed due to interlocking")
+        assertFalse(viewModel.domainState.value.frames[0].levers[1].isReversed, "Points lever should NOT be reversed due to interlocking")
         assertTrue(viewModel.uiState.value.errorMessage != null, "Error message should be set")
     }
 
