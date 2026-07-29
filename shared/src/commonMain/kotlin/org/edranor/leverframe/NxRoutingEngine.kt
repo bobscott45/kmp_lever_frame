@@ -24,12 +24,29 @@
  * Calculates valid routes through turnouts and crossings, and translates them into required lever states.
  */
 package org.edranor.leverframe
+/**
+ * Represents a resolved Entrance-Exit (NX) route across the schematic.
+ * 
+ * @property pathCells An ordered list of (X, Y) grid coordinates tracing the route from entrance to exit.
+ */
 data class NxRoute(
     val pathCells: List<Pair<Int, Int>>
 )
 
+/**
+ * Engine responsible for evaluating Entrance-Exit (NX) routing logic on the track schematic.
+ * It builds a connection graph from [SchematicElementDef] instances and resolves paths 
+ * through complex junctions, translating them into the necessary lever throws.
+ */
 object NxRoutingEngine {
 
+    /**
+     * Determines the adjacent grid coordinates that a specific schematic element physically connects to.
+     *
+     * @param element The schematic element to evaluate.
+     * @param map A lookup map of all elements on the grid, keyed by (X, Y) coordinates.
+     * @return A list of (X, Y) coordinates this element can route to.
+     */
     fun getConnections(element: SchematicElementDef, map: Map<Pair<Int, Int>, SchematicElementDef>): List<Pair<Int, Int>> {
         val x = element.x
         val y = element.y
@@ -100,6 +117,14 @@ object NxRoutingEngine {
         return conns.distinct()
     }
 
+    /**
+     * Performs a breadth-first search to find all valid, connected NX exit points from a starting coordinate.
+     *
+     * @param startX The X coordinate of the entrance button.
+     * @param startY The Y coordinate of the entrance button.
+     * @param elements The list of all schematic elements in the current frame.
+     * @return A list of valid [NxRoute]s that originate at the starting point.
+     */
     fun findReachableExits(
         startX: Int,
         startY: Int,
@@ -140,6 +165,15 @@ object NxRoutingEngine {
         }
         return routes
     }
+    /**
+     * Traverses an Abstract Syntax Tree (AST) representing interlocking logic and extracts
+     * the mandatory lever states required to satisfy the condition. Used by the NX routing
+     * engine to automatically throw points required for a specific route.
+     *
+     * @param node The root AST node to evaluate.
+     * @param inNot Internal flag used during recursive descent to invert required states.
+     * @return A map of Lever Index -> Required State (`true` for Reversed, `false` for Normal).
+     */
     fun getRequiredLeverStatesFromAst(node: AstNode, inNot: Boolean = false): Map<Int, Boolean> {
         val res = mutableMapOf<Int, Boolean>()
         when (node) {

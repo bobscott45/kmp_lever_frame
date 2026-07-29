@@ -26,30 +26,56 @@
  */
 package org.edranor.leverframe
 
+/**
+ * Defines the modes for handling external state conflicts from the network.
+ * 
+ * @property id The integer ID used for serialization and configuration.
+ */
 enum class ConflictPolicy(val id: Int) { 
+    /** Rejects incoming LCC network events if they violate local interlocking rules. */
     STRICT(1), 
+    
+    /** Accepts incoming LCC network events and updates local state silently, bypassing interlocking rules. */
     PERMISSIVE(2), 
+    
+    /** Accepts incoming LCC network events but marks the conflicting levers for visual alarm. */
     ALARM(3);
     
     companion object { 
+        /** Resolves a [ConflictPolicy] from its integer ID, defaulting to [PERMISSIVE]. */
         fun of(id: Int) = entries.firstOrNull { it.id == id } ?: PERMISSIVE 
     }
 }
 
+/**
+ * Policy orchestrator governing the interaction between user interactions, external network events,
+ * and the local interlocking graph logic.
+ */
 object LeverFramePolicy {
     /**
      * Determines whether an external LCC event should mutate the UI state.
      * Based on the user's VM_PATTERN_PLAN.md:
      * "STRICT-ignore vs. else-apply; ALARM falls into the `else` and applies 
      * while `getConflictingLevers` provides the visual flag."
+     * 
+     * @param policy The currently active [ConflictPolicy].
+     * @param isValid Whether the external event satisfies local interlocking logic.
+     * @return `true` if the event should be applied locally, `false` otherwise.
      */
     fun shouldApplyExternalEvent(policy: ConflictPolicy, isValid: Boolean): Boolean {
         return !(policy == ConflictPolicy.STRICT && !isValid)
     }
 
     /**
-     * Helper to attempt toggling a lever state. Returns a new array if the toggle
+     * Helper to attempt toggling a lever state. Returns a new list of levers if the toggle
      * is valid according to Interlocking rules, or null if it violates the rules.
+     * 
+     * @param tabDef The configuration definition of the active frame.
+     * @param levers The current state of all levers in the frame.
+     * @param blocks The current state of all blocks in the frame.
+     * @param leverIndex The index of the lever being toggled.
+     * @param target The requested state (`true` for Reversed, `false` for Normal).
+     * @return A mutated list containing the new states, or `null` if the toggle was invalid.
      */
     fun attemptToggle(tabDef: TabDef, levers: List<DomainLever>, blocks: List<DomainBlock>, leverIndex: Int, target: Boolean): List<DomainLever>? {
         val isValid = Interlocking.evaluate(tabDef.toInterlockingGraph(), levers, blocks, leverIndex, target)

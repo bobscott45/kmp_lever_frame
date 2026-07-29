@@ -36,6 +36,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * The central service managing the evaluation of interlocking rules, block cascades, 
+ * and network event processing. It holds the authoritative source of truth for the 
+ * [DomainState] and triggers physical save operations via [PersistenceService].
+ * 
+ * @property configService Provides the active system layout configuration.
+ * @property persistenceRepo Repository interface for persisting state across reboots.
+ * @property configRepo Repository interface for accessing application settings.
+ * @property lccClient Client used to emit network events based on state changes.
+ * @property eventProcessor Handles incoming hex LCC events mapping to block/lever changes.
+ */
 class InterlockingService(
     private val configService: ConfigurationService,
     private val persistenceRepo: StatePersistenceRepository,
@@ -63,6 +74,10 @@ class InterlockingService(
         persistenceRepo.clearSavedStates()
     }
 
+    /**
+     * Rebuilds the initial domain state (levers and blocks) from the current configuration,
+     * optionally loading persisted states from disk if the configuration allows it.
+     */
     suspend fun buildInitialState() {
         val configState = configService.configState.value
         val frames = configState.tabs.mapIndexed { tabIdx, (_, tabDef) ->
@@ -99,6 +114,10 @@ class InterlockingService(
         }
     }
 
+    /**
+     * Broadcasts the current states of all enabled levers and polls block occupancy sensors
+     * on the LCC network upon initialization.
+     */
     fun broadcastCurrentStates() {
         coroutineScope.launch {
             kotlinx.coroutines.delay(1000) // Wait for LccNode init sequence to finish
@@ -138,6 +157,13 @@ class InterlockingService(
         }
     }
 
+    /**
+     * Processes an incoming LCC event ID string, delegating to the `NetworkEventProcessor`
+     * and potentially updating the local domain state and responding with outgoing events.
+     *
+     * @param hexEventId The 16-character hex representation of the LCC Event ID.
+     * @param currentUiState The current transient UI state, used for determining active tabs.
+     */
     fun handleExternalEvent(hexEventId: String, currentUiState: TransientUiState) {
         var result: EventProcessorResult? = null
         
@@ -156,6 +182,11 @@ class InterlockingService(
         }
     }
 
+    /**
+     * Re-evaluates interlocking rules across the currently selected tab to update visual conflict alarms.
+     *
+     * @param selectedTabIndex The index of the newly focused tab.
+     */
     fun recalculateConflicts(selectedTabIndex: Int) {
         _domainState.update { currentDomain ->
             val configState = configService.configState.value
@@ -170,6 +201,15 @@ class InterlockingService(
         }
     }
 
+    /**
+     * Attempts to toggle a lever's state locally, respecting interlocking logic.
+     * If successful, saves state and optionally broadcasts an LCC network event.
+     *
+     * @param tabIndex Index of the frame containing the lever.
+     * @param leverIndex Index of the lever being toggled.
+     * @param selectedTabIndex The currently active tab, used to update visual alarms immediately.
+     * @return A [ToggleResult] indicating success or failure, with an optional error message.
+     */
     fun toggleLever(tabIndex: Int, leverIndex: Int, selectedTabIndex: Int): ToggleResult {
         var lccEventStr: String? = null
         var didChange = false
@@ -235,6 +275,14 @@ class InterlockingService(
         persistStatesIfEnabled()
     }
 
+    /**
+     * Toggles the Occupied/Empty state of a track block (e.g., when a virtual sensor is clicked).
+     * This may cascade and trigger `autoReverser` logic on bound levers, returning them to NORMAL.
+     *
+     * @param tabIndex Index of the frame containing the block.
+     * @param blockIndex Index of the block being toggled.
+     * @param selectedTabIndex The currently active tab, for refreshing conflict alarms.
+     */
     fun toggleBlockState(tabIndex: Int, blockIndex: Int, selectedTabIndex: Int) {
         val outgoingEvents = mutableListOf<String>()
         var didChange = false
@@ -301,4 +349,10 @@ class InterlockingService(
     }
 }
 
+/**
+ * Result wrapper for lever toggle operations.
+ *
+ * @property didChange `true` if the state was mutated, `false` otherwise.
+ * @property errorMessage Present if the toggle failed (e.g., interlocking conflict).
+ */
 data class ToggleResult(val didChange: Boolean, val errorMessage: String?)
