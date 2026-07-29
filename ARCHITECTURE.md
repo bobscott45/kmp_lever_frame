@@ -43,12 +43,18 @@ The brain of the lever frame.
 *   When a user attempts to move a lever, the `AppViewModel` queries this engine to determine if the move is legal based on both lever and block occupancies.
 *   The logic aims to exactly replicate physical mechanical tappet locking mechanisms found in prototypical signal boxes, enhanced with electro-mechanical track circuit interactions.
 
-### 2.4 Networking (The `:openlcb` module)
+### 2.4 Routing Engine (`NxRoutingService.kt`)
+The routing engine orchestrates complex multi-lever eNtrance-eXit (NX) routes across the schematic panel.
+*   **Pathfinding & Orchestration**: It analyzes the schematic matrix to trace diverging turnout paths and identify primary/secondary signals between a start and destination point.
+*   **Sequence Execution**: It executes mechanical lever sequences in strict prototypical railway order (e.g., unplunge FPLs -> throw points -> replunge FPLs -> clear signals).
+*   **Dependency Resolution**: Evaluates the interlocking AST logic to recursively resolve and enforce all required mechanical dependencies for a requested route.
+
+### 2.5 Networking (The `:openlcb` module)
 *   **`OpenLcbEngine`**: Housed in the decoupled `:openlcb` module, this engine acts as the OpenLCB/LCC protocol translator. It handles the raw CAN framing, SNIP metadata, and Memory Configuration datagram logic purely based on byte arrays and string flows.
 *   **`GridConnectNetwork`**: A robust, Coroutine-based TCP engine inside `:openlcb` utilizing `io.ktor.network`. It manages the raw socket connections (acting as either a TCP Server listening on port 12021, or a TCP Client bridging to a JMRI Hub).
 *   **`LccNode` (Adapter in `:shared`)**: Bridges LeverFrame's internal `ConfigManager` to the generic `:openlcb` library interfaces (`OpenLcbConfig`, `MemorySpaceHandler`, `EventProducerProvider`), allowing the network layer to remain strictly agnostic of the app's domain logic.
 
-### 2.5 User Interface
+### 2.6 User Interface
 Built entirely in Compose Multiplatform.
 *   **`App.kt`**: The root composable that observes the `AppViewModel` state and routes between the main views.
 *   **`LeverFrameScreen.kt`**: The primary operational UI, rendering the physical levers and their dynamic locking states.
