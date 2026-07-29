@@ -425,8 +425,8 @@ fun MobileRuleCard(
             if (hasAlt) {
                 RuleTargetDropdown(
                     label = "Alt Target",
-                    targetType = rule.alt_target_type ?: "LEVER",
-                    targetIndex = rule.alt_target ?: 0,
+                    targetType = rule.alt_target_type,
+                    targetIndex = rule.alt_target,
                     allLevers = allLevers,
                     allBlocks = allBlocks,
                     onTargetSelected = { type, idx -> onRuleChange(rule.copy(alt_target_type = type, alt_target = idx)) }
@@ -434,8 +434,8 @@ fun MobileRuleCard(
                 
                 RuleStateDropdown(
                     label = "Alt Required State",
-                    targetType = rule.alt_target_type ?: "LEVER",
-                    state = rule.alt_state ?: "NORMAL",
+                    targetType = rule.alt_target_type,
+                    state = rule.alt_state,
                     onStateSelected = { onRuleChange(rule.copy(alt_state = it)) }
                 )
             }

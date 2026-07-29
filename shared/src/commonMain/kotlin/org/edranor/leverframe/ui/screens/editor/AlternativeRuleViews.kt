@@ -111,7 +111,7 @@ fun LockingTableView(lever: JsonLever, allLevers: List<JsonLever>, allBlocks: Li
                 Text("Target", modifier = Modifier.weight(0.3f), style = MaterialTheme.typography.labelLarge, color = LeverFrameTheme.Colors.Brass)
                 Text("Locking Logic Formula", modifier = Modifier.weight(0.7f), style = MaterialTheme.typography.labelLarge, color = LeverFrameTheme.Colors.Brass)
             }
-            Divider(color = Color.DarkGray)
+            HorizontalDivider(color = Color.DarkGray)
             
             // Just show this specific lever in the table for now
             // To make it frame-wide we'd move this component up the hierarchy
@@ -122,7 +122,7 @@ fun LockingTableView(lever: JsonLever, allLevers: List<JsonLever>, allBlocks: Li
                 Text(targetName, modifier = Modifier.weight(0.3f), color = Color.White)
                 Text(formula, modifier = Modifier.weight(0.7f), color = Color.White, fontFamily = FontFamily.Monospace)
             }
-            Divider(color = Color.DarkGray, thickness = 0.5.dp)
+            HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
         }
     }
 }

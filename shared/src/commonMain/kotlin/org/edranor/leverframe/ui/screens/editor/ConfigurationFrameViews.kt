@@ -115,7 +115,7 @@ fun FrameSetupView(
             }
 
             // Sub-tabs
-            TabRow(
+            PrimaryTabRow(
                 selectedTabIndex = selectedFrameConfigTab,
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = LeverFrameTheme.Colors.Brass
