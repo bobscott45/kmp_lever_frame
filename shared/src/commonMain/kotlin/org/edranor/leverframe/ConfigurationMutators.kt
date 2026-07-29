@@ -20,13 +20,11 @@
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
 /**
- * Provides business logic for safely mutating the application's configuration state.
- * Contains utility functions to strip UI-specific data or safely rewrite indices in the 
+ * Provides extension and helper functions for safely mutating the application's configuration state.
+ * Contains utilities to strip UI-specific data or safely rewrite indices in the 
  * AST when levers or blocks are added, swapped, or deleted in the schematic editor.
  */
 package org.edranor.leverframe
-// This file contains business logic for safely mutating configuration state
-// extracted from the UI layer.
 
 fun JsonConfig.withoutRules(): JsonConfig {
     return this.copy(
