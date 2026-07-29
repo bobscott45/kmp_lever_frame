@@ -7,6 +7,7 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 > **Project Status:** Fully functional and tested with physical LCC hardware via a JMRI hub. Currently built and tested extensively on **Android and Desktop (JVM)**. While the architecture supports iOS out of the box, it has not yet been compiled or physically tested on Apple devices.
 
 **📖 See the [User Guide](USER_GUIDE.md) for detailed instructions on how to configure and use the application.**
+**💻 See the [API Documentation](https://bobscott45.github.io/kmp_lever_frame/) for detailed developer documentation of the source code.**
 
 ## Key Features
 

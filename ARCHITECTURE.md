@@ -2,6 +2,8 @@
 
 This document outlines the high-level architecture and design patterns used in the **LeverFrame** Kotlin Multiplatform (KMP) project.
 
+For deep-dive class and method level details, refer to the [API Documentation Site](https://bobscott45.github.io/kmp_lever_frame/).
+
 ## 1. Project Structure
 The project is built using the standard Kotlin Multiplatform structure with Compose Multiplatform for the UI.
 
