@@ -50,6 +50,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+/**
+ * Renders the track layout schematic on a responsive grid canvas.
+ * Handles user interactions for the eNtrance-eXit (NX) routing system, calculating
+ * tap coordinates to resolve route endpoints and drawing active path highlights.
+ *
+ * @param tabDef The configuration for the current tab, including grid size and elements.
+ * @param levers The current domain states of all levers, used to draw signals/turnouts accurately.
+ * @param blocks The current domain states of all track blocks, used to colorize track occupancy.
+ * @param routeErrorCells A list of (X, Y) grid coordinates to highlight with a flashing error indicator.
+ * @param onNxRouteExecute Callback triggered when a valid NX route exit button is tapped.
+ * @param onNxRouteCancel Callback triggered to cancel an ongoing NX route selection.
+ * @param modifier Standard Compose modifier for the container layout.
+ */
 @Composable
 fun SchematicScreen(
     tabDef: TabDef,

@@ -40,6 +40,7 @@ object OpenLcbConstants {
     const val CDI_SHORT_CODE_SPACE = MAX_SHORT_CODE_LENGTH + 1
 }
 
+/** Contract for reading, parsing, and writing the JSON configuration file to/from persistent storage. */
 interface ConfigurationRepository {
     var currentConfig: JsonConfig
     suspend fun initConfig()
@@ -48,12 +49,14 @@ interface ConfigurationRepository {
     suspend fun saveConfig(newConfig: JsonConfig)
 }
 
+/** Contract for saving and loading the physical state (Reversed/Normal) of the frame across reboots. */
 interface StatePersistenceRepository {
     suspend fun loadSavedStates(): SavedStatesData?
     suspend fun saveCurrentStates(states: SavedStatesData)
     suspend fun clearSavedStates()
 }
 
+/** Root JSON object representing the entire application configuration schema. */
 @Serializable
 data class JsonConfig(
     val node_id: String = "05.01.01.01.03.01",
@@ -146,6 +149,10 @@ data class SavedStatesData(
     val blocks: List<List<Boolean>> = emptyList()
 )
 
+/**
+ * Concrete implementation of the Configuration and Persistence repositories.
+ * Handles the bidirectional conversion between standard JSON models and the application's internal Domain models.
+ */
 object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
 
     val jsonFormat = Json { 

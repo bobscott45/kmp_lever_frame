@@ -28,8 +28,13 @@ package org.edranor.leverframe
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
+/** Result of an AST evaluation, indicating if the conditions are met and which levers are involved in any failures. */
 data class AstEvaluationResult(val isSatisfied: Boolean, val involvedLevers: Set<Int> = emptySet())
 
+/**
+ * Base class for all nodes in the Interlocking Abstract Syntax Tree.
+ * Subclasses define specific logical operations or state checks.
+ */
 @Serializable
 sealed class AstNode {
     abstract fun toFormulaString(): String
@@ -37,6 +42,7 @@ sealed class AstNode {
     abstract fun collectAllLevers(): Set<Int>
 }
 
+/** Logical AND node that requires all of its child conditions to be satisfied. */
 @Serializable
 @SerialName("AND")
 data class AndNode(val children: List<AstNode> = emptyList()) : AstNode() {
@@ -54,6 +60,7 @@ data class AndNode(val children: List<AstNode> = emptyList()) : AstNode() {
     override fun collectAllLevers(): Set<Int> = children.flatMap { it.collectAllLevers() }.toSet()
 }
 
+/** Logical OR node that requires at least one of its child conditions to be satisfied. */
 @Serializable
 @SerialName("OR")
 data class OrNode(val children: List<AstNode> = emptyList()) : AstNode() {
@@ -72,6 +79,7 @@ data class OrNode(val children: List<AstNode> = emptyList()) : AstNode() {
     override fun collectAllLevers(): Set<Int> = children.flatMap { it.collectAllLevers() }.toSet()
 }
 
+/** Logical NOT node that inverts the evaluation result of its single child condition. */
 @Serializable
 @SerialName("NOT")
 data class NotNode(val child: AstNode) : AstNode() {
@@ -87,6 +95,7 @@ data class NotNode(val child: AstNode) : AstNode() {
     override fun collectAllLevers(): Set<Int> = child.collectAllLevers()
 }
 
+/** Leaf node that checks if a specific lever is in the required state (Reversed or Normal). */
 @Serializable
 @SerialName("LEVER")
 data class LeverStateNode(val leverIndex: Int, val requiredReversed: Boolean) : AstNode() {
@@ -103,6 +112,7 @@ data class LeverStateNode(val leverIndex: Int, val requiredReversed: Boolean) : 
     override fun collectAllLevers(): Set<Int> = setOf(leverIndex)
 }
 
+/** Leaf node that checks if a specific track block is in the required state (Occupied or Clear). */
 @Serializable
 @SerialName("BLOCK")
 data class BlockStateNode(val blockIndex: Int, val requiredOccupied: Boolean) : AstNode() {

@@ -47,6 +47,26 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * An interactive, graphical representation of a physical mechanical lever.
+ * Handles rendering the brass nameplate, painted handle, and locking collar.
+ *
+ * @param leverIndex The zero-based index of this lever in the frame.
+ * @param showLeverNumber Whether to display the lever's index number on the track.
+ * @param leverDef The domain configuration defining this lever's type, color, and labels.
+ * @param labelLines The number of text lines available on the brass nameplate.
+ * @param labelLineHeight The height (in dp) of each text line on the brass nameplate.
+ * @param isReversed `true` if the lever is currently pulled (Thrown/Off), `false` if Normal.
+ * @param isManuallyLocked `true` if the software locking collar has been engaged by the user.
+ * @param isSystemLocked `true` if mechanical interlocking rules currently prevent movement.
+ * @param isAlarmed `true` if an external network state contradicts the local interlocking rules.
+ * @param scale Uniform scaling factor for all dimensions.
+ * @param widthScale Independent scaling factor for horizontal dimensions to squeeze layouts.
+ * @param soundPlayer The audio service for playing interaction sounds (clanks, thuds).
+ * @param onLabelClick Callback triggered when the brass nameplate is clicked.
+ * @param onToggle Callback triggered when an unlocked lever handle is clicked to change its state.
+ * @param onToggleLock Callback triggered when the locking collar button is clicked.
+ */
 @Composable
 fun LeverComponent(
     leverIndex: Int,

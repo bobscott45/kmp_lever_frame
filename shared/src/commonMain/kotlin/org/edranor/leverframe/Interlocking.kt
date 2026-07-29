@@ -27,8 +27,10 @@
  */
 package org.edranor.leverframe
 
+/** Distinguishes between evaluating a Lever's state or a Block's state. */
 enum class TargetType { LEVER, BLOCK }
 
+/** Legacy flat structure for defining interlocking requirements before the AST was introduced. */
 data class InterlockingCondition(
     val targetType: TargetType = TargetType.LEVER,
     val targetIndex: Int = -1,
@@ -38,6 +40,7 @@ data class InterlockingCondition(
     val altRequiredState: Boolean = false
 )
 
+/** Defines the physical/functional role of a lever, influencing its styling and logic. */
 enum class LeverType {
     HOME_SIGNAL,
     DISTANT_SIGNAL,
@@ -54,6 +57,7 @@ enum class RestoreOverride {
     NEVER
 }
 
+/** Core domain definition for a single Lever, containing its layout, networking IDs, and logic rules. */
 data class LeverDef(
     val conditions: List<InterlockingCondition> = emptyList(),
     val type: LeverType = LeverType.SPARE,
@@ -72,6 +76,7 @@ enum class BlockMode {
     LOCAL_ONLY
 }
 
+/** Core domain definition for a track circuit or occupancy block. */
 data class BlockDef(
     val label: String = "",
     val shortCode: String = "",
@@ -104,6 +109,7 @@ enum class NxButtonColor {
     BLUE
 }
 
+/** Core domain definition for a track schematic element (e.g., turnouts, signals, straight track). */
 data class SchematicElementDef(
     val type: String,
     val x: Int,
@@ -116,6 +122,7 @@ data class SchematicElementDef(
     val nxButtonColor: NxButtonColor = NxButtonColor.BLACK
 )
 
+/** Core domain definition for an entire Frame or Tab, containing its layout properties and elements. */
 data class TabDef(
     val levers: List<LeverDef>,
     val labelLines: Int = 2,
@@ -138,6 +145,7 @@ data class LeverRule(
     val autoReverser: Boolean
 )
 
+/** A fast-lookup graph containing the consolidated rules for all levers on a frame. */
 data class InterlockingGraph(
     val levers: List<LeverRule>
 )
@@ -154,6 +162,11 @@ fun TabDef.toInterlockingGraph(): InterlockingGraph {
     )
 }
 
+/**
+ * The core business logic engine for the lever frame.
+ * Evaluates locking rules, conditions, and Abstract Syntax Trees against the current
+ * state of all levers and blocks to enforce safe, prototypical mechanical interlocking.
+ */
 object Interlocking {
     /**
      * Evaluates whether a lever can be thrown to the new state based on interlocking rules.

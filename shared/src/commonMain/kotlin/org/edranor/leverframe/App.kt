@@ -76,6 +76,12 @@ import org.koin.core.context.startKoin
 
 var koinStarted = false
 
+/**
+ * Application root entry point. Bootstraps the Koin dependency injection container
+ * and wraps the main content in the Koin context.
+ * 
+ * @param runtimeUiScale Optional scaling factor applied to the entire Compose UI hierarchy.
+ */
 @Composable
 @Preview
 fun App(runtimeUiScale: Float = 1.0f) {
