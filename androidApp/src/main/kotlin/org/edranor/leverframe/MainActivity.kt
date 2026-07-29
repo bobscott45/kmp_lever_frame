@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Android entry point for LeverFrame.
+ * Configures window insets for full-screen immersive mode and hosts the root Compose App.
+ */
 package org.edranor.leverframe
 
 import android.os.Bundle

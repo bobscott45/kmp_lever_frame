@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Provides the expansive settings UI for both system-wide parameters (LCC, JMRI, etc.)
+ * and frame-specific configurations (levers, blocks, logic rules, and schematic layout).
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.clickable

@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Android implementation of platform-specific utilities.
+ * Handles file I/O using internal storage, retrieving the device IP, and managing screen wake locks.
+ */
 package org.edranor.leverframe
 
 import android.app.Activity

@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * iOS implementation for the file picker.
+ * Currently provides stub functions (not fully implemented natively) and relies on UI fallbacks.
+ */
 package org.edranor.leverframe
 
 actual val isFilePickerAvailable: Boolean = false

@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Renders a diagnostic overlay displaying the current status of the application,
+ * including software version, network connectivity (LCC), and active configurations.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.background

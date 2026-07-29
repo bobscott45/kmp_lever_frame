@@ -19,6 +19,11 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * The main Compose application entry point.
+ * Manages the top-level UI architecture, screen navigation (Configuration vs. Status vs. Frame),
+ * and dynamic scaling based on the user's viewport and configuration settings.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.animation.core.animateFloatAsState

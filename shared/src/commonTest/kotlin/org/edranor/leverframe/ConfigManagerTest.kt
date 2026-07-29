@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Unit tests verifying the JSON configuration loading, parsing, and migration logic.
+ */
 package org.edranor.leverframe
 
 import kotlin.test.Test

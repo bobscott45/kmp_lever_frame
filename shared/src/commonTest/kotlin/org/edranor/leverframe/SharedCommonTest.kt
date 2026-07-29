@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * General sanity test for the shared common module to ensure basic multiplatform testing infrastructure is working.
+ */
 package org.edranor.leverframe
 
 import kotlin.test.Test

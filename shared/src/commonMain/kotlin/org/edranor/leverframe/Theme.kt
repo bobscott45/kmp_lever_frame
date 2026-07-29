@@ -19,6 +19,11 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Centralized theme definitions for LeverFrame.
+ * Provides consistent color palettes (e.g., standard UK railway lever colors) and
+ * shared animation constants used across the Compose UI.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.ui.graphics.Color

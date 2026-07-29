@@ -19,6 +19,12 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+
+/**
+ * Defines the core state data classes for the Unidirectional Data Flow architecture.
+ * Segregates state into DomainState (high-frequency logic), ConfigState (layout/settings), 
+ * and TransientUiState (view modalities and transient errors).
+ */
 package org.edranor.leverframe
 
 enum class ConfigMode { NONE, SYSTEM, FRAMES }

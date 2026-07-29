@@ -19,6 +19,11 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Renders a detailed diagnostic overlay for a single lever.
+ * Shows current physical state, active interlocking rules, and whether those
+ * rules are currently satisfied or blocking movement.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.background

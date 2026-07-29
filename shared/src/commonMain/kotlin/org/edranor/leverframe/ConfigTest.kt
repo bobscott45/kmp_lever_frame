@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * A standalone test script for validating the JSON serialization and deserialization
+ * of the LeverFrame configuration model using Kotlinx Serialization.
+ */
 package org.edranor.leverframe
 
 fun main() {

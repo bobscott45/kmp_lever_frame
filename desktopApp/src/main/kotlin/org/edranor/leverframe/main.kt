@@ -19,6 +19,11 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Desktop (JVM) entry point for LeverFrame.
+ * Configures the Compose Window, manages UI scaling arguments, and handles
+ * environment-specific behaviors (e.g., fullscreen on Raspberry Pi).
+ */
 package org.edranor.leverframe
 
 import androidx.compose.ui.unit.dp

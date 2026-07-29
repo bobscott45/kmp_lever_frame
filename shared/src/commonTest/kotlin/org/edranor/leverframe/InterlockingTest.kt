@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Unit tests validating the core interlocking graph and conflict resolution logic.
+ */
 package org.edranor.leverframe
 
 import kotlin.test.Test

@@ -19,6 +19,11 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+
+/**
+ * Defines the application's policy for handling external LCC network events that conflict with
+ * local interlocking rules (e.g., STRICT rejection, PERMISSIVE overriding, or ALARM states).
+ */
 package org.edranor.leverframe
 
 enum class ConflictPolicy(val id: Int) { 

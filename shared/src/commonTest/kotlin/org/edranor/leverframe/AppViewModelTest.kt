@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Unit tests for the AppViewModel, verifying the orchestration between UI actions and domain services.
+ */
 package org.edranor.leverframe
 
 import kotlinx.coroutines.Dispatchers

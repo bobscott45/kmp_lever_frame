@@ -19,6 +19,12 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+
+/**
+ * The core business logic engine for the lever frame.
+ * Evaluates locking rules, conditions, and Abstract Syntax Trees against the current
+ * state of all levers and blocks to enforce safe, prototypical mechanical interlocking.
+ */
 package org.edranor.leverframe
 
 enum class TargetType { LEVER, BLOCK }

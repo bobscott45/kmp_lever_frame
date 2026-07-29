@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Platform-specific test verifying the shared logic runs correctly on a Desktop (JVM) environment.
+ */
 package org.edranor.leverframe
 
 import kotlin.test.Test

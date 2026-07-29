@@ -19,6 +19,10 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * Defines expect/actual capabilities for platform-specific utilities like networking
+ * discovery, keeping the screen awake, and persistence file I/O operations.
+ */
 package org.edranor.leverframe
 
 interface Platform {

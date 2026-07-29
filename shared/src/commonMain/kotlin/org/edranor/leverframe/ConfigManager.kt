@@ -19,6 +19,12 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+
+/**
+ * Handles the serialization, deserialization, and persistence of the application's core configuration state.
+ * Implements repositories to dynamically convert user-defined JSON configurations into domain structures
+ * (like LeverDef and SchematicElementDef) used by the interlocking engine and UI.
+ */
 package org.edranor.leverframe
 
 import kotlinx.serialization.Serializable
