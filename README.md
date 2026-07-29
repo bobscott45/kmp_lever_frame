@@ -80,13 +80,13 @@ cage -- java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
 #### Dedicated Kiosk Mode (Systemd)
 For a permanent physical interlocking frame, it is highly recommended to run LeverFrame on **Raspberry Pi OS Lite (64-bit)** (which has no desktop GUI overhead). 
 
-**Hardware Note:** The application has been verified to run successfully on a basic **Raspberry Pi 4 (2GB RAM)**. Because LeverFrame is lightweight and runs without a heavy desktop environment, 2GB of RAM is perfectly sufficient. However, upgrading to a **Raspberry Pi 5 (2GB RAM)** is recommended for much faster JVM load times and a noticeably snappier, smoother UI due to its superior CPU and GPU architecture.
+**Hardware Note:** The application has been verified to run successfully on a basic **Raspberry Pi 4 (2GB RAM)**. However, upgrading to a **Raspberry Pi 5 (with 2GB or more of RAM)** is highly recommended for much faster JVM load times and a noticeably smoother UI due to its superior CPU and GPU architecture. Note that because LeverFrame is lightweight and runs without a heavy desktop environment, 2GB of RAM is perfectly sufficient—purchasing a model with 4GB or 8GB of RAM will not provide any additional performance benefits for this specific application.
 
 You can create a `systemd` service to boot directly into the app using Cage without requiring a login.
 
 1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre cage`
 2. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
-3. Paste the following robust configuration (assuming your username is `robert` with UID `1000`):
+3. Paste the following robust configuration (assuming your username is `pi` with UID `1000`):
 
 ```ini
 [Unit]
@@ -94,9 +94,9 @@ Description=LeverFrame Kiosk
 After=network.target systemd-user-sessions.service systemd-logind.service
 
 [Service]
-User=robert
-Group=robert
-WorkingDirectory=/home/robert
+User=pi
+Group=pi
+WorkingDirectory=/home/pi
 
 # CRITICAL: Force a logind session to grant Cage access to the GPU/DRM
 PAMName=login
@@ -117,7 +117,7 @@ ExecStartPre=/bin/sleep 3
 ExecStartPre=/usr/bin/chvt 7
 
 # Launch LeverFrame natively without decorations
-ExecStart=/usr/bin/cage -- java -jar /home/robert/LeverFrame.jar --ui-scale 1.5
+ExecStart=/usr/bin/cage -- java -jar /home/pi/LeverFrame.jar --ui-scale 1.5
 
 # Automatically restart if the app crashes (but not if it exits cleanly via ESC, thanks to on-failure)
 Restart=on-failure
