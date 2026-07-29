@@ -1,0 +1,29 @@
+name: LeverFrame CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-and-build:
+    runs-on: macos-latest # macOS is required to build the iOS Multiplatform targets
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Run full Multiplatform Verification
+      # This runs Android, JVM, and iOS tests as defined in the Gradle check task
+      run: ./gradlew check
