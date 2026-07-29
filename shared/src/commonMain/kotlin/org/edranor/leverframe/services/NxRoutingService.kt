@@ -55,17 +55,17 @@ class NxRoutingService(
         var actualEntrancePos = entrancePos
         val clickedElem = map[entrancePos]
         
-        val isClickedSignalReversed = clickedElem != null && clickedElem.type.contains("SIGNAL") && clickedElem.linkedLever >= 0 && (
+        val isClickedSignalReversed = clickedElem != null && clickedElem.type.name.contains("SIGNAL") && clickedElem.linkedLever >= 0 && (
             levers.getOrNull(clickedElem.linkedLever)?.isReversed == true || 
-            (clickedElem.type.startsWith("BRACKET_SIGNAL") && clickedElem.linkedLever2 >= 0 && levers.getOrNull(clickedElem.linkedLever2)?.isReversed == true)
+            (clickedElem.type.name.startsWith("BRACKET_SIGNAL") && clickedElem.linkedLever2 >= 0 && levers.getOrNull(clickedElem.linkedLever2)?.isReversed == true)
         )
         
 
         
         if (!isClickedSignalReversed) {
-            val reversedSignals = tabDef.schematicElements.filter { it.type.contains("SIGNAL") && it.linkedLever >= 0 && (
+            val reversedSignals = tabDef.schematicElements.filter { it.type.name.contains("SIGNAL") && it.linkedLever >= 0 && (
                 levers.getOrNull(it.linkedLever)?.isReversed == true ||
-                (it.type.startsWith("BRACKET_SIGNAL") && it.linkedLever2 >= 0 && levers.getOrNull(it.linkedLever2)?.isReversed == true)
+                (it.type.name.startsWith("BRACKET_SIGNAL") && it.linkedLever2 >= 0 && levers.getOrNull(it.linkedLever2)?.isReversed == true)
             ) }
             
             var foundStart: Pair<Int, Int>? = null
@@ -101,9 +101,9 @@ class NxRoutingService(
         }
         
         val startElem = map[actualEntrancePos]
-        if (startElem != null && startElem.type.contains("SIGNAL") && startElem.linkedLever >= 0) {
+        if (startElem != null && startElem.type.name.contains("SIGNAL") && startElem.linkedLever >= 0) {
             val isReversed1 = levers.getOrNull(startElem.linkedLever)?.isReversed == true
-            val isReversed2 = if (startElem.type.startsWith("BRACKET_SIGNAL") && startElem.linkedLever2 >= 0) {
+            val isReversed2 = if (startElem.type.name.startsWith("BRACKET_SIGNAL") && startElem.linkedLever2 >= 0) {
                 levers.getOrNull(startElem.linkedLever2)?.isReversed == true
             } else false
             
@@ -123,18 +123,18 @@ class NxRoutingService(
                                 visited.add(n)
                                 val neighborElem = map[n]
                                 if (neighborElem != null) {
-                                    if (neighborElem.type.contains("SIGNAL") && neighborElem.linkedLever >= 0) {
+                                    if (neighborElem.type.name.contains("SIGNAL") && neighborElem.linkedLever >= 0) {
                                         val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: continue
                                         if (freshLevers.getOrNull(neighborElem.linkedLever)?.isReversed == true) {
                                             interlockingService.toggleLever(tabIndex, neighborElem.linkedLever, selectedTabIndex)
                                         }
-                                        if (neighborElem.type.startsWith("BRACKET_SIGNAL") && neighborElem.linkedLever2 >= 0) {
+                                        if (neighborElem.type.name.startsWith("BRACKET_SIGNAL") && neighborElem.linkedLever2 >= 0) {
                                             if (freshLevers.getOrNull(neighborElem.linkedLever2)?.isReversed == true) {
                                                 interlockingService.toggleLever(tabIndex, neighborElem.linkedLever2, selectedTabIndex)
                                             }
                                         }
                                     }
-                                    if (!neighborElem.type.contains("SIGNAL") || neighborElem.nxButton != org.edranor.leverframe.NxButtonType.EXIT_ONLY) {
+                                    if (!neighborElem.type.name.contains("SIGNAL") || neighborElem.nxButton != org.edranor.leverframe.NxButtonType.EXIT_ONLY) {
                                         nextQueue.add(neighborElem)
                                     }
                                 }
@@ -203,27 +203,27 @@ class NxRoutingService(
                 }
             }
             
-            if (elem.type.startsWith("TURNOUT")) {
+            if (elem.type.name.startsWith("TURNOUT")) {
                 if (elem.linkedLever >= 0) {
                     val prev = route.pathCells.getOrNull(i - 1)
                     val next = route.pathCells.getOrNull(i + 1)
-                    val isDiverging = if (elem.type == "TURNOUT_LEFT") {
+                    val isDiverging = if (elem.type.name == "TURNOUT_LEFT") {
                         prev == Pair(pos.first + 1, pos.second - 1) || next == Pair(pos.first + 1, pos.second - 1)
                     } else { // TURNOUT_RIGHT
                         prev == Pair(pos.first + 1, pos.second + 1) || next == Pair(pos.first + 1, pos.second + 1)
                     }
                     requiredLeverStates[elem.linkedLever] = isDiverging
                 }
-            } else if (elem.type.contains("SIGNAL")) {
-                if (elem.type.startsWith("BRACKET_SIGNAL")) {
+            } else if (elem.type.name.contains("SIGNAL")) {
+                if (elem.type.name.startsWith("BRACKET_SIGNAL")) {
                     var nextTurnoutDiverging = false
                     for (j in (i + 1) until route.pathCells.size) {
                         val aheadPos = route.pathCells[j]
                         val aheadElem = map[aheadPos]
-                        if (aheadElem != null && aheadElem.type.startsWith("TURNOUT")) {
+                        if (aheadElem != null && aheadElem.type.name.startsWith("TURNOUT")) {
                             val tPrev = route.pathCells.getOrNull(j - 1)
                             val tNext = route.pathCells.getOrNull(j + 1)
-                            nextTurnoutDiverging = if (aheadElem.type == "TURNOUT_LEFT") {
+                            nextTurnoutDiverging = if (aheadElem.type.name == "TURNOUT_LEFT") {
                                 tPrev == Pair(aheadPos.first + 1, aheadPos.second - 1) || tNext == Pair(aheadPos.first + 1, aheadPos.second - 1)
                             } else {
                                 tPrev == Pair(aheadPos.first + 1, aheadPos.second + 1) || tNext == Pair(aheadPos.first + 1, aheadPos.second + 1)
@@ -252,16 +252,16 @@ class NxRoutingService(
                 val behindPos = startNeighbors.find { it != nextPos }
                 if (behindPos != null) {
                     val behindElem = map[behindPos]
-                    if (behindElem != null && behindElem.type.contains("SIGNAL")) {
-                        val leverToPull = if (behindElem.type.startsWith("BRACKET_SIGNAL")) {
+                    if (behindElem != null && behindElem.type.name.contains("SIGNAL")) {
+                        val leverToPull = if (behindElem.type.name.startsWith("BRACKET_SIGNAL")) {
                             var nextTurnoutDiverging = false
                             for (j in 0 until route.pathCells.size) {
                                 val aheadPos = route.pathCells[j]
                                 val aheadElem = map[aheadPos]
-                                if (aheadElem != null && aheadElem.type.startsWith("TURNOUT")) {
+                                if (aheadElem != null && aheadElem.type.name.startsWith("TURNOUT")) {
                                     val tPrev = route.pathCells.getOrNull(j - 1) ?: behindPos
                                     val tNext = route.pathCells.getOrNull(j + 1)
-                                    nextTurnoutDiverging = if (aheadElem.type == "TURNOUT_LEFT") {
+                                    nextTurnoutDiverging = if (aheadElem.type.name == "TURNOUT_LEFT") {
                                         tPrev == Pair(aheadPos.first + 1, aheadPos.second - 1) || tNext == Pair(aheadPos.first + 1, aheadPos.second - 1)
                                     } else {
                                         tPrev == Pair(aheadPos.first + 1, aheadPos.second + 1) || tNext == Pair(aheadPos.first + 1, aheadPos.second + 1)
@@ -300,12 +300,12 @@ class NxRoutingService(
         var isAnySignalReversed = false
         for (pos in route.pathCells) {
             val elemCheck = map[pos]
-            if (elemCheck != null && elemCheck.type.contains("SIGNAL") && elemCheck.linkedLever >= 0) {
+            if (elemCheck != null && elemCheck.type.name.contains("SIGNAL") && elemCheck.linkedLever >= 0) {
                 if (levers.getOrNull(elemCheck.linkedLever)?.isReversed == true) {
                     isAnySignalReversed = true
                     break
                 }
-                if (elemCheck.type.startsWith("BRACKET_SIGNAL") && elemCheck.linkedLever2 >= 0) {
+                if (elemCheck.type.name.startsWith("BRACKET_SIGNAL") && elemCheck.linkedLever2 >= 0) {
                     if (levers.getOrNull(elemCheck.linkedLever2)?.isReversed == true) {
                         isAnySignalReversed = true
                         break

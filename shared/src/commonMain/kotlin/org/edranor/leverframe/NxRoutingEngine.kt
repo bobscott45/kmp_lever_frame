@@ -52,7 +52,7 @@ object NxRoutingEngine {
         val y = element.y
         val conns = mutableListOf<Pair<Int, Int>>()
         
-        when (element.type) {
+        when (element.type.name) {
             "STRAIGHT_H", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT" -> {
                 // Connects right
                 conns.add(Pair(x + 1, y))
@@ -64,16 +64,16 @@ object NxRoutingEngine {
                 }
                 // Connects left to a turnout coming from below
                 val leftTurnoutUp = map[Pair(x - 1, y + 1)]
-                if (leftTurnoutUp?.type == "TURNOUT_LEFT") {
+                if (leftTurnoutUp?.type?.name == "TURNOUT_LEFT") {
                     conns.add(Pair(x - 1, y + 1))
                 }
                 // Connects left to a turnout coming from above
                 val leftTurnoutDown = map[Pair(x - 1, y - 1)]
-                if (leftTurnoutDown?.type == "TURNOUT_RIGHT") {
+                if (leftTurnoutDown?.type?.name == "TURNOUT_RIGHT") {
                     conns.add(Pair(x - 1, y - 1))
                 }
                 // Fallback: if there's nothing diagonal, we still report left so we don't break simple tracks
-                if (leftTurnoutUp?.type != "TURNOUT_LEFT" && leftTurnoutDown?.type != "TURNOUT_RIGHT") {
+                if (leftTurnoutUp?.type?.name != "TURNOUT_LEFT" && leftTurnoutDown?.type?.name != "TURNOUT_RIGHT") {
                     conns.add(Pair(x - 1, y))
                 }
             }

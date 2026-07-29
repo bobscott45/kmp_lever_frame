@@ -109,9 +109,23 @@ enum class NxButtonColor {
     BLUE
 }
 
+enum class SchematicElementType {
+    STRAIGHT_H,
+    STRAIGHT_V,
+    TURNOUT_LEFT,
+    TURNOUT_RIGHT,
+    TURNOUT_LEFT_TRAILING,
+    TURNOUT_RIGHT_TRAILING,
+    DIAMOND_CROSSING,
+    SIGNAL_LEFT,
+    SIGNAL_RIGHT,
+    BRACKET_SIGNAL_LEFT,
+    BRACKET_SIGNAL_RIGHT
+}
+
 /** Core domain definition for a track schematic element (e.g., turnouts, signals, straight track). */
 data class SchematicElementDef(
-    val type: String,
+    val type: SchematicElementType,
     val x: Int,
     val y: Int,
     val linkedLever: Int = -1,

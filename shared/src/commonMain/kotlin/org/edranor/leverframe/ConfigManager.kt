@@ -240,8 +240,9 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 val nxButtonType = try { NxButtonType.valueOf(jsonElem.nx_button) } catch (e: Exception) { NxButtonType.NONE }
                 val nxPlacement = try { NxButtonPlacement.valueOf(jsonElem.nx_button_placement) } catch (e: Exception) { NxButtonPlacement.DEFAULT }
                 val nxColor = try { NxButtonColor.valueOf(jsonElem.nx_button_color) } catch (e: Exception) { NxButtonColor.BLACK }
+                val elemType = try { SchematicElementType.valueOf(jsonElem.type) } catch (e: Exception) { SchematicElementType.STRAIGHT_H }
                 SchematicElementDef(
-                    type = jsonElem.type,
+                    type = elemType,
                     x = jsonElem.x,
                     y = jsonElem.y,
                     linkedLever = jsonElem.linked_lever,

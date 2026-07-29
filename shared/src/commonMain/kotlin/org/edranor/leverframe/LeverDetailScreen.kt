@@ -80,7 +80,7 @@ fun LeverDetailScreen(
                             )
 
                             var typeExpanded by remember { mutableStateOf(false) }
-                            val types = listOf("HOME_SIGNAL", "DISTANT_SIGNAL", "POINTS", "FACING_POINTS", "BROWN", "GREEN", "SPARE")
+                            val types = LeverType.entries.map { it.name }
                             val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
                             
                             ExposedDropdownMenuBox(
@@ -123,9 +123,9 @@ fun LeverDetailScreen(
                                 
                                 var overrideExpanded by remember { mutableStateOf(false) }
                                 val overrideOptions = mapOf(
-                                    "DEFAULT" to "Follow Frame Default",
-                                    "ALWAYS" to "Always Restore to Normal",
-                                    "NEVER" to "Never Restore (Leave As-Is)"
+                                    RestoreOverride.DEFAULT.name to "Follow Frame Default",
+                                    RestoreOverride.ALWAYS.name to "Always Restore to Normal",
+                                    RestoreOverride.NEVER.name to "Never Restore (Leave As-Is)"
                                 )
                                 val currentOverrideName = overrideOptions[lever.restore_override] ?: "Follow Frame Default"
                                 

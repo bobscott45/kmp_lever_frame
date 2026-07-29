@@ -249,7 +249,7 @@ fun SchematicScreen(
                     .groupBy { it.linkedBlock }
 
                 blockElementsMap.forEach { (blockIdx, elements) ->
-                    val straightElements = elements.filter { it.type == "STRAIGHT_H" || it.type == "STRAIGHT_V" }
+                    val straightElements = elements.filter { it.type.name == "STRAIGHT_H" || it.type.name == "STRAIGHT_V" }
                     val elementsToCenter = if (straightElements.isNotEmpty()) straightElements else elements
                     val minX = elementsToCenter.minOf { it.x }
                     val maxX = elementsToCenter.maxOf { it.x }
@@ -273,11 +273,11 @@ fun SchematicScreen(
                     )
                     
                     var textCenterX = centerPx
-                    if (elements.size == 1 && elements.first().type.contains("SIGNAL")) {
+                    if (elements.size == 1 && elements.first().type.name.contains("SIGNAL")) {
                         val elem = elements.first()
-                        if (elem.type == "SIGNAL_RIGHT") {
+                        if (elem.type.name == "SIGNAL_RIGHT") {
                             textCenterX += gridSizeX * 0.4f
-                        } else if (elem.type == "SIGNAL_LEFT") {
+                        } else if (elem.type.name == "SIGNAL_LEFT") {
                             textCenterX -= gridSizeX * 0.4f
                         }
                     }

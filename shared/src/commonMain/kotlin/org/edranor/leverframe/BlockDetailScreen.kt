@@ -94,9 +94,9 @@ fun BlockDetailScreen(
                     Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         var modeExpanded by remember { mutableStateOf(false) }
                         val modes = mapOf(
-                            "HARDWARE_SENSOR" to "Hardware Sensor (Read-Only)",
-                            "VIRTUAL_SENSOR" to "Virtual Sensor (Broadcasts)",
-                            "LOCAL_ONLY" to "Local Only (No Broadcast)"
+                            BlockMode.HARDWARE_SENSOR.name to "Hardware Sensor (Read-Only)",
+                            BlockMode.VIRTUAL_SENSOR.name to "Virtual Sensor (Broadcasts)",
+                            BlockMode.LOCAL_ONLY.name to "Local Only (No Broadcast)"
                         )
                         ExposedDropdownMenuBox(expanded = modeExpanded, onExpandedChange = { modeExpanded = !modeExpanded }) {
                             OutlinedTextField(

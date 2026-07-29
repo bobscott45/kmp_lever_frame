@@ -57,7 +57,7 @@ fun DrawScope.drawSchematicElement(
 
     val trackColor = getBlockColor(element.linkedBlock)
 
-    when (element.type) {
+    when (element.type.name) {
         "STRAIGHT_H" -> drawLine(
             color = trackColor,
             start = Offset(px, py + gridSizeY / 2),
@@ -153,11 +153,11 @@ fun DrawScope.drawSchematicElement(
             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
             if (leftElement == null) {
                 // Check if a turnout from the row below points up to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_LEFT"
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type.name == "TURNOUT_LEFT"
             }
             if (leftElement == null) {
                 // Check if a turnout from the row above points down to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == "TURNOUT_RIGHT" } }
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type.name == "TURNOUT_RIGHT" } }
             }
             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             
@@ -206,11 +206,11 @@ fun DrawScope.drawSchematicElement(
             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
             if (leftElement == null) {
                 // Check if a turnout from the row below points up to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == "TURNOUT_LEFT"
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type.name == "TURNOUT_LEFT"
             }
             if (leftElement == null) {
                 // Check if a turnout from the row above points down to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == "TURNOUT_RIGHT" } }
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type.name == "TURNOUT_RIGHT" } }
             }
             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             

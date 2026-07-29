@@ -36,7 +36,7 @@ fun SchematicElementEditorDialog(
         title = { Text("Edit Cell ($cx, $cy)") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val types = listOf("STRAIGHT_H", "STRAIGHT_V", "TURNOUT_LEFT", "TURNOUT_RIGHT", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT")
+                val types = SchematicElementType.entries.map { it.name }
                 var typeExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }) {
                     OutlinedTextField(
@@ -120,10 +120,10 @@ fun SchematicElementEditorDialog(
                 // NX Button Type
                 var nxExpanded by remember { mutableStateOf(false) }
                 val nxLabels = mapOf(
-                    "NONE" to "None",
-                    "ENTRANCE_ONLY" to "Entrance Only",
-                    "EXIT_ONLY" to "Exit Only",
-                    "BOTH" to "Entry & Exit"
+                    NxButtonType.NONE.name to "None",
+                    NxButtonType.ENTRANCE_ONLY.name to "Entrance Only",
+                    NxButtonType.EXIT_ONLY.name to "Exit Only",
+                    NxButtonType.BOTH.name to "Entry & Exit"
                 )
                 ExposedDropdownMenuBox(expanded = nxExpanded, onExpandedChange = { nxExpanded = !nxExpanded }) {
                     OutlinedTextField(
@@ -148,11 +148,11 @@ fun SchematicElementEditorDialog(
                 if (editNxButton != "NONE") {
                     var placementExpanded by remember { mutableStateOf(false) }
                     val placementLabels = mapOf(
-                        "DEFAULT" to "Default (Top-Left)",
-                        "LEFT" to "Left Edge",
-                        "RIGHT" to "Right Edge",
-                        "TOP" to "Top Edge",
-                        "BOTTOM" to "Bottom Edge"
+                        NxButtonPlacement.DEFAULT.name to "Default (Top-Left)",
+                        NxButtonPlacement.LEFT.name to "Left Edge",
+                        NxButtonPlacement.RIGHT.name to "Right Edge",
+                        NxButtonPlacement.TOP.name to "Top Edge",
+                        NxButtonPlacement.BOTTOM.name to "Bottom Edge"
                     )
                     ExposedDropdownMenuBox(expanded = placementExpanded, onExpandedChange = { placementExpanded = !placementExpanded }) {
                         OutlinedTextField(
@@ -178,12 +178,12 @@ fun SchematicElementEditorDialog(
                 if (editNxButton != "NONE") {
                     var colorExpanded by remember { mutableStateOf(false) }
                     val colorLabels = mapOf(
-                        "BLACK" to "Black",
-                        "WHITE" to "White",
-                        "RED" to "Red (Main Line)",
-                        "YELLOW" to "Yellow (Call-On/Shunt)",
-                        "GREEN" to "Green",
-                        "BLUE" to "Blue"
+                        NxButtonColor.BLACK.name to "Black",
+                        NxButtonColor.WHITE.name to "White",
+                        NxButtonColor.RED.name to "Red (Main Line)",
+                        NxButtonColor.YELLOW.name to "Yellow (Call-On/Shunt)",
+                        NxButtonColor.GREEN.name to "Green",
+                        NxButtonColor.BLUE.name to "Blue"
                     )
                     ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
                         OutlinedTextField(

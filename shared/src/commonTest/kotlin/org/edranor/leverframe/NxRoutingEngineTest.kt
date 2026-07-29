@@ -63,10 +63,10 @@ class NxRoutingEngineTest {
     @Test
     fun testFindReachableExitsStraightLine() {
         val elements = listOf(
-            SchematicElementDef(x = 0, y = 0, type = "SIGNAL_LEFT", nxButton = NxButtonType.ENTRANCE_ONLY),
-            SchematicElementDef(x = 1, y = 0, type = "STRAIGHT_H"),
-            SchematicElementDef(x = 2, y = 0, type = "STRAIGHT_H"),
-            SchematicElementDef(x = 3, y = 0, type = "SIGNAL_LEFT", nxButton = NxButtonType.EXIT_ONLY)
+            SchematicElementDef(x = 0, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.ENTRANCE_ONLY),
+            SchematicElementDef(x = 1, y = 0, type = SchematicElementType.STRAIGHT_H),
+            SchematicElementDef(x = 2, y = 0, type = SchematicElementType.STRAIGHT_H),
+            SchematicElementDef(x = 3, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.EXIT_ONLY)
         )
         
         val routes = NxRoutingEngine.findReachableExits(0, 0, elements)
@@ -79,10 +79,10 @@ class NxRoutingEngineTest {
     @Test
     fun testFindReachableExitsDiverging() {
         val elements = listOf(
-            SchematicElementDef(x = 0, y = 0, type = "SIGNAL_LEFT", nxButton = NxButtonType.ENTRANCE_ONLY),
-            SchematicElementDef(x = 1, y = 0, type = "TURNOUT_RIGHT"), // Splits to (2,0) and (2,1)
-            SchematicElementDef(x = 2, y = 0, type = "SIGNAL_LEFT", nxButton = NxButtonType.EXIT_ONLY),
-            SchematicElementDef(x = 2, y = 1, type = "SIGNAL_LEFT", nxButton = NxButtonType.EXIT_ONLY)
+            SchematicElementDef(x = 0, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.ENTRANCE_ONLY),
+            SchematicElementDef(x = 1, y = 0, type = SchematicElementType.TURNOUT_RIGHT), // Splits to (2,0) and (2,1)
+            SchematicElementDef(x = 2, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.EXIT_ONLY),
+            SchematicElementDef(x = 2, y = 1, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.EXIT_ONLY)
         )
         
         val routes = NxRoutingEngine.findReachableExits(0, 0, elements)
