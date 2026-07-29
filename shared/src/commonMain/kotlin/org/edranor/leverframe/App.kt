@@ -25,6 +25,20 @@
  * and dynamic scaling based on the user's viewport and configuration settings.
  */
 package org.edranor.leverframe
+import org.edranor.leverframe.*
+
+import org.edranor.leverframe.network.*
+import org.edranor.leverframe.services.*
+import org.edranor.leverframe.ui.screens.main.*
+import org.edranor.leverframe.ui.components.*
+import org.edranor.leverframe.ui.theme.*
+import org.edranor.leverframe.di.*
+import org.edranor.leverframe.ui.screens.editor.*
+import org.edranor.leverframe.domain.models.*
+import org.edranor.leverframe.config.*
+import org.edranor.leverframe.ui.screens.schematic.*
+import org.edranor.leverframe.domain.engine.*
+import org.edranor.leverframe.domain.parser.*
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -71,7 +85,6 @@ import kotlinx.coroutines.delay
 
 import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel
-import org.edranor.leverframe.di.appModule
 import org.koin.core.context.startKoin
 
 var koinStarted = false

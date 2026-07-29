@@ -24,16 +24,22 @@
  * provisioning for the core shared logic.
  */
 package org.edranor.leverframe.di
+import org.edranor.leverframe.*
 
-import org.edranor.leverframe.ConfigurationRepository
-import org.edranor.leverframe.StatePersistenceRepository
-import org.edranor.leverframe.ConfigManager
+import org.edranor.leverframe.network.*
+import org.edranor.leverframe.services.*
+import org.edranor.leverframe.ui.screens.main.*
+import org.edranor.leverframe.ui.components.*
+import org.edranor.leverframe.ui.theme.*
+import org.edranor.leverframe.di.*
+import org.edranor.leverframe.ui.screens.editor.*
+import org.edranor.leverframe.domain.models.*
+import org.edranor.leverframe.config.*
+import org.edranor.leverframe.ui.screens.schematic.*
+import org.edranor.leverframe.domain.engine.*
+import org.edranor.leverframe.domain.parser.*
+
 import org.edranor.openlcb.LccNetworkClient
-import org.edranor.leverframe.LccNode
-import org.edranor.leverframe.AppViewModel
-import org.edranor.leverframe.NetworkEventProcessor
-import org.edranor.leverframe.services.ConfigurationService
-import org.edranor.leverframe.services.InterlockingService
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
