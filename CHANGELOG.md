@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 1.2.0-dev
 
+### Changed
+- **Architecture**: Refactored JSON DTOs (`JsonLever`, `JsonBlock`, `JsonSchematicElement`, `JsonInterlocking`) to eliminate primitive obsession. Configuration fields previously stored as raw Strings (such as lever types, block modes, and interlocking states) have been migrated to strict, type-safe Enums (`LeverType`, `BlockMode`, `TargetType`, `SchematicElementType`, etc.).
+- **Architecture**: Introduced a robust `EnumFallbackSerializer` to ensure that malformed or legacy JSON configurations do not crash the application, gracefully falling back to a default value while still providing strict type safety within the codebase.
+
+- **Architecture**: Reorganized the project package structure into well-defined `domain`, `ui`, `config`, and `network` layers.
+- **Architecture**: Broken down the `App.kt` monolith and improved `ConfigurationService` extensions for better separation of concerns.
+- **Codebase**: Cleaned up minor code smells and migrated away from deprecated Compose APIs (e.g., replacing `LocalClipboardManager` with `LocalClipboard`).
+- **Maintenance**: Removed obsolete test scripts (`SnipTest.kt`, `ConfigTest.kt`) from production source sets.
+- **Documentation**: Updated `ARCHITECTURE.md`, license headers, and added missing KDocs to routing helpers.
+
 ### Fixed
 - **UI/UX**: Restored the dynamic color indicator for Turnouts on the schematic. The diverging route leg will now properly illuminate Green when the points are thrown, providing clear visual feedback of the active route.
 
