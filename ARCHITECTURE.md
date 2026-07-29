@@ -57,7 +57,7 @@ The routing engine orchestrates complex multi-lever eNtrance-eXit (NX) routes ac
 ### 2.6 User Interface
 Built entirely in Compose Multiplatform.
 *   **`App.kt`**: The root composable that observes the `AppViewModel` state and routes between the main views.
-*   **`LeverFrameScreen.kt`**: The primary operational UI, rendering the physical levers and their dynamic locking states.
+*   **`MainScreenViews.kt`**: The primary operational UI, rendering the physical levers and their dynamic locking states.
 *   **`SchematicScreen.kt`**: Uses the Compose `Canvas` API to render a live, reactive panel diagram based on block/lever states and grid coordinates.
 *   **`ConfigurationScreen.kt` & `SchematicEditorScreen.kt`**: In-app editors for modifying the JSON configuration and drawing the track schematic visually, bypassing the need for external tools. (Note: these UI monoliths have been refactored into smaller component files such as `SystemSettingsViews.kt`, `LeverDetailScreen.kt`, `BlockDetailScreen.kt`, and `SchematicElementEditorDialog.kt` for maintainability).
 *   **`SystemStatusScreen.kt` & `LeverStatusScreen.kt`**: Diagnostic overlays providing real-time feedback on network health and interlocking state.
