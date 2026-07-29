@@ -1,4 +1,5 @@
 [versions]
+dokka = "1.9.20"
 app-version = "1.2.0-dev"
 app-versionCode = "5"
 buildkonfig = "0.15.2"
@@ -49,6 +50,7 @@ koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", ver
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 
 [plugins]
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
