@@ -27,8 +27,13 @@
  */
 package org.edranor.leverframe
 
+/** Defines the three major application view modes. */
 enum class ConfigMode { NONE, SYSTEM, FRAMES }
 
+/**
+ * The high-frequency, source-of-truth state for the physical and logical layout.
+ * Tracks the real-time position of all levers and occupancy of all track blocks.
+ */
 data class DomainState(
     val frames: List<DomainFrame> = emptyList(),
     val conflictingLevers: List<Int> = emptyList()
@@ -51,12 +56,21 @@ data class DomainBlock(
     val isOccupied: Boolean
 )
 
+/**
+ * The slow-moving configuration state.
+ * Contains the parsed tab definitions and the raw JSON schema data. 
+ * Changes here trigger a full re-evaluation of the layout UI.
+ */
 data class ConfigState(
     val tabs: List<Pair<String, TabDef>> = emptyList(),
     val configVersion: Int = 0,
     val config: JsonConfig = JsonConfig()
 )
 
+/**
+ * Ephemeral user-interface state that does not need to be saved to disk.
+ * Handles active tabs, error banners, and modal dialog visibility.
+ */
 data class TransientUiState(
     val selectedTabIndex: Int = 0,
     val configMode: ConfigMode = ConfigMode.NONE,

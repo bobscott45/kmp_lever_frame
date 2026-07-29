@@ -29,12 +29,18 @@ import org.edranor.leverframe.NxRoute
 import org.edranor.leverframe.NxRoutingEngine
 import org.edranor.leverframe.toAstNode
 
+/** Result sum type for a requested NX route operation. */
 sealed class NxRoutingResult {
     object Success : NxRoutingResult()
     object Cancelled : NxRoutingResult()
     data class Error(val message: String, val errorCells: List<Pair<Int, Int>> = emptyList()) : NxRoutingResult()
 }
 
+/**
+ * Stateful service that orchestrates NX (eNtrance-eXit) routing operations.
+ * Communicates with the core InterlockingService to flip required turnouts, plunge FPLs, 
+ * and clear signals along the computed safe track path.
+ */
 class NxRoutingService(
     private val configService: ConfigurationService,
     private val interlockingService: InterlockingService

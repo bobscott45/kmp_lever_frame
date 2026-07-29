@@ -24,10 +24,15 @@
  * circular dependencies or contradictory requirements that would result in a lever being permanently locked.
  */
 package org.edranor.leverframe
+/** Contains the findings of a rule validation sweep. */
 data class ValidationResult(
     val unreachableLevers: Map<Int, String> // Map of lever index to explanation
 )
 
+/**
+ * Engine that performs static analysis on the interlocking logic graph.
+ * Detects circular dependencies or impossible conditions that would permanently lock a lever.
+ */
 object RuleValidator {
     
     fun validate(tab: TabDef): ValidationResult {

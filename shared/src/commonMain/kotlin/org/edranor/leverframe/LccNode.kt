@@ -30,6 +30,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Singleton implementation of the OpenLCB Node.
+ * Manages the node's identity, memory space configuration (CDI), and the 
+ * bidirectional flow of events between the physical network and the local application.
+ */
 object LccNode : OpenLcbConfig, MemorySpaceHandler, EventProducerProvider, LccNetworkClient {
 
     override val nodeId: String

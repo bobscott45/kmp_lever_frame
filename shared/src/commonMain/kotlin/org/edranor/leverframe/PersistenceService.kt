@@ -30,6 +30,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
+/**
+ * Service responsible for automatically saving the lever/block state to disk.
+ * Debounces rapid domain state changes to prevent excessive disk writes during cascades.
+ */
 class PersistenceService(
     private val persistenceRepo: StatePersistenceRepository,
     private val configRepo: ConfigurationRepository,

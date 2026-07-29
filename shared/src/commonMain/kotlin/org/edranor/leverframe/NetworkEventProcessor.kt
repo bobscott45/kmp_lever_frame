@@ -27,6 +27,11 @@
 package org.edranor.leverframe
 import org.edranor.openlcb.LccNetworkClient
 
+/**
+ * Core business logic for digesting incoming OpenLCB/LCC network events.
+ * Determines if an incoming event corresponds to a known Lever or Block state change,
+ * evaluates it against local interlocking policies, and executes the change if valid.
+ */
 class NetworkEventProcessor(
     private val lccClient: LccNetworkClient,
     private val configRepo: ConfigurationRepository
@@ -134,6 +139,10 @@ class NetworkEventProcessor(
     }
 }
 
+/** 
+ * Represents the result of processing a network event, detailing whether the domain 
+ * state was altered and if any cascade events must be broadcast back to the network.
+ */
 data class EventProcessorResult(
     val didChange: Boolean,
     val newState: DomainState,
