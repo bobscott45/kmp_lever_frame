@@ -63,6 +63,7 @@ class NxRoutingService(
         return NxRoutingResult.Error("No valid entrance signal found at this location")
     }
 
+    /** Helper function: findactualentrancepos */
     private fun findActualEntrancePos(entrancePos: Pair<Int, Int>, map: Map<Pair<Int, Int>, SchematicElementDef>, levers: List<DomainLever>, tabDef: TabDef): Pair<Int, Int> {
         val clickedElem = map[entrancePos]
         val isClickedSignalReversed = isSignalReversed(clickedElem, levers)
@@ -77,6 +78,7 @@ class NxRoutingService(
         return entrancePos
     }
 
+    /** Helper function: issignalreversed */
     private fun isSignalReversed(elem: SchematicElementDef?, levers: List<DomainLever>): Boolean {
         if (elem == null || !elem.type.name.contains("SIGNAL") || elem.linkedLever < 0) return false
         if (levers.getOrNull(elem.linkedLever)?.isReversed == true) return true
@@ -86,6 +88,7 @@ class NxRoutingService(
         return false
     }
 
+    /** Helper function: tracereversedsignalstoentrance */
     private fun traceReversedSignalsToEntrance(reversedSignals: List<SchematicElementDef>, entrancePos: Pair<Int, Int>, map: Map<Pair<Int, Int>, SchematicElementDef>): Pair<Int, Int>? {
         for (sig in reversedSignals) {
             var q = listOf(sig)
@@ -115,6 +118,7 @@ class NxRoutingService(
         return null
     }
 
+    /** Helper function: cancelsignallevers */
     private fun cancelSignalLevers(startElem: SchematicElementDef, levers: List<DomainLever>, tabIndex: Int, selectedTabIndex: Int) {
         val isReversed1 = levers.getOrNull(startElem.linkedLever)?.isReversed == true
         val isReversed2 = if (startElem.type.name.startsWith("BRACKET_SIGNAL") && startElem.linkedLever2 >= 0) {
@@ -125,6 +129,7 @@ class NxRoutingService(
         if (isReversed2) interlockingService.toggleLever(tabIndex, startElem.linkedLever2, selectedTabIndex)
     }
 
+    /** Helper function: canceldependentsignals */
     private fun cancelDependentSignals(startElem: SchematicElementDef, actualEntrancePos: Pair<Int, Int>, map: Map<Pair<Int, Int>, SchematicElementDef>, tabIndex: Int, selectedTabIndex: Int) {
         var currentQueue = listOf(startElem)
         val visited = mutableSetOf<Pair<Int, Int>>()
@@ -161,6 +166,7 @@ class NxRoutingService(
         }
     }
 
+    /** Helper function: restorenormallevers */
     private fun restoreNormalLevers(tabIndex: Int, selectedTabIndex: Int) {
         val postSignalLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers
         if (postSignalLevers != null) {
@@ -211,6 +217,7 @@ class NxRoutingService(
         return executeLeverSequence(tabIndex, selectedTabIndex, requiredLeverStates, allSignals, primarySignals, tabDef)
     }
 
+    /** Helper function: findoccupiedcells */
     private fun findOccupiedCells(route: NxRoute, map: Map<Pair<Int, Int>, SchematicElementDef>, blocks: List<DomainBlock>): List<Pair<Int, Int>> {
         val occupiedCells = mutableListOf<Pair<Int, Int>>()
         for (pos in route.pathCells) {
@@ -222,6 +229,7 @@ class NxRoutingService(
         return occupiedCells
     }
 
+    /** Helper function: calculaterequiredturnoutstates */
     private fun calculateRequiredTurnoutStates(route: NxRoute, map: Map<Pair<Int, Int>, SchematicElementDef>): Map<Int, Boolean> {
         val requiredLeverStates = mutableMapOf<Int, Boolean>()
         for (i in route.pathCells.indices) {
@@ -242,6 +250,7 @@ class NxRoutingService(
         return requiredLeverStates
     }
 
+    /** Helper function: identifyprimarysignallevers */
     private fun identifyPrimarySignalLevers(route: NxRoute, map: Map<Pair<Int, Int>, SchematicElementDef>): List<Int> {
         val primarySignals = mutableListOf<Int>()
         for (i in route.pathCells.indices) {
@@ -261,6 +270,7 @@ class NxRoutingService(
         return primarySignals
     }
 
+    /** Helper function: isnextturnoutdiverging */
     private fun isNextTurnoutDiverging(route: NxRoute, startIndex: Int, map: Map<Pair<Int, Int>, SchematicElementDef>): Boolean {
         for (j in (startIndex + 1) until route.pathCells.size) {
             val aheadPos = route.pathCells[j]
@@ -278,6 +288,7 @@ class NxRoutingService(
         return false
     }
 
+    /** Helper function: identifysecondarysignallevers */
     private fun identifySecondarySignalLevers(route: NxRoute, map: Map<Pair<Int, Int>, SchematicElementDef>, primarySignals: List<Int>): List<Int> {
         val secondarySignals = mutableListOf<Int>()
         if (route.pathCells.size < 2) return secondarySignals
@@ -305,6 +316,7 @@ class NxRoutingService(
         return secondarySignals
     }
 
+    /** Helper function: isanysignalalreadycleared */
     private fun isAnySignalAlreadyCleared(primarySignals: List<Int>, allSignals: List<Int>, levers: List<DomainLever>, map: Map<Pair<Int, Int>, SchematicElementDef>, route: NxRoute): Boolean {
         var isPrimaryReversed = false
         for (leverIdx in primarySignals) {
@@ -327,6 +339,7 @@ class NxRoutingService(
         return false
     }
 
+    /** Helper function: resolvedependenciesfromast */
     private fun resolveDependenciesFromAst(tabDef: TabDef, allSignals: List<Int>, requiredLeverStates: MutableMap<Int, Boolean>) {
         for (signalLeverIdx in allSignals) {
             val leverDef = tabDef.levers.getOrNull(signalLeverIdx) ?: continue
@@ -345,6 +358,7 @@ class NxRoutingService(
         }
     }
 
+    /** Helper function: executeleversequence */
     private fun executeLeverSequence(
         tabIndex: Int, 
         selectedTabIndex: Int, 
@@ -365,6 +379,7 @@ class NxRoutingService(
         return clearSignals(allSignalLevers, primarySignalLevers, tabIndex, selectedTabIndex, tabDef)
     }
     
+    /** Helper function: unplungefacingpoints */
     private fun unplungeFacingPoints(fplLevers: List<Int>, tabIndex: Int, selectedTabIndex: Int) {
         for (fplIdx in fplLevers) {
             val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
@@ -374,6 +389,7 @@ class NxRoutingService(
         }
     }
     
+    /** Helper function: throwpoints */
     private fun throwPoints(pointLevers: List<Int>, requiredLeverStates: Map<Int, Boolean>, tabIndex: Int, selectedTabIndex: Int) {
         for (pointIdx in pointLevers) {
             val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
@@ -384,6 +400,7 @@ class NxRoutingService(
         }
     }
     
+    /** Helper function: replungefacingpoints */
     private fun replungeFacingPoints(fplLevers: List<Int>, requiredLeverStates: Map<Int, Boolean>, tabIndex: Int, selectedTabIndex: Int) {
         for (fplIdx in fplLevers) {
             val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
@@ -394,6 +411,7 @@ class NxRoutingService(
         }
     }
     
+    /** Helper function: throwotherlevers */
     private fun throwOtherLevers(otherLevers: List<Int>, requiredLeverStates: Map<Int, Boolean>, tabIndex: Int, selectedTabIndex: Int) {
         for (otherIdx in otherLevers) {
             val freshLevers = interlockingService.domainState.value.frames.getOrNull(tabIndex)?.levers ?: break
@@ -404,6 +422,7 @@ class NxRoutingService(
         }
     }
     
+    /** Helper function: clearsignals */
     private fun clearSignals(
         allSignalLevers: List<Int>, 
         primarySignalLevers: List<Int>, 

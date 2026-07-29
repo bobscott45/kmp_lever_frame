@@ -46,6 +46,7 @@ object RuleValidator {
         return ValidationResult(unreachableLevers)
     }
 
+    /** Helper function: explorereachablestates */
     private fun exploreReachableStates(tab: TabDef, numLevers: Int): Set<Int> {
         val reachableStates = mutableSetOf<List<Boolean>>()
         val queue = ArrayDeque<List<Boolean>>()
@@ -83,6 +84,7 @@ object RuleValidator {
         return reversedLevers
     }
 
+    /** Helper function: analyzeunreachablelevers */
     private fun analyzeUnreachableLevers(tab: TabDef, numLevers: Int, reversedLevers: Set<Int>): Map<Int, String> {
         val unreachable = mutableMapOf<Int, String>()
         for (i in 0 until numLevers) {
@@ -94,6 +96,7 @@ object RuleValidator {
         return unreachable
     }
 
+    /** Helper function: checkconflict */
     private fun checkConflict(tab: TabDef, leverStates: List<Boolean>): Boolean {
         val referencedBlocks = mutableSetOf<Int>()
         for (i in leverStates.indices) {
@@ -116,6 +119,7 @@ object RuleValidator {
         return true
     }
     
+    /** Helper function: isvalidstatefound */
     private fun isValidStateFound(tab: TabDef, leverStates: List<Boolean>, blockList: List<Int>, assignment: Int): Boolean {
         val blockStates = mutableMapOf<Int, Boolean>()
         for (b in blockList.indices) {
@@ -135,6 +139,7 @@ object RuleValidator {
         return true
     }
 
+    /** Helper function: collectblocks */
     private fun collectBlocks(node: AstNode, blocks: MutableSet<Int>) {
         when (node) {
             is BlockStateNode -> blocks.add(node.blockIndex)
@@ -145,6 +150,7 @@ object RuleValidator {
         }
     }
 
+    /** Helper function: evaluatenode */
     private fun evaluateNode(node: AstNode, leverStates: List<Boolean>, blockStates: Map<Int, Boolean>): Boolean {
         return when (node) {
             is LeverStateNode -> leverStates.getOrElse(node.leverIndex) { false } == node.requiredReversed
@@ -155,6 +161,7 @@ object RuleValidator {
         }
     }
 
+    /** Helper function: analyzecontradiction */
     private fun analyzeContradiction(targetLever: Int, tab: TabDef): String {
         val requirements = mutableMapOf<Int, Pair<Boolean, Int>>()
         val blockRequirements = mutableMapOf<Int, Pair<Boolean, Int>>()
@@ -185,6 +192,7 @@ object RuleValidator {
         return "Complex or cyclical interlocking rules prevent this lever from ever being pulled."
     }
 
+    /** Helper function: extractrequirements */
     private fun extractRequirements(
         node: AstNode, 
         sourceLever: Int, 
@@ -205,6 +213,7 @@ object RuleValidator {
         }
     }
     
+    /** Helper function: evaluatelevercontradiction */
     private fun evaluateLeverContradiction(
         node: LeverStateNode,
         sourceLever: Int,
@@ -224,6 +233,7 @@ object RuleValidator {
         return null
     }
     
+    /** Helper function: evaluateblockcontradiction */
     private fun evaluateBlockContradiction(
         node: BlockStateNode,
         sourceLever: Int,
@@ -241,6 +251,7 @@ object RuleValidator {
         return null
     }
 
+    /** Helper function: formatlevercontradictionmessage */
     private fun formatLeverContradictionMessage(
         reqState: Boolean,
         existing: Pair<Boolean, Int>,
@@ -262,6 +273,7 @@ object RuleValidator {
         }
     }
 
+    /** Helper function: formatblockcontradictionmessage */
     private fun formatBlockContradictionMessage(
         reqState: Boolean,
         existing: Pair<Boolean, Int>,
