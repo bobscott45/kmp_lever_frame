@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * User interface component for editing individual levers, their behavior, and logical rules.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.layout.*
@@ -33,6 +36,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+/**
+ * A detailed editor screen that allows users to modify a single [JsonLever]'s properties,
+ * configure its LCC events, set up auto-reversal, and author complex interlocking logic rules.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeverDetailScreen(

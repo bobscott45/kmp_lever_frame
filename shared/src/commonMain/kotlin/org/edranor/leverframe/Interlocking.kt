@@ -51,6 +51,7 @@ enum class LeverType {
     SPARE
 }
 
+/** Options for overriding the default lever restoration behavior when a train clears a block. */
 enum class RestoreOverride {
     DEFAULT,
     ALWAYS,
@@ -70,6 +71,7 @@ data class LeverDef(
     val restoreOverride: RestoreOverride = RestoreOverride.DEFAULT
 )
 
+/** Represents the operational mode of a block sensor. */
 enum class BlockMode {
     HARDWARE_SENSOR,
     VIRTUAL_SENSOR,
@@ -85,6 +87,7 @@ data class BlockDef(
     val mode: BlockMode = BlockMode.LOCAL_ONLY
 )
 
+/** Defines the functionality of an NX (eNtrance/eXit) routing button on a track element. */
 enum class NxButtonType {
     NONE,
     ENTRANCE_ONLY,
@@ -92,6 +95,7 @@ enum class NxButtonType {
     BOTH
 }
 
+/** Defines the visual placement of the NX button relative to the track element. */
 enum class NxButtonPlacement {
     DEFAULT,
     LEFT,
@@ -100,6 +104,7 @@ enum class NxButtonPlacement {
     BOTTOM
 }
 
+/** Defines the visual color of the NX button. */
 enum class NxButtonColor {
     BLACK,
     WHITE,
@@ -109,6 +114,7 @@ enum class NxButtonColor {
     BLUE
 }
 
+/** Represents the various track components that can be drawn on the schematic panel. */
 enum class SchematicElementType {
     STRAIGHT_H,
     STRAIGHT_V,

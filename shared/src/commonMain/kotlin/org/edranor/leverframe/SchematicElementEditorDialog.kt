@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * User interface component for configuring individual track elements on the schematic panel.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.layout.*
@@ -27,6 +30,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * A dialog overlay that allows users to change a schematic cell's visual track type,
+ * bind it to a lever or block, and configure NX (Entrance/Exit) routing buttons.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchematicElementEditorDialog(

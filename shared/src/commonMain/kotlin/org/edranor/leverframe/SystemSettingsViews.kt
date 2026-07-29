@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * User interface components for managing global system-wide configuration settings.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.layout.*
@@ -38,6 +41,9 @@ fun brassTextFieldColors() = OutlinedTextFieldDefaults.colors(
     cursorColor = LeverFrameTheme.Colors.Brass
 )
 
+/**
+ * The main settings panel encompassing network, behavior, developer, and JMRI options.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemSettingsSection(config: JsonConfig, onConfigChange: (JsonConfig) -> Unit) {

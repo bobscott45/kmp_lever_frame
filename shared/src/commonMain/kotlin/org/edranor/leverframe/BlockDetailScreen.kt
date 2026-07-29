@@ -19,6 +19,9 @@
  * agree to grant the author a non-exclusive, perpetual license to distribute 
  * your contributions under both the GPLv3 and our storefront distribution licenses.
  */
+/**
+ * User interface component for editing individual track blocks and sensors.
+ */
 package org.edranor.leverframe
 
 import androidx.compose.foundation.layout.*
@@ -30,6 +33,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * A detailed editor screen that allows users to modify a single [JsonBlock]'s properties,
+ * including its short code, LCC events, and operational mode.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockDetailScreen(
