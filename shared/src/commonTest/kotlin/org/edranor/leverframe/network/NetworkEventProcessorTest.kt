@@ -71,7 +71,7 @@ class NetworkEventProcessorTest {
             label_lines = 2,
             label_line_height = 18,
             levers = listOf(
-                JsonLever(label = "Signal", type = "HOME_SIGNAL", lcc_event_normal = "11.22.33.44.00.00.00.01", lcc_event_reversed = "11.22.33.44.00.00.00.02")
+                JsonLever(label = "Signal", type = LeverType.HOME_SIGNAL, lcc_event_normal = "11.22.33.44.00.00.00.01", lcc_event_reversed = "11.22.33.44.00.00.00.02")
             ),
             blocks = listOf(
                 JsonBlock(label = "Platform 1", lcc_event_occupied = "11.22.33.44.00.00.00.06", lcc_event_empty = "11.22.33.44.00.00.00.07")

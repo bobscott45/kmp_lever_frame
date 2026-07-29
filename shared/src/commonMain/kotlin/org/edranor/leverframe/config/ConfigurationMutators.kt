@@ -88,7 +88,7 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
                     )
                 },
                 blocks = tab.blocks.map { block ->
-                    block.copy(lcc_event_occupied = "", lcc_event_empty = "", mode = "LOCAL_ONLY")
+                    block.copy(lcc_event_occupied = "", lcc_event_empty = "", mode = org.edranor.leverframe.domain.engine.BlockMode.LOCAL_ONLY)
                 }
             )
         }
@@ -187,11 +187,11 @@ fun swapBlocksSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     val newLevers = tab.levers.map { lever ->
         val newRules = lever.interlocking.map { rule ->
             var newRule = rule
-            if (rule.target_type == "BLOCK") {
+            if (rule.target_type == org.edranor.leverframe.domain.engine.TargetType.BLOCK) {
                 if (rule.target == indexA) newRule = newRule.copy(target = indexB)
                 else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
             }
-            if (rule.alt_target_type == "BLOCK") {
+            if (rule.alt_target_type == org.edranor.leverframe.domain.engine.TargetType.BLOCK) {
                 if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
                 else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
             }
@@ -223,11 +223,11 @@ fun swapLeversSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     val newLeversMapped = newLevers.map { lever ->
         val newRules = lever.interlocking.map { rule ->
             var newRule = rule
-            if (rule.target_type == "LEVER") {
+            if (rule.target_type == org.edranor.leverframe.domain.engine.TargetType.LEVER) {
                 if (rule.target == indexA) newRule = newRule.copy(target = indexB)
                 else if (rule.target == indexB) newRule = newRule.copy(target = indexA)
             }
-            if (rule.alt_target_type == "LEVER") {
+            if (rule.alt_target_type == org.edranor.leverframe.domain.engine.TargetType.LEVER) {
                 if (rule.alt_target == indexA) newRule = newRule.copy(alt_target = indexB)
                 else if (rule.alt_target == indexB) newRule = newRule.copy(alt_target = indexA)
             }
@@ -254,11 +254,11 @@ fun deleteBlockSafe(tab: JsonTab, index: Int): JsonTab {
     val newLevers = tab.levers.map { lever ->
         val newRules = lever.interlocking.mapNotNull { rule ->
             var newRule = rule
-            if (rule.target_type == "BLOCK") {
+            if (rule.target_type == org.edranor.leverframe.domain.engine.TargetType.BLOCK) {
                 if (rule.target == index) return@mapNotNull null
                 else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
             }
-            if (rule.alt_target_type == "BLOCK") {
+            if (rule.alt_target_type == org.edranor.leverframe.domain.engine.TargetType.BLOCK) {
                 if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
                 else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
             }
@@ -287,11 +287,11 @@ fun deleteLeverSafe(tab: JsonTab, index: Int): JsonTab {
     val newLeversMapped = newLevers.map { lever ->
         val newRules = lever.interlocking.mapNotNull { rule ->
             var newRule = rule
-            if (rule.target_type == "LEVER") {
+            if (rule.target_type == org.edranor.leverframe.domain.engine.TargetType.LEVER) {
                 if (rule.target == index) return@mapNotNull null
                 else if (rule.target > index) newRule = newRule.copy(target = rule.target - 1)
             }
-            if (rule.alt_target_type == "LEVER") {
+            if (rule.alt_target_type == org.edranor.leverframe.domain.engine.TargetType.LEVER) {
                 if (rule.alt_target == index) newRule = newRule.copy(alt_target = -1)
                 else if (rule.alt_target > index) newRule = newRule.copy(alt_target = rule.alt_target - 1)
             }

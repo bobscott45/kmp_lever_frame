@@ -76,12 +76,12 @@ class AppViewModelTest {
             label_lines = 2,
             label_line_height = 18,
             levers = listOf(
-                JsonLever(label = "Signal", type = "HOME_SIGNAL", lcc_event_normal = "11.22.33.44.00.00.00.01", lcc_event_reversed = "11.22.33.44.00.00.00.02"),
-                JsonLever(label = "Points", type = "POINTS", lcc_event_reversed = "11.22.33.44.00.00.00.04", interlocking = listOf(
+                JsonLever(label = "Signal", type = LeverType.HOME_SIGNAL, lcc_event_normal = "11.22.33.44.00.00.00.01", lcc_event_reversed = "11.22.33.44.00.00.00.02"),
+                JsonLever(label = "Points", type = LeverType.POINTS, lcc_event_reversed = "11.22.33.44.00.00.00.04", interlocking = listOf(
                     JsonInterlocking(target = 0, state = "NORMAL", alt_target = -1, alt_state = "NORMAL")
                 )),
-                JsonLever(label = "Auto Signal", type = "HOME_SIGNAL", auto_reverser = true, lcc_event_normal = "11.22.33.44.00.00.00.05", lcc_event_reversed = "11.22.33.44.00.00.00.08", interlocking = listOf(
-                    JsonInterlocking(target = 0, target_type = "BLOCK", state = "EMPTY", alt_target = -1, alt_state = "NORMAL")
+                JsonLever(label = "Auto Signal", type = LeverType.HOME_SIGNAL, auto_reverser = true, lcc_event_normal = "11.22.33.44.00.00.00.05", lcc_event_reversed = "11.22.33.44.00.00.00.08", interlocking = listOf(
+                    JsonInterlocking(target = 0, target_type = TargetType.BLOCK, state = "EMPTY", alt_target = -1, alt_state = "NORMAL")
                 ))
             ),
             blocks = listOf(
@@ -93,7 +93,7 @@ class AppViewModelTest {
             label_lines = 1,
             label_line_height = 18,
             levers = listOf(
-                JsonLever(label = "Signal 2", type = "HOME_SIGNAL")
+                JsonLever(label = "Signal 2", type = LeverType.HOME_SIGNAL)
             )
         )
         configRepo.currentConfig = JsonConfig(

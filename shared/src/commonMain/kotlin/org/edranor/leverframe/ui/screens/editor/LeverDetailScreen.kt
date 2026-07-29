@@ -122,7 +122,7 @@ fun LeverDetailScreen(
                             )
 
                             var typeExpanded by remember { mutableStateOf(false) }
-                            val types = LeverType.entries.map { it.name }
+                            val types = LeverType.entries
                             val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
                             
                             ExposedDropdownMenuBox(
@@ -130,7 +130,7 @@ fun LeverDetailScreen(
                                 onExpandedChange = { typeExpanded = !typeExpanded }
                             ) {
                                 OutlinedTextField(
-                                    value = formatDisplay(lever.type),
+                                    value = formatDisplay(lever.type.name),
                                     onValueChange = {},
                                     readOnly = true,
                                     label = { Text("Lever Type") },
@@ -144,7 +144,7 @@ fun LeverDetailScreen(
                                 ) {
                                     types.forEach { t ->
                                         DropdownMenuItem(
-                                            text = { Text(formatDisplay(t)) },
+                                            text = { Text(formatDisplay(t.name)) },
                                             onClick = {
                                                 onLeverChange(lever.copy(type = t))
                                                 typeExpanded = false
@@ -156,7 +156,7 @@ fun LeverDetailScreen(
 
                         }
                     }
-                    if (lever.type == "POINTS" || lever.type == "FACING_POINTS") {
+                    if (lever.type == LeverType.POINTS || lever.type == LeverType.FACING_POINTS) {
                         Card(modifier = Modifier.fillMaxWidth().padding(top = 16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
                             Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
                                 Text("NX Route Cancellation Override", style = MaterialTheme.typography.bodyMedium, color = Color.White)
@@ -165,9 +165,9 @@ fun LeverDetailScreen(
                                 
                                 var overrideExpanded by remember { mutableStateOf(false) }
                                 val overrideOptions = mapOf(
-                                    RestoreOverride.DEFAULT.name to "Follow Frame Default",
-                                    RestoreOverride.ALWAYS.name to "Always Restore to Normal",
-                                    RestoreOverride.NEVER.name to "Never Restore (Leave As-Is)"
+                                    RestoreOverride.DEFAULT to "Follow Frame Default",
+                                    RestoreOverride.ALWAYS to "Always Restore to Normal",
+                                    RestoreOverride.NEVER to "Never Restore (Leave As-Is)"
                                 )
                                 val currentOverrideName = overrideOptions[lever.restore_override] ?: "Follow Frame Default"
                                 
@@ -412,9 +412,9 @@ fun MobileRuleCard(
                     checked = hasAlt,
                     onCheckedChange = { checked ->
                         if (checked) {
-                            onRuleChange(rule.copy(alt_target = 0, alt_target_type = "LEVER", alt_state = "NORMAL"))
+                            onRuleChange(rule.copy(alt_target = 0, alt_target_type = TargetType.LEVER, alt_state = "NORMAL"))
                         } else {
-                            onRuleChange(rule.copy(alt_target = -1, alt_target_type = "LEVER", alt_state = "NORMAL"))
+                            onRuleChange(rule.copy(alt_target = -1, alt_target_type = TargetType.LEVER, alt_state = "NORMAL"))
                         }
                     },
                     colors = CheckboxDefaults.colors(checkedColor = LeverFrameTheme.Colors.Brass)
@@ -447,14 +447,14 @@ fun MobileRuleCard(
 @Composable
 private fun RuleTargetDropdown(
     label: String,
-    targetType: String,
+    targetType: TargetType,
     targetIndex: Int,
     allLevers: List<JsonLever>,
     allBlocks: List<JsonBlock>,
-    onTargetSelected: (String, Int) -> Unit
+    onTargetSelected: (TargetType, Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val displayValue = if (targetType == "BLOCK") {
+    val displayValue = if (targetType == TargetType.BLOCK) {
         "Block ${targetIndex + 1}" + (allBlocks.getOrNull(targetIndex)?.label?.let { " ($it)" } ?: "")
     } else {
         "Lever ${targetIndex + 1}" + (allLevers.getOrNull(targetIndex)?.label?.let { " ($it)" } ?: "")
@@ -475,7 +475,7 @@ private fun RuleTargetDropdown(
                 DropdownMenuItem(
                     text = { Text("Lever ${i + 1} (${l.label})") },
                     onClick = {
-                        onTargetSelected("LEVER", i)
+                        onTargetSelected(TargetType.LEVER, i)
                         expanded = false
                     }
                 )
@@ -485,7 +485,7 @@ private fun RuleTargetDropdown(
                 DropdownMenuItem(
                     text = { Text("Block ${i + 1} (${b.label})") },
                     onClick = {
-                        onTargetSelected("BLOCK", i)
+                        onTargetSelected(TargetType.BLOCK, i)
                         expanded = false
                     }
                 )
@@ -498,12 +498,12 @@ private fun RuleTargetDropdown(
 @Composable
 private fun RuleStateDropdown(
     label: String,
-    targetType: String,
+    targetType: TargetType,
     state: String,
     onStateSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val isBlock = targetType == "BLOCK"
+    val isBlock = targetType == TargetType.BLOCK
     val states = if (isBlock) listOf("OCCUPIED", "CLEAR") else listOf("NORMAL", "REVERSED")
     val formatDisplay = { s: String -> s.lowercase().split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
     

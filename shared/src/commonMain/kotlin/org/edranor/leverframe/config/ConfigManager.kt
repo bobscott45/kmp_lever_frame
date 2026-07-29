@@ -114,15 +114,15 @@ data class JsonTab(
 
 @Serializable
 data class JsonSchematicElement(
-    val type: String,
+    val type: SchematicElementType = SchematicElementType.STRAIGHT_H,
     val x: Int,
     val y: Int,
     val linked_lever: Int = -1,
     val linked_lever_2: Int = -1,
     val linked_block: Int = -1,
-    val nx_button: String = "NONE",
-    val nx_button_placement: String = "DEFAULT",
-    val nx_button_color: String = "BLACK"
+    val nx_button: NxButtonType = NxButtonType.NONE,
+    val nx_button_placement: NxButtonPlacement = NxButtonPlacement.DEFAULT,
+    val nx_button_color: NxButtonColor = NxButtonColor.BLACK
 )
 
 @Serializable
@@ -131,18 +131,18 @@ data class JsonBlock(
     val short_code: String = "",
     val lcc_event_occupied: String = "",
     val lcc_event_empty: String = "",
-    val mode: String = "LOCAL_ONLY"
+    val mode: BlockMode = BlockMode.LOCAL_ONLY
 )
 
 @Serializable
 data class JsonLever(
     val label: String = "",
-    val type: String = "SPARE",
+    val type: LeverType = LeverType.SPARE,
     val lcc_event_normal: String = "",
     val lcc_event_reversed: String = "",
     val lcc_enabled: Boolean = true,
     val auto_reverser: Boolean = false,
-    val restore_override: String = "DEFAULT",
+    val restore_override: RestoreOverride = RestoreOverride.DEFAULT,
     val interlocking: List<JsonInterlocking> = emptyList(),
     val ast_logic: AstNode? = null
 )
@@ -151,10 +151,10 @@ data class JsonLever(
 data class JsonInterlocking(
     val target: Int,
     val state: String,
-    val target_type: String = "LEVER",
+    val target_type: TargetType = TargetType.LEVER,
     val alt_target: Int = -1,
     val alt_state: String = "NORMAL",
-    val alt_target_type: String = "LEVER"
+    val alt_target_type: TargetType = TargetType.LEVER
 )
 
 @Serializable
@@ -197,23 +197,14 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
         
         return config.tabs.map { jsonTab ->
             val levers = jsonTab.levers.map { jsonLever ->
-                val type = try {
-                    LeverType.valueOf(jsonLever.type)
-                } catch (e: Exception) {
-                    LeverType.SPARE
-                }
-                
                 val conditions = jsonLever.interlocking.map { condition ->
-                    val tType = try { TargetType.valueOf(condition.target_type) } catch (e: Exception) { TargetType.LEVER }
-                    val altTType = try { TargetType.valueOf(condition.alt_target_type) } catch (e: Exception) { TargetType.LEVER }
-                    
                     InterlockingCondition(
-                        targetType = tType,
+                        targetType = condition.target_type,
                         targetIndex = condition.target,
-                        requiredState = if (tType == TargetType.BLOCK) condition.state == "OCCUPIED" else condition.state == "REVERSED",
-                        altTargetType = altTType,
+                        requiredState = if (condition.target_type == TargetType.BLOCK) condition.state == "OCCUPIED" else condition.state == "REVERSED",
+                        altTargetType = condition.alt_target_type,
                         altTargetIndex = condition.alt_target,
-                        altRequiredState = if (altTType == TargetType.BLOCK) condition.alt_state == "OCCUPIED" else condition.alt_state == "REVERSED"
+                        altRequiredState = if (condition.alt_target_type == TargetType.BLOCK) condition.alt_state == "OCCUPIED" else condition.alt_state == "REVERSED"
                     )
                 }
                 
@@ -224,13 +215,13 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 
                 LeverDef(
                     conditions = conditions,
-                    type = type,
+                    type = jsonLever.type,
                     label = jsonLever.label,
                     lcc_event_normal = if (normalSuffix.isNotBlank()) "${config.node_id}.$normalSuffix" else "",
                     lcc_event_reversed = if (reversedSuffix.isNotBlank()) "${config.node_id}.$reversedSuffix" else "",
                     lcc_enabled = jsonLever.lcc_enabled,
                     autoReverser = jsonLever.auto_reverser,
-                    restoreOverride = try { RestoreOverride.valueOf(jsonLever.restore_override) } catch (e: Exception) { RestoreOverride.DEFAULT },
+                    restoreOverride = jsonLever.restore_override,
                     logic = logicNode
                 )
             }
@@ -239,32 +230,26 @@ object ConfigManager : ConfigurationRepository, StatePersistenceRepository {
                 val occupiedSuffix = extractSuffix(jsonBlock.lcc_event_occupied, config.node_id)
                 val emptySuffix = extractSuffix(jsonBlock.lcc_event_empty, config.node_id)
                 
-                val mode = try { BlockMode.valueOf(jsonBlock.mode) } catch (e: Exception) { BlockMode.LOCAL_ONLY }
-                
                 BlockDef(
                     label = jsonBlock.label,
                     shortCode = jsonBlock.short_code,
                     lcc_event_occupied = if (occupiedSuffix.isNotBlank()) "${config.node_id}.$occupiedSuffix" else "",
                     lcc_event_empty = if (emptySuffix.isNotBlank()) "${config.node_id}.$emptySuffix" else "",
-                    mode = mode
+                    mode = jsonBlock.mode
                 )
             }
             
             val schematicElements = jsonTab.schematic_elements.map { jsonElem ->
-                val nxButtonType = try { NxButtonType.valueOf(jsonElem.nx_button) } catch (e: Exception) { NxButtonType.NONE }
-                val nxPlacement = try { NxButtonPlacement.valueOf(jsonElem.nx_button_placement) } catch (e: Exception) { NxButtonPlacement.DEFAULT }
-                val nxColor = try { NxButtonColor.valueOf(jsonElem.nx_button_color) } catch (e: Exception) { NxButtonColor.BLACK }
-                val elemType = try { SchematicElementType.valueOf(jsonElem.type) } catch (e: Exception) { SchematicElementType.STRAIGHT_H }
                 SchematicElementDef(
-                    type = elemType,
+                    type = jsonElem.type,
                     x = jsonElem.x,
                     y = jsonElem.y,
                     linkedLever = jsonElem.linked_lever,
                     linkedLever2 = jsonElem.linked_lever_2,
                     linkedBlock = jsonElem.linked_block,
-                    nxButton = nxButtonType,
-                    nxButtonPlacement = nxPlacement,
-                    nxButtonColor = nxColor
+                    nxButton = jsonElem.nx_button,
+                    nxButtonPlacement = jsonElem.nx_button_placement,
+                    nxButtonColor = jsonElem.nx_button_color
                 )
             }
 

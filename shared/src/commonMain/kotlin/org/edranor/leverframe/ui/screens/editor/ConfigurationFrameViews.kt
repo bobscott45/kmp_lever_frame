@@ -373,7 +373,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameLeversTab(
         ) {
             ListItem(
                 headlineContent = { Text(lever.label.replace("\n", " ").takeIf { it.isNotBlank() } ?: "Unnamed Lever", style = MaterialTheme.typography.bodyMedium) },
-                supportingContent = { Text(lever.type) },
+                supportingContent = { Text(lever.type.name) },
                 leadingContent = {
                     Box(
                         modifier = Modifier.size(32.dp),
@@ -406,7 +406,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.frameLeversTab(
             onClick = {
                 val newTabs = config.tabs.toMutableList()
                 val newLevers = newTabs[selectedFrameIndex].levers.toMutableList()
-                newLevers.add(JsonLever(label = "SPARE", type = "SPARE"))
+                newLevers.add(JsonLever(label = "SPARE", type = LeverType.SPARE))
                 newTabs[selectedFrameIndex] = newTabs[selectedFrameIndex].copy(levers = newLevers)
                 onConfigChange(config.copy(tabs = newTabs))
             },

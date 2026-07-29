@@ -54,15 +54,15 @@ fun SchematicElementEditorDialog(
     tabDef: JsonTab,
     cx: Int,
     cy: Int,
-    initialEditType: String,
+    initialEditType: SchematicElementType,
     initialLinkedLever: Int,
     initialLinkedLever2: Int,
     initialLinkedBlock: Int,
-    initialNxButton: String,
-    initialNxPlacement: String,
-    initialNxColor: String,
+    initialNxButton: NxButtonType,
+    initialNxPlacement: NxButtonPlacement,
+    initialNxColor: NxButtonColor,
     onDismiss: () -> Unit,
-    onSave: (String, Int, Int, Int, String, String, String) -> Unit,
+    onSave: (SchematicElementType, Int, Int, Int, NxButtonType, NxButtonPlacement, NxButtonColor) -> Unit,
     onDelete: () -> Unit
 ) {
     var editType by remember { mutableStateOf(initialEditType) }
@@ -78,11 +78,11 @@ fun SchematicElementEditorDialog(
         title = { Text("Edit Cell ($cx, $cy)") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val types = SchematicElementType.entries.map { it.name }
+                val types = SchematicElementType.entries
                 var typeExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(expanded = typeExpanded, onExpandedChange = { typeExpanded = !typeExpanded }) {
                     OutlinedTextField(
-                        value = editType,
+                        value = editType.name,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Component Type") },
@@ -91,7 +91,7 @@ fun SchematicElementEditorDialog(
                     )
                     ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
                         types.forEach { t ->
-                            DropdownMenuItem(text = { Text(t) }, onClick = { editType = t; typeExpanded = false })
+                            DropdownMenuItem(text = { Text(t.name) }, onClick = { editType = t; typeExpanded = false })
                         }
                     }
                 }
@@ -116,7 +116,7 @@ fun SchematicElementEditorDialog(
                 }
 
                 // Linked Lever 2
-                if (editType.startsWith("BRACKET_SIGNAL")) {
+                if (editType.name.startsWith("BRACKET_SIGNAL")) {
                     var lever2Expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(expanded = lever2Expanded, onExpandedChange = { lever2Expanded = !lever2Expanded }) {
                         OutlinedTextField(
@@ -162,10 +162,10 @@ fun SchematicElementEditorDialog(
                 // NX Button Type
                 var nxExpanded by remember { mutableStateOf(false) }
                 val nxLabels = mapOf(
-                    NxButtonType.NONE.name to "None",
-                    NxButtonType.ENTRANCE_ONLY.name to "Entrance Only",
-                    NxButtonType.EXIT_ONLY.name to "Exit Only",
-                    NxButtonType.BOTH.name to "Entry & Exit"
+                    NxButtonType.NONE to "None",
+                    NxButtonType.ENTRANCE_ONLY to "Entrance Only",
+                    NxButtonType.EXIT_ONLY to "Exit Only",
+                    NxButtonType.BOTH to "Entry & Exit"
                 )
                 ExposedDropdownMenuBox(expanded = nxExpanded, onExpandedChange = { nxExpanded = !nxExpanded }) {
                     OutlinedTextField(
@@ -187,14 +187,14 @@ fun SchematicElementEditorDialog(
                 }
 
                 // NX Button Placement
-                if (editNxButton != "NONE") {
+                if (editNxButton != NxButtonType.NONE) {
                     var placementExpanded by remember { mutableStateOf(false) }
                     val placementLabels = mapOf(
-                        NxButtonPlacement.DEFAULT.name to "Default (Top-Left)",
-                        NxButtonPlacement.LEFT.name to "Left Edge",
-                        NxButtonPlacement.RIGHT.name to "Right Edge",
-                        NxButtonPlacement.TOP.name to "Top Edge",
-                        NxButtonPlacement.BOTTOM.name to "Bottom Edge"
+                        NxButtonPlacement.DEFAULT to "Default (Top-Left)",
+                        NxButtonPlacement.LEFT to "Left Edge",
+                        NxButtonPlacement.RIGHT to "Right Edge",
+                        NxButtonPlacement.TOP to "Top Edge",
+                        NxButtonPlacement.BOTTOM to "Bottom Edge"
                     )
                     ExposedDropdownMenuBox(expanded = placementExpanded, onExpandedChange = { placementExpanded = !placementExpanded }) {
                         OutlinedTextField(
@@ -217,15 +217,15 @@ fun SchematicElementEditorDialog(
                 }
 
                 // NX Button Color
-                if (editNxButton != "NONE") {
+                if (editNxButton != NxButtonType.NONE) {
                     var colorExpanded by remember { mutableStateOf(false) }
                     val colorLabels = mapOf(
-                        NxButtonColor.BLACK.name to "Black",
-                        NxButtonColor.WHITE.name to "White",
-                        NxButtonColor.RED.name to "Red (Main Line)",
-                        NxButtonColor.YELLOW.name to "Yellow (Call-On/Shunt)",
-                        NxButtonColor.GREEN.name to "Green",
-                        NxButtonColor.BLUE.name to "Blue"
+                        NxButtonColor.BLACK to "Black",
+                        NxButtonColor.WHITE to "White",
+                        NxButtonColor.RED to "Red (Main Line)",
+                        NxButtonColor.YELLOW to "Yellow (Call-On/Shunt)",
+                        NxButtonColor.GREEN to "Green",
+                        NxButtonColor.BLUE to "Blue"
                     )
                     ExposedDropdownMenuBox(expanded = colorExpanded, onExpandedChange = { colorExpanded = !colorExpanded }) {
                         OutlinedTextField(

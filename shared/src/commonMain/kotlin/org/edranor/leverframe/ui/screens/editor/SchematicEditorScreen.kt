@@ -77,13 +77,13 @@ fun SchematicEditorScreen(
     val textMeasurer = rememberTextMeasurer()
 
     var editingCell by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-    var editType by remember { mutableStateOf("STRAIGHT_H") }
+    var editType by remember { mutableStateOf(SchematicElementType.STRAIGHT_H) }
     var editLinkedBlock by remember { mutableStateOf(-1) }
     var editLinkedLever by remember { mutableStateOf(-1) }
     var editLinkedLever2 by remember { mutableStateOf(-1) }
-    var editNxButton by remember { mutableStateOf("NONE") }
-    var editNxPlacement by remember { mutableStateOf("DEFAULT") }
-    var editNxColor by remember { mutableStateOf("BLACK") }
+    var editNxButton by remember { mutableStateOf(NxButtonType.NONE) }
+    var editNxPlacement by remember { mutableStateOf(NxButtonPlacement.DEFAULT) }
+    var editNxColor by remember { mutableStateOf(NxButtonColor.BLACK) }
 
     BoxWithConstraints(
         modifier = modifier.background(Color(0xFF1E1E1E)),
@@ -123,13 +123,13 @@ fun SchematicEditorScreen(
                             
                             if (clickedX in 0 until cellsX && clickedY in 0 until cellsY) {
                                 val existing = tabDef.schematic_elements.find { it.x == clickedX && it.y == clickedY }
-                                editType = existing?.type ?: "STRAIGHT_H"
+                                editType = existing?.type ?: SchematicElementType.STRAIGHT_H
                                 editLinkedBlock = existing?.linked_block ?: -1
                                 editLinkedLever = existing?.linked_lever ?: -1
                                 editLinkedLever2 = existing?.linked_lever_2 ?: -1
-                                editNxButton = existing?.nx_button ?: "NONE"
-                                editNxPlacement = existing?.nx_button_placement ?: "DEFAULT"
-                                editNxColor = existing?.nx_button_color ?: "BLACK"
+                                editNxButton = existing?.nx_button ?: NxButtonType.NONE
+                                editNxPlacement = existing?.nx_button_placement ?: NxButtonPlacement.DEFAULT
+                                editNxColor = existing?.nx_button_color ?: NxButtonColor.BLACK
                                 editingCell = Pair(clickedX, clickedY)
                             }
                         }
@@ -163,44 +163,44 @@ fun SchematicEditorScreen(
                     val trackColor = Color.Gray
 
                     when (element.type) {
-                        "STRAIGHT_H" -> drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
-                        "STRAIGHT_V" -> drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
-                        "TURNOUT_LEFT" -> {
+                        SchematicElementType.STRAIGHT_H -> drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+                        SchematicElementType.STRAIGHT_V -> drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
+                        SchematicElementType.TURNOUT_LEFT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
                                 drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f))
                             }
                         }
-                        "TURNOUT_RIGHT" -> {
+                        SchematicElementType.TURNOUT_RIGHT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
                                 drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f))
                             }
                         }
-                        "TURNOUT_LEFT_TRAILING" -> {
+                        SchematicElementType.TURNOUT_LEFT_TRAILING -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py - gridSizeY / 2), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
                                 drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.15f))
                             }
                         }
-                        "TURNOUT_RIGHT_TRAILING" -> {
+                        SchematicElementType.TURNOUT_RIGHT_TRAILING -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py + gridSizeY / 2), Offset(px, py + gridSizeY * 1.5f), strokeWidth = 4f)
                             if (element.linked_lever >= 0) {
                                 drawText(textMeasurer = textMeasurer, text = "${element.linked_lever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.85f))
                             }
                         }
-                        "DIAMOND_CROSSING" -> {
+                        SchematicElementType.DIAMOND_CROSSING -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
                         }
-                        "SIGNAL_LEFT" -> {
+                        SchematicElementType.SIGNAL_LEFT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
-                            val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+                            val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
                             val arrowColor = if (normalColor == Color.Red) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
@@ -219,10 +219,10 @@ fun SchematicEditorScreen(
                                 )
                             }
                         }
-                        "SIGNAL_RIGHT" -> {
+                        SchematicElementType.SIGNAL_RIGHT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             val leverType = tabDef.levers.getOrNull(element.linked_lever)?.type
-                            val normalColor = if (leverType == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+                            val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
                             drawCircle(normalColor, radius = gridSizeY / 5, center = Offset(px + gridSizeX / 2, py + gridSizeY / 2))
                             val arrowColor = if (normalColor == Color.Red) Color.White else Color.Black
                             val cx = px + gridSizeX / 2
@@ -241,7 +241,7 @@ fun SchematicEditorScreen(
                                 )
                             }
                         }
-                        "BRACKET_SIGNAL_LEFT" -> {
+                        SchematicElementType.BRACKET_SIGNAL_LEFT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(Color.Gray, Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2), Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.15f), strokeWidth = 2f)
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2))
@@ -281,7 +281,7 @@ fun SchematicEditorScreen(
                                 )
                             }
                         }
-                        "BRACKET_SIGNAL_RIGHT" -> {
+                        SchematicElementType.BRACKET_SIGNAL_RIGHT -> {
                             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
                             drawLine(Color.Gray, Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2), Offset(px + gridSizeX * 0.35f, py + gridSizeY * 0.85f), strokeWidth = 2f)
                             drawCircle(Color.Red, radius = gridSizeY / 5, center = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2))
@@ -323,40 +323,40 @@ fun SchematicEditorScreen(
                         }
                     }
                     
-                    val nxBtnStr = element.nx_button ?: "NONE"
-                    val nxPlacement = element.nx_button_placement ?: "DEFAULT"
-                    val nxColorStr = element.nx_button_color ?: "BLACK"
-                    if (nxBtnStr != "NONE") {
+                    val nxBtn = element.nx_button
+                    val nxPlacement = element.nx_button_placement
+                    val nxColorStr = element.nx_button_color
+                    if (nxBtn != NxButtonType.NONE) {
                         val cx = px + when (nxPlacement) {
-                            "LEFT" -> gridSizeX * 0.15f
-                            "RIGHT" -> gridSizeX * 0.85f
-                            "TOP", "BOTTOM" -> gridSizeX * 0.5f
+                            NxButtonPlacement.LEFT -> gridSizeX * 0.15f
+                            NxButtonPlacement.RIGHT -> gridSizeX * 0.85f
+                            NxButtonPlacement.TOP, NxButtonPlacement.BOTTOM -> gridSizeX * 0.5f
                             else -> gridSizeX * 0.25f
                         }
                         val cy = py + when (nxPlacement) {
-                            "TOP" -> gridSizeY * 0.15f
-                            "BOTTOM" -> gridSizeY * 0.85f
-                            "LEFT", "RIGHT" -> gridSizeY * 0.5f
+                            NxButtonPlacement.TOP -> gridSizeY * 0.15f
+                            NxButtonPlacement.BOTTOM -> gridSizeY * 0.85f
+                            NxButtonPlacement.LEFT, NxButtonPlacement.RIGHT -> gridSizeY * 0.5f
                             else -> gridSizeY * 0.25f
                         }
                         val r = gridSizeY * 0.15f
                         
                         val fillCol = when (nxColorStr) {
-                            "WHITE" -> Color.White
-                            "RED" -> Color.Red
-                            "YELLOW" -> Color.Yellow
-                            "GREEN" -> Color.Green
-                            "BLUE" -> Color.Blue
+                            NxButtonColor.WHITE -> Color.White
+                            NxButtonColor.RED -> Color.Red
+                            NxButtonColor.YELLOW -> Color.Yellow
+                            NxButtonColor.GREEN -> Color.Green
+                            NxButtonColor.BLUE -> Color.Blue
                             else -> Color.Black
                         }
                         val borderCol = if (fillCol == Color.White || fillCol == Color.Yellow) Color.Black else Color.White
                         
-                        when (nxBtnStr) {
-                            "ENTRANCE_ONLY" -> {
+                        when (nxBtn) {
+                            NxButtonType.ENTRANCE_ONLY -> {
                                 drawCircle(color = fillCol, radius = r, center = Offset(cx, cy))
                                 drawCircle(color = borderCol, radius = r, center = Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
                             }
-                            "EXIT_ONLY" -> {
+                            NxButtonType.EXIT_ONLY -> {
                                 val path = Path().apply {
                                     moveTo(cx, cy - r)
                                     lineTo(cx + r, cy + r)
@@ -366,7 +366,7 @@ fun SchematicEditorScreen(
                                 drawPath(path = path, color = fillCol)
                                 drawPath(path = path, color = borderCol, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
                             }
-                            "BOTH" -> {
+                            NxButtonType.BOTH -> {
                                 val path = Path().apply {
                                     moveTo(cx, cy - r)
                                     lineTo(cx + r, cy)
@@ -387,7 +387,7 @@ fun SchematicEditorScreen(
                     .groupBy { it.linked_block }
 
                 blockElementsMap.forEach { (blockIdx, elements) ->
-                    val straightElements = elements.filter { it.type == "STRAIGHT_H" || it.type == "STRAIGHT_V" }
+                    val straightElements = elements.filter { it.type == SchematicElementType.STRAIGHT_H || it.type == SchematicElementType.STRAIGHT_V }
                     val elementsToCenter = if (straightElements.isNotEmpty()) straightElements else elements
                     val minX = elementsToCenter.minOf { it.x }
                     val maxX = elementsToCenter.maxOf { it.x }
@@ -411,11 +411,11 @@ fun SchematicEditorScreen(
                     )
                     
                     var textCenterX = centerPx
-                    if (elements.size == 1 && elements.first().type.contains("SIGNAL")) {
+                    if (elements.size == 1 && elements.first().type.name.contains("SIGNAL")) {
                         val elem = elements.first()
-                        if (elem.type == "SIGNAL_RIGHT") {
+                        if (elem.type == SchematicElementType.SIGNAL_RIGHT) {
                             textCenterX += gridSizeX * 0.4f
-                        } else if (elem.type == "SIGNAL_LEFT") {
+                        } else if (elem.type == SchematicElementType.SIGNAL_LEFT) {
                             textCenterX -= gridSizeX * 0.4f
                         }
                     }

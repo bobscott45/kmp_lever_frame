@@ -177,14 +177,14 @@ fun migrateJsonInterlockingToAst(list: List<JsonInterlocking>): AstNode? {
     if (list.isEmpty()) return null
     
     val conditionsAst = list.map { condition ->
-        val mainNode = if (condition.target_type == "BLOCK") {
+        val mainNode = if (condition.target_type == TargetType.BLOCK) {
             BlockStateNode(condition.target, condition.state == "OCCUPIED")
         } else {
             LeverStateNode(condition.target, condition.state == "REVERSED")
         }
 
         if (condition.alt_target != -1) {
-            val altNode = if (condition.alt_target_type == "BLOCK") {
+            val altNode = if (condition.alt_target_type == TargetType.BLOCK) {
                 BlockStateNode(condition.alt_target, condition.alt_state == "OCCUPIED")
             } else {
                 LeverStateNode(condition.alt_target, condition.alt_state == "REVERSED")

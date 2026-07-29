@@ -40,8 +40,10 @@ import org.edranor.leverframe.config.*
 import org.edranor.leverframe.ui.screens.schematic.*
 import org.edranor.leverframe.domain.engine.*
 import org.edranor.leverframe.domain.parser.*
-
+import kotlinx.serialization.Serializable
+import org.edranor.leverframe.config.*
 /** Distinguishes between evaluating a Lever's state or a Block's state. */
+@Serializable(with = TargetTypeSerializer::class)
 enum class TargetType { LEVER, BLOCK }
 
 /** Legacy flat structure for defining interlocking requirements before the AST was introduced. */
@@ -55,6 +57,7 @@ data class InterlockingCondition(
 )
 
 /** Defines the physical/functional role of a lever, influencing its styling and logic. */
+@Serializable(with = LeverTypeSerializer::class)
 enum class LeverType {
     HOME_SIGNAL,
     DISTANT_SIGNAL,
@@ -66,6 +69,7 @@ enum class LeverType {
 }
 
 /** Options for overriding the default lever restoration behavior when a train clears a block. */
+@Serializable(with = RestoreOverrideSerializer::class)
 enum class RestoreOverride {
     DEFAULT,
     ALWAYS,
@@ -86,6 +90,7 @@ data class LeverDef(
 )
 
 /** Represents the operational mode of a block sensor. */
+@Serializable(with = BlockModeSerializer::class)
 enum class BlockMode {
     HARDWARE_SENSOR,
     VIRTUAL_SENSOR,
@@ -102,6 +107,7 @@ data class BlockDef(
 )
 
 /** Defines the functionality of an NX (eNtrance/eXit) routing button on a track element. */
+@Serializable(with = NxButtonTypeSerializer::class)
 enum class NxButtonType {
     NONE,
     ENTRANCE_ONLY,
@@ -110,6 +116,7 @@ enum class NxButtonType {
 }
 
 /** Defines the visual placement of the NX button relative to the track element. */
+@Serializable(with = NxButtonPlacementSerializer::class)
 enum class NxButtonPlacement {
     DEFAULT,
     LEFT,
@@ -119,6 +126,7 @@ enum class NxButtonPlacement {
 }
 
 /** Defines the visual color of the NX button. */
+@Serializable(with = NxButtonColorSerializer::class)
 enum class NxButtonColor {
     BLACK,
     WHITE,
@@ -129,6 +137,7 @@ enum class NxButtonColor {
 }
 
 /** Represents the various track components that can be drawn on the schematic panel. */
+@Serializable(with = SchematicElementTypeSerializer::class)
 enum class SchematicElementType {
     STRAIGHT_H,
     STRAIGHT_V,
