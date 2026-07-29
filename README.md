@@ -86,7 +86,7 @@ You can create a `systemd` service to boot directly into the app using Cage with
 
 1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre cage`
 2. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
-3. Paste the following robust configuration (assuming your username is `pi` with UID `1000`):
+3. Paste the following configuration (assuming your username is `pi` with UID `1000`):
 
 ```ini
 [Unit]
