@@ -24,6 +24,7 @@
  * circular dependencies or contradictory requirements that would result in a lever being permanently locked.
  */
 package org.edranor.leverframe
+
 /** Contains the findings of a rule validation sweep. */
 data class ValidationResult(
     val unreachableLevers: Map<Int, String> // Map of lever index to explanation
@@ -39,6 +40,13 @@ object RuleValidator {
         val numLevers = tab.levers.size
         if (numLevers == 0) return ValidationResult(emptyMap())
 
+        val reversedLevers = exploreReachableStates(tab, numLevers)
+        val unreachableLevers = analyzeUnreachableLevers(tab, numLevers, reversedLevers)
+        
+        return ValidationResult(unreachableLevers)
+    }
+
+    private fun exploreReachableStates(tab: TabDef, numLevers: Int): Set<Int> {
         val reachableStates = mutableSetOf<List<Boolean>>()
         val queue = ArrayDeque<List<Boolean>>()
         
@@ -72,7 +80,10 @@ object RuleValidator {
                 }
             }
         }
-        
+        return reversedLevers
+    }
+
+    private fun analyzeUnreachableLevers(tab: TabDef, numLevers: Int, reversedLevers: Set<Int>): Map<Int, String> {
         val unreachable = mutableMapOf<Int, String>()
         for (i in 0 until numLevers) {
             if (i !in reversedLevers) {
@@ -80,8 +91,7 @@ object RuleValidator {
                 unreachable[i] = explanation
             }
         }
-        
-        return ValidationResult(unreachable)
+        return unreachable
     }
 
     private fun checkConflict(tab: TabDef, leverStates: List<Boolean>): Boolean {
@@ -99,24 +109,28 @@ object RuleValidator {
         val numAssignments = 1 shl blockList.size
         
         for (assignment in 0 until numAssignments) {
-            val blockStates = mutableMapOf<Int, Boolean>()
-            for (b in blockList.indices) {
-                blockStates[blockList[b]] = (assignment and (1 shl b)) != 0
+            if (isValidStateFound(tab, leverStates, blockList, assignment)) {
+                return false
             }
-            
-            var allPass = true
-            for (i in leverStates.indices) {
-                if (leverStates[i]) {
-                    val logic = tab.levers[i].logic
-                    if (logic != null) {
-                        if (!evaluateNode(logic, leverStates, blockStates)) {
-                            allPass = false
-                            break
-                        }
+        }
+        return true
+    }
+    
+    private fun isValidStateFound(tab: TabDef, leverStates: List<Boolean>, blockList: List<Int>, assignment: Int): Boolean {
+        val blockStates = mutableMapOf<Int, Boolean>()
+        for (b in blockList.indices) {
+            blockStates[blockList[b]] = (assignment and (1 shl b)) != 0
+        }
+        
+        for (i in leverStates.indices) {
+            if (leverStates[i]) {
+                val logic = tab.levers[i].logic
+                if (logic != null) {
+                    if (!evaluateNode(logic, leverStates, blockStates)) {
+                        return false
                     }
                 }
             }
-            if (allPass) return false // valid state found
         }
         return true
     }
@@ -179,58 +193,93 @@ object RuleValidator {
         stack: MutableList<Int>, 
         tab: TabDef
     ): String? {
-        when (node) {
-            is LeverStateNode -> {
-                val reqState = node.requiredReversed
-                val existing = requirements[node.leverIndex]
-                if (existing != null && existing.first != reqState) {
-                    val reqStateStr = if (reqState) "Reversed" else "Normal"
-                    val existingStateStr = if (existing.first) "Reversed" else "Normal"
-                    
-                    val targetName = tab.levers[node.leverIndex].label.replace("\n", " ").trim()
-                    val sourceName = tab.levers[sourceLever].label.replace("\n", " ").trim()
-                    val existingSourceName = tab.levers[existing.second].label.replace("\n", " ").trim()
-                    
-                    if (sourceLever == existing.second) {
-                        return "Contradiction: '$sourceName' requires lever '$targetName' to be both Normal and Reversed."
-                    } else {
-                        return "Contradiction: '$sourceName' requires lever '$targetName' to be $reqStateStr, but '$existingSourceName' requires it to be $existingStateStr."
-                    }
-                }
-                if (existing == null) {
-                    requirements[node.leverIndex] = Pair(reqState, sourceLever)
-                    stack.add(node.leverIndex)
-                }
-            }
-            is BlockStateNode -> {
-                val reqState = node.requiredOccupied
-                val existing = blockRequirements[node.blockIndex]
-                if (existing != null && existing.first != reqState) {
-                    val reqStateStr = if (reqState) "Occupied" else "Clear"
-                    val existingStateStr = if (existing.first) "Occupied" else "Clear"
-                    
-                    val targetName = tab.blocks.getOrNull(node.blockIndex)?.label?.replace("\n", " ")?.trim() ?: "Block ${node.blockIndex + 1}"
-                    val sourceName = tab.levers[sourceLever].label.replace("\n", " ").trim()
-                    val existingSourceName = tab.levers[existing.second].label.replace("\n", " ").trim()
-                    
-                    if (sourceLever == existing.second) {
-                        return "Contradiction: '$sourceName' requires block '$targetName' to be both Occupied and Clear."
-                    } else {
-                        return "Contradiction: '$sourceName' requires block '$targetName' to be $reqStateStr, but '$existingSourceName' requires it to be $existingStateStr."
-                    }
-                }
-                if (existing == null) {
-                    blockRequirements[node.blockIndex] = Pair(reqState, sourceLever)
-                }
-            }
+        return when (node) {
+            is LeverStateNode -> evaluateLeverContradiction(node, sourceLever, requirements, stack, tab)
+            is BlockStateNode -> evaluateBlockContradiction(node, sourceLever, blockRequirements, tab)
             is AndNode -> {
-                for (child in node.children) {
-                    val contradiction = extractRequirements(child, sourceLever, requirements, blockRequirements, stack, tab)
-                    if (contradiction != null) return contradiction
+                node.children.firstNotNullOfOrNull { 
+                    extractRequirements(it, sourceLever, requirements, blockRequirements, stack, tab) 
                 }
             }
-            else -> {}
+            else -> null
+        }
+    }
+    
+    private fun evaluateLeverContradiction(
+        node: LeverStateNode,
+        sourceLever: Int,
+        requirements: MutableMap<Int, Pair<Boolean, Int>>,
+        stack: MutableList<Int>,
+        tab: TabDef
+    ): String? {
+        val reqState = node.requiredReversed
+        val existing = requirements[node.leverIndex]
+        if (existing != null && existing.first != reqState) {
+            return formatLeverContradictionMessage(reqState, existing, node, sourceLever, tab)
+        }
+        if (existing == null) {
+            requirements[node.leverIndex] = Pair(reqState, sourceLever)
+            stack.add(node.leverIndex)
         }
         return null
+    }
+    
+    private fun evaluateBlockContradiction(
+        node: BlockStateNode,
+        sourceLever: Int,
+        blockRequirements: MutableMap<Int, Pair<Boolean, Int>>,
+        tab: TabDef
+    ): String? {
+        val reqState = node.requiredOccupied
+        val existing = blockRequirements[node.blockIndex]
+        if (existing != null && existing.first != reqState) {
+            return formatBlockContradictionMessage(reqState, existing, node, sourceLever, tab)
+        }
+        if (existing == null) {
+            blockRequirements[node.blockIndex] = Pair(reqState, sourceLever)
+        }
+        return null
+    }
+
+    private fun formatLeverContradictionMessage(
+        reqState: Boolean,
+        existing: Pair<Boolean, Int>,
+        node: LeverStateNode,
+        sourceLever: Int,
+        tab: TabDef
+    ): String {
+        val reqStateStr = if (reqState) "Reversed" else "Normal"
+        val existingStateStr = if (existing.first) "Reversed" else "Normal"
+        
+        val targetName = tab.levers[node.leverIndex].label.replace("\n", " ").trim()
+        val sourceName = tab.levers[sourceLever].label.replace("\n", " ").trim()
+        val existingSourceName = tab.levers[existing.second].label.replace("\n", " ").trim()
+        
+        return if (sourceLever == existing.second) {
+            "Contradiction: '$sourceName' requires lever '$targetName' to be both Normal and Reversed."
+        } else {
+            "Contradiction: '$sourceName' requires lever '$targetName' to be $reqStateStr, but '$existingSourceName' requires it to be $existingStateStr."
+        }
+    }
+
+    private fun formatBlockContradictionMessage(
+        reqState: Boolean,
+        existing: Pair<Boolean, Int>,
+        node: BlockStateNode,
+        sourceLever: Int,
+        tab: TabDef
+    ): String {
+        val reqStateStr = if (reqState) "Occupied" else "Clear"
+        val existingStateStr = if (existing.first) "Occupied" else "Clear"
+        
+        val targetName = tab.blocks.getOrNull(node.blockIndex)?.label?.replace("\n", " ")?.trim() ?: "Block ${node.blockIndex + 1}"
+        val sourceName = tab.levers[sourceLever].label.replace("\n", " ").trim()
+        val existingSourceName = tab.levers[existing.second].label.replace("\n", " ").trim()
+        
+        return if (sourceLever == existing.second) {
+            "Contradiction: '$sourceName' requires block '$targetName' to be both Occupied and Clear."
+        } else {
+            "Contradiction: '$sourceName' requires block '$targetName' to be $reqStateStr, but '$existingSourceName' requires it to be $existingStateStr."
+        }
     }
 }
