@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Architecture**: Introduced a robust `EnumFallbackSerializer` to ensure that malformed or legacy JSON configurations do not crash the application, gracefully falling back to a default value while still providing strict type safety within the codebase.
 
 - **Architecture**: Reorganized the project package structure into well-defined `domain`, `ui`, `config`, and `network` layers.
+- **Architecture**: Further refactored the `AppContent` composable in `App.kt` into smaller, highly cohesive modular composables (`AppTheme`, `ResumeInputBlocker`, `MainAppRouter`, `StatusOverlayRouter`).
+- **Documentation**: Added missing KDoc documentation to `AppContent` and the `koinStarted` global flag in `App.kt`.
 - **Architecture**: Broken down the `App.kt` monolith and improved `ConfigurationService` extensions for better separation of concerns.
 - **Codebase**: Cleaned up minor code smells and migrated away from deprecated Compose APIs (e.g., replacing `LocalClipboardManager` with `LocalClipboard`).
 - **Maintenance**: Removed obsolete test scripts (`SnipTest.kt`, `ConfigTest.kt`) from production source sets.

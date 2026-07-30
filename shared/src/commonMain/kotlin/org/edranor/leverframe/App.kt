@@ -87,6 +87,11 @@ import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.context.startKoin
 
+/**
+ * Global flag to ensure the Koin dependency injection container is only started once.
+ * This prevents crashes on certain platforms if the Compose UI hierarchy is recomposed
+ * or recreated (e.g., during hot reloads or configuration changes).
+ */
 var koinStarted = false
 
 /**
@@ -109,30 +114,49 @@ fun App(runtimeUiScale: Float = 1.0f) {
     }
 }
 
+/**
+ * Renders the main content of the application, managing themes, dependency injection
+ * bindings, state subscriptions from the [AppViewModel], and navigation between the 
+ * configuration, status, and main lever frame screens.
+ *
+ * @param runtimeUiScale A base scaling factor applied to the UI hierarchy, which can be 
+ *                       overridden by the user's configured scale.
+ */
 @Composable
 fun AppContent(runtimeUiScale: Float) {
     KeepScreenOn(keepOn = true)
     
-    var isInputBlocked by remember { mutableStateOf(false) }
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                isInputBlocked = true
+    AppTheme {
+        ResumeInputBlocker {
+            val viewModel = koinViewModel<AppViewModel>()
+            val domainState by viewModel.domainState.collectAsState()
+            val configState by viewModel.configState.collectAsState()
+            val uiState by viewModel.uiState.collectAsState()
+            
+            val soundPlayer = rememberConfiguredSoundPlayer(configState.config.enable_sound)
+            
+            val currentDensity = LocalDensity.current
+            val scale = if (configState.config.ui_scale > 0.0f) configState.config.ui_scale else runtimeUiScale
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = currentDensity.density * scale,
+                    fontScale = currentDensity.fontScale
+                )
+            ) {
+                MainAppRouter(
+                    domainState = domainState,
+                    configState = configState,
+                    uiState = uiState,
+                    viewModel = viewModel,
+                    soundPlayer = soundPlayer
+                )
             }
         }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+}
 
-    LaunchedEffect(isInputBlocked) {
-        if (isInputBlocked) {
-            delay(500)
-            isInputBlocked = false
-        }
-    }
-
+@Composable
+private fun AppTheme(content: @Composable () -> Unit) {
     val customColorScheme = darkColorScheme(
         primary = LeverFrameTheme.Colors.Brass,
         onPrimary = Color.Black,
@@ -153,99 +177,139 @@ fun AppContent(runtimeUiScale: Float) {
     )
 
     MaterialTheme(colorScheme = customColorScheme, typography = customTypography) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val viewModel = koinViewModel<AppViewModel>()
-            val domainState by viewModel.domainState.collectAsState()
-            val configState by viewModel.configState.collectAsState()
-            val uiState by viewModel.uiState.collectAsState()
-            val actualSoundPlayer = rememberSoundPlayer()
-            val soundPlayer = remember(actualSoundPlayer, configState.config.enable_sound) {
-                object : SoundPlayer {
-                    override fun playClank() { if (configState.config.enable_sound) actualSoundPlayer.playClank() }
-                    override fun playLock() { if (configState.config.enable_sound) actualSoundPlayer.playLock() }
-                    override fun playThud() { if (configState.config.enable_sound) actualSoundPlayer.playThud() }
-                    override fun playAlarm() { if (configState.config.enable_sound) actualSoundPlayer.playAlarm() }
-                    override fun playDing() { if (configState.config.enable_sound) actualSoundPlayer.playDing() }
-                    override fun playDoubleDing() { if (configState.config.enable_sound) actualSoundPlayer.playDoubleDing() }
-                }
+        content()
+    }
+}
+
+@Composable
+private fun ResumeInputBlocker(content: @Composable () -> Unit) {
+    var isInputBlocked by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isInputBlocked = true
             }
-            
-            val currentDensity = LocalDensity.current
-            val scale = if (configState.config.ui_scale > 0.0f) configState.config.ui_scale else runtimeUiScale
-            CompositionLocalProvider(
-                LocalDensity provides Density(
-                    density = currentDensity.density * scale,
-                    fontScale = currentDensity.fontScale
-                )
-            ) {
-                if (uiState.configMode != ConfigMode.NONE) {
-                    ConfigurationScreen(
-                    initialConfig = configState.config,
-                    initialMode = uiState.configMode,
-                    initialSelectedFrameIndex = uiState.initialEditFrameIndex ?: 0,
-                    initialEditingLeverIndex = uiState.initialEditLeverIndex,
-                    onUpdateSystemConfig = { cfg, rulesOnly, clearStates -> viewModel.updateSystemConfig(cfg, rulesOnly, clearStates) },
-                    onClose = viewModel::exitConfigMode
-                )
-            } else {
-                ConflictSoundEffectHandler(domainState, soundPlayer)
-                BlockSoundEffectHandler(domainState, soundPlayer)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
-                NavContent(
-                    domainState = domainState,
-                    configState = configState,
-                    uiState = uiState,
-                    viewModel = viewModel,
-                    soundPlayer = soundPlayer
-                )
+    LaunchedEffect(isInputBlocked) {
+        if (isInputBlocked) {
+            delay(500)
+            isInputBlocked = false
+        }
+    }
 
-                if (uiState.isStatusMode) {
-                    if (uiState.statusLeverIndex == null) {
-                        SystemStatusScreen(
-                            config = configState.config,
-                            networkStatus = uiState.networkStatus,
-                            onClose = viewModel::exitStatusMode
-                        )
-                    } else {
-                        val index = uiState.statusLeverIndex!!
-                        val tabDef = configState.tabs.getOrNull(uiState.selectedTabIndex)?.second
-                        val leverDef = tabDef?.levers?.getOrNull(index)
-                        
-                        if (leverDef == null) {
-                            viewModel.dismissStatusLever()
-                        } else {
-                            LeverStatusScreen(
-                                leverIndex = index,
-                                leverDef = leverDef,
-                                levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
-                                blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
-                                onClose = viewModel::dismissStatusLever,
-                                onEditConfig = {
-                                    viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = uiState.selectedTabIndex, leverIndex = index)
-                                },
-                                onLccEnabledChange = { checked ->
-                                    viewModel.setLeverLccEnabled(uiState.selectedTabIndex, index, checked)
-                                }
-                            )
-                        }
-                    }
-                }
-                }
-            } // Close CompositionLocalProvider
+    Box(modifier = Modifier.fillMaxSize()) {
+        content()
 
-            // Input blocking overlay
-            if (isInputBlocked) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) {
-                            awaitPointerEventScope {
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    event.changes.forEach { it.consume() }
-                                }
+        if (isInputBlocked) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                event.changes.forEach { it.consume() }
                             }
                         }
+                    }
+            )
+        }
+    }
+}
+
+@Composable
+private fun rememberConfiguredSoundPlayer(isSoundEnabled: Boolean): SoundPlayer {
+    val actualSoundPlayer = rememberSoundPlayer()
+    return remember(actualSoundPlayer, isSoundEnabled) {
+        object : SoundPlayer {
+            override fun playClank() { if (isSoundEnabled) actualSoundPlayer.playClank() }
+            override fun playLock() { if (isSoundEnabled) actualSoundPlayer.playLock() }
+            override fun playThud() { if (isSoundEnabled) actualSoundPlayer.playThud() }
+            override fun playAlarm() { if (isSoundEnabled) actualSoundPlayer.playAlarm() }
+            override fun playDing() { if (isSoundEnabled) actualSoundPlayer.playDing() }
+            override fun playDoubleDing() { if (isSoundEnabled) actualSoundPlayer.playDoubleDing() }
+        }
+    }
+}
+
+@Composable
+private fun MainAppRouter(
+    domainState: DomainState,
+    configState: ConfigState,
+    uiState: TransientUiState,
+    viewModel: AppViewModel,
+    soundPlayer: SoundPlayer
+) {
+    if (uiState.configMode != ConfigMode.NONE) {
+        ConfigurationScreen(
+            initialConfig = configState.config,
+            initialMode = uiState.configMode,
+            initialSelectedFrameIndex = uiState.initialEditFrameIndex ?: 0,
+            initialEditingLeverIndex = uiState.initialEditLeverIndex,
+            onUpdateSystemConfig = { cfg, rulesOnly, clearStates -> viewModel.updateSystemConfig(cfg, rulesOnly, clearStates) },
+            onClose = viewModel::exitConfigMode
+        )
+    } else {
+        ConflictSoundEffectHandler(domainState, soundPlayer)
+        BlockSoundEffectHandler(domainState, soundPlayer)
+
+        NavContent(
+            domainState = domainState,
+            configState = configState,
+            uiState = uiState,
+            viewModel = viewModel,
+            soundPlayer = soundPlayer
+        )
+
+        StatusOverlayRouter(
+            domainState = domainState,
+            configState = configState,
+            uiState = uiState,
+            viewModel = viewModel
+        )
+    }
+}
+
+@Composable
+private fun StatusOverlayRouter(
+    domainState: DomainState,
+    configState: ConfigState,
+    uiState: TransientUiState,
+    viewModel: AppViewModel
+) {
+    if (uiState.isStatusMode) {
+        if (uiState.statusLeverIndex == null) {
+            SystemStatusScreen(
+                config = configState.config,
+                networkStatus = uiState.networkStatus,
+                onClose = viewModel::exitStatusMode
+            )
+        } else {
+            val index = uiState.statusLeverIndex!!
+            val tabDef = configState.tabs.getOrNull(uiState.selectedTabIndex)?.second
+            val leverDef = tabDef?.levers?.getOrNull(index)
+            
+            if (leverDef == null) {
+                viewModel.dismissStatusLever()
+            } else {
+                LeverStatusScreen(
+                    leverIndex = index,
+                    leverDef = leverDef,
+                    levers = domainState.frames.getOrNull(uiState.selectedTabIndex)?.levers ?: emptyList(),
+                    blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks ?: emptyList(),
+                    onClose = viewModel::dismissStatusLever,
+                    onEditConfig = {
+                        viewModel.enterConfigMode(ConfigMode.FRAMES, frameIndex = uiState.selectedTabIndex, leverIndex = index)
+                    },
+                    onLccEnabledChange = { checked ->
+                        viewModel.setLeverLccEnabled(uiState.selectedTabIndex, index, checked)
+                    }
                 )
             }
         }
