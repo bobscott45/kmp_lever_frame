@@ -44,6 +44,12 @@ import org.edranor.leverframe.*
 sealed class NxRoutingResult {
     object Success : NxRoutingResult()
     object Cancelled : NxRoutingResult()
+    /** 
+     * Represents a routing failure due to configuration, state, or an interlocking conflict.
+     *
+     * @property message A human-readable error description.
+     * @property errorCells Optional list of (x,y) coordinates highlighting the failure source.
+     */
     data class Error(val message: String, val errorCells: List<Pair<Int, Int>> = emptyList()) : NxRoutingResult()
 }
 
@@ -57,6 +63,15 @@ class NxRoutingService(
     private val interlockingService: InterlockingService
 ) {
 
+    /**
+     * Attempts to cancel a previously established NX route by returning relevant signals 
+     * and dependent turnouts back to normal.
+     *
+     * @param tabIndex The index of the frame containing the route.
+     * @param entrancePos The grid coordinates of the entrance signal or track node.
+     * @param selectedTabIndex The currently focused tab, for instant alarm updates.
+     * @return The resulting [NxRoutingResult] of the cancellation attempt.
+     */
     fun cancelNxRoute(tabIndex: Int, entrancePos: Pair<Int, Int>, selectedTabIndex: Int): NxRoutingResult {
         val tabDef = configService.configState.value.tabs.getOrNull(tabIndex)?.second ?: return NxRoutingResult.Error("Configuration not found")
         val map = tabDef.schematicElements.associateBy { Pair(it.x, it.y) }
@@ -205,6 +220,15 @@ class NxRoutingService(
         }
     }
 
+    /**
+     * Orchestrates the throwing of turnouts, facing point locks, and signals to establish
+     * a safe path from the entrance to the exit node in the provided route.
+     *
+     * @param tabIndex The index of the frame containing the schematic elements.
+     * @param route The computed physical path across the schematic grid.
+     * @param selectedTabIndex The currently focused tab.
+     * @return The resulting [NxRoutingResult], denoting success or an interlocking failure.
+     */
     fun setNxRoute(tabIndex: Int, route: NxRoute, selectedTabIndex: Int): NxRoutingResult {
         val tabDef = configService.configState.value.tabs.getOrNull(tabIndex)?.second ?: return NxRoutingResult.Error("Configuration not found")
         val map = tabDef.schematicElements.associateBy { Pair(it.x, it.y) }

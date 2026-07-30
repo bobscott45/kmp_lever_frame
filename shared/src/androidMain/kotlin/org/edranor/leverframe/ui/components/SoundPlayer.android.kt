@@ -46,6 +46,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
+/**
+ * Android implementation of [SoundPlayer].
+ * Uses Android's native SoundPool API for low-latency playback of sound effects.
+ * 
+ * @param context The Android context used to load sound resources.
+ */
 class AndroidSoundPlayer(context: Context) : SoundPlayer {
     private val soundPool = SoundPool.Builder()
         .setMaxStreams(5)

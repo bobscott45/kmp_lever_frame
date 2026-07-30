@@ -47,6 +47,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 
+/**
+ * A text-based formula editor allowing power users to directly input locking logic formulas.
+ * Supports a custom syntax parsing lever and block conditions into an [AstNode] tree.
+ */
 @Composable
 fun FormulaTextView(ast: AstNode?, onAstChange: (AstNode?) -> Unit) {
     Card(
@@ -96,6 +100,10 @@ fun FormulaTextView(ast: AstNode?, onAstChange: (AstNode?) -> Unit) {
     }
 }
 
+/**
+ * Displays a summarized, read-only view of a lever's locking logic in a tabular format.
+ * Useful for reviewing interlocking constraints quickly.
+ */
 @Composable
 fun LockingTableView(lever: JsonLever, allLevers: List<JsonLever>, allBlocks: List<JsonBlock>) {
     Card(

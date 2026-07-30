@@ -51,8 +51,25 @@ data class AstEvaluationResult(val isSatisfied: Boolean, val involvedLevers: Set
  */
 @Serializable
 sealed class AstNode {
+    /**
+     * Returns a human-readable string representation of this node and its children.
+     */
     abstract fun toFormulaString(): String
+
+    /**
+     * Evaluates this logic node against the current lever and block states.
+     *
+     * @param levers The current state of all levers.
+     * @param blocks The current state of all track blocks.
+     * @return The [AstEvaluationResult] indicating if the condition is satisfied.
+     */
     abstract fun evaluate(levers: List<DomainLever>, blocks: List<DomainBlock>): AstEvaluationResult
+
+    /**
+     * Collects the indices of all levers referenced within this node and its children.
+     *
+     * @return A set of referenced lever indices.
+     */
     abstract fun collectAllLevers(): Set<Int>
 }
 

@@ -50,6 +50,12 @@ data class ValidationResult(
  */
 object RuleValidator {
     
+    /**
+     * Performs static analysis on the layout's interlocking logic to detect permanently locked levers.
+     *
+     * @param tab The frame configuration containing lever and block definitions.
+     * @return A [ValidationResult] containing any unreachable levers and the contradictions causing them.
+     */
     fun validate(tab: TabDef): ValidationResult {
         val numLevers = tab.levers.size
         if (numLevers == 0) return ValidationResult(emptyMap())

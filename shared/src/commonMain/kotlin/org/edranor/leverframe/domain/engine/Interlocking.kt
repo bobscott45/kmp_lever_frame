@@ -182,6 +182,14 @@ data class TabDef(
     val schematicElements: List<SchematicElementDef> = emptyList()
 )
 
+/**
+ * Consolidates the logic, conditions, and auto-reverser settings for a single lever.
+ * Used within an [InterlockingGraph] to speed up evaluation.
+ *
+ * @property logic The AST logic tree defining the interlocking rules.
+ * @property conditions Legacy flat-list conditions.
+ * @property autoReverser If true, the lever automatically returns to NORMAL if its logic becomes dissatisfied.
+ */
 data class LeverRule(
     val logic: AstNode?,
     val conditions: List<InterlockingCondition>,
@@ -193,6 +201,12 @@ data class InterlockingGraph(
     val levers: List<LeverRule>
 )
 
+/**
+ * Converts a [TabDef] into an [InterlockingGraph] to facilitate faster evaluation
+ * of lever rules and cascading updates.
+ *
+ * @return An [InterlockingGraph] containing the consolidated rules for all levers on the tab.
+ */
 fun TabDef.toInterlockingGraph(): InterlockingGraph {
     return InterlockingGraph(
         levers = this.levers.map {
@@ -281,6 +295,16 @@ object Interlocking {
         return conflicts.toList()
     }
 
+    /**
+     * Iteratively applies auto-reverser cascading rules to the provided list of levers.
+     * If a lever's rules are no longer met and it has [LeverRule.autoReverser] enabled, 
+     * it will be forced back to NORMAL. This process repeats until a steady state is reached.
+     *
+     * @param graph The [InterlockingGraph] containing lever rules.
+     * @param levers Mutable list of [DomainLever] states to be updated in place.
+     * @param blocks List of current track [DomainBlock] states.
+     * @return A list of lever indices whose states were changed by the cascade.
+     */
     fun applyCascades(
         graph: InterlockingGraph,
         levers: MutableList<DomainLever>,

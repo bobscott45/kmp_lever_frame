@@ -51,6 +51,16 @@ class NetworkEventProcessor(
     private val configRepo: ConfigurationRepository
 ) {
 
+    /**
+     * Parses an incoming LCC event ID and updates the domain state if it matches any
+     * configured lever or block triggers, enforcing interlocking policies.
+     *
+     * @param hexEventId The received LCC event ID in hexadecimal string format.
+     * @param currentDomain The current operational state of the frames.
+     * @param configState The active configuration dictating network event bindings.
+     * @param uiState The transient UI state (e.g., currently active tab).
+     * @return An [EventProcessorResult] containing the updated domain state and any cascading outbound events.
+     */
     fun processEvent(
         hexEventId: String,
         currentDomain: DomainState,

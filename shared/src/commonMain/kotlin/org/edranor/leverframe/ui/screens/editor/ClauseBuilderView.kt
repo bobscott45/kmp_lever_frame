@@ -49,6 +49,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * Provides a visual, hierarchical editor for building complex interlocking rules via an AST.
+ * Allows users to add, group, or negate conditions using a structured node tree interface.
+ */
 @Composable
 fun ClauseBuilderView(
     ast: AstNode?,
@@ -82,6 +86,10 @@ fun ClauseBuilderView(
     }
 }
 
+/**
+ * A recursive component used by [ClauseBuilderView] to render and edit an individual [AstNode].
+ * Provides UI controls contextually based on the type of AST node it represents.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AstNodeEditor(

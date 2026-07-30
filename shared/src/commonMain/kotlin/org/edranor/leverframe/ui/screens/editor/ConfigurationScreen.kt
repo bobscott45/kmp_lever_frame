@@ -57,6 +57,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.launch
 
+/**
+ * The main configuration management screen, providing access to either global system settings
+ * or frame-specific configurations based on the initialMode. Acts as the root for detailed editors.
+ */
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ConfigurationScreen(

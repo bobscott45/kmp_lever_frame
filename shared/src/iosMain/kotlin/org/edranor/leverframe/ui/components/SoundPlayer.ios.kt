@@ -46,6 +46,10 @@ import platform.AVFAudio.AVAudioPlayer
 import platform.Foundation.NSBundle
 import platform.Foundation.NSURL
 
+/**
+ * iOS implementation of [SoundPlayer].
+ * Uses AVFoundation's AVAudioPlayer to play sound resources bundled in the application.
+ */
 class IosSoundPlayer : SoundPlayer {
     
     private var clankPlayer: AVAudioPlayer? = null

@@ -45,6 +45,10 @@ import java.io.BufferedInputStream
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
+/**
+ * JVM implementation of [SoundPlayer].
+ * Uses Java's built-in AudioSystem API to play sound resources from the classpath.
+ */
 class JvmSoundPlayer : SoundPlayer {
     private fun playWav(resourcePath: String) {
         try {

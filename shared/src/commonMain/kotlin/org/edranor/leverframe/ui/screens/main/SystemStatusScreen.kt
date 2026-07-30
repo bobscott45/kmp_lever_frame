@@ -59,6 +59,10 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.draw.shadow
 import kotlinx.coroutines.launch
 
+/**
+ * A modal dialog presenting read-only diagnostic info for the entire Lever Frame system,
+ * including software version, network connectivity, IP address, and active policy modes.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SystemStatusScreen(

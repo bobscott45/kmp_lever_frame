@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Architecture**: Reorganized the project package structure into well-defined `domain`, `ui`, `config`, and `network` layers.
 - **Architecture**: Further refactored the `AppContent` composable in `App.kt` into smaller, highly cohesive modular composables (`AppTheme`, `ResumeInputBlocker`, `MainAppRouter`, `StatusOverlayRouter`).
-- **Documentation**: Added missing KDoc documentation to `AppContent` and the `koinStarted` global flag in `App.kt`.
+- **Documentation**: Comprehensive documentation pass to add missing KDocs to all previously undocumented classes, interfaces, and functions across the `config`, `domain`, `openlcb`, and `ui` modules.
 - **Architecture**: Broken down the `App.kt` monolith and improved `ConfigurationService` extensions for better separation of concerns.
 - **Codebase**: Cleaned up minor code smells and migrated away from deprecated Compose APIs (e.g., replacing `LocalClipboardManager` with `LocalClipboard`).
 - **Maintenance**: Removed obsolete test scripts (`SnipTest.kt`, `ConfigTest.kt`) from production source sets.

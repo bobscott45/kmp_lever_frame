@@ -7,6 +7,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+/**
+ * A custom kotlinx.serialization serializer that gracefully handles unknown enum values
+ * by falling back to a default value instead of throwing an exception.
+ * Particularly useful for backward compatibility when loading older configurations.
+ */
 open class EnumFallbackSerializer<T : Enum<T>>(
     private val fallback: T,
     private val enumEntries: List<T>

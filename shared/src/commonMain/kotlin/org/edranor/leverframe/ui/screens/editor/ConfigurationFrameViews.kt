@@ -50,6 +50,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+/**
+ * The primary view for managing a specific Lever Frame tab's general settings, levers, and blocks.
+ * Enables modifying the layout properties, adding/removing components, and entering detailed edits.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FrameSetupView(

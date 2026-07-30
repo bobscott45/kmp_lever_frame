@@ -41,12 +41,22 @@ import org.edranor.leverframe.domain.parser.*
 
 import androidx.compose.runtime.Composable
 
+/**
+ * Interface defining the available sound effects in the LeverFrame application.
+ * Platform-specific implementations handle the actual playback of these audio cues.
+ */
 interface SoundPlayer {
+    /** Plays the mechanical sound of a lever being moved. */
     fun playClank()
+    /** Plays the sound of a mechanical lock engaging. */
     fun playLock()
+    /** Plays a heavy thud sound for significant mechanical actions. */
     fun playThud()
+    /** Plays an alarm sound to indicate a conflict or error. */
     fun playAlarm()
+    /** Plays a single ding sound for notifications. */
     fun playDing()
+    /** Plays a double ding sound for significant notifications. */
     fun playDoubleDing()
 }
 

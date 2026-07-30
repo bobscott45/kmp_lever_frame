@@ -196,6 +196,10 @@ fun BlockDetailScreen(
     }
 }
 
+/**
+ * A text field tailored for integer inputs. Safely handles empty states, negative signs,
+ * and parsing errors while exposing a standardized [Int] value to its caller.
+ */
 @Composable
 fun IntTextField(
     value: Int,

@@ -46,6 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * Provides a standardized color scheme for text fields across the configuration UI, 
+ * styling them with a distinctive brass accent matching the Lever Frame theme.
+ */
 @Composable
 fun brassTextFieldColors() = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = LeverFrameTheme.Colors.Brass,
@@ -227,6 +231,10 @@ private fun DeveloperSettings(config: JsonConfig, onConfigChange: (JsonConfig) -
     }
 }
 
+/**
+ * A generic, reusable row component for boolean configuration toggles.
+ * Features an optional info tooltip to explain the setting's purpose.
+ */
 @Composable
 fun SettingSwitchRow(
     label: String, 

@@ -53,18 +53,38 @@ data class DomainState(
     val conflictingLevers: List<Int> = emptyList()
 )
 
+/**
+ * Represents the current operational state of a single lever frame (tab).
+ *
+ * @property id The zero-based index of the frame.
+ * @property levers The current state of all levers on this frame.
+ * @property blocks The current state of all track blocks on this frame.
+ */
 data class DomainFrame(
     val id: Int,
     val levers: List<DomainLever>,
     val blocks: List<DomainBlock>
 )
 
+/**
+ * Represents the current physical state of a single lever.
+ *
+ * @property id The zero-based index of the lever within its frame.
+ * @property isReversed True if the lever is pulled (REVERSED), false if it is NORMAL.
+ * @property isManuallyLocked True if the lever has a manual locking collar applied.
+ */
 data class DomainLever(
     val id: Int,
     val isReversed: Boolean,
     val isManuallyLocked: Boolean = false
 )
 
+/**
+ * Represents the current occupancy state of a single track circuit (block).
+ *
+ * @property id The zero-based index of the block within its frame.
+ * @property isOccupied True if a train is detected in this block, false otherwise.
+ */
 data class DomainBlock(
     val id: Int,
     val isOccupied: Boolean

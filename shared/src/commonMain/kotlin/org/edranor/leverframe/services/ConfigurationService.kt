@@ -48,6 +48,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/**
+ * Manages reading and writing application configurations to persistence,
+ * and exposes the current configuration state to the rest of the application.
+ * 
+ * @property configRepo The underlying repository handling raw storage and retrieval.
+ */
 class ConfigurationService(
     private val configRepo: ConfigurationRepository
 ) {
@@ -56,11 +62,19 @@ class ConfigurationService(
     private val _configState = MutableStateFlow(ConfigState())
     val configState: StateFlow<ConfigState> = _configState.asStateFlow()
 
+    /**
+     * Initializes the service by delegating to the repository and loading the
+     * parsed configuration into memory.
+     */
     suspend fun initialize() {
         configRepo.initConfig()
         loadConfig()
     }
 
+    /**
+     * Loads the raw JSON string from the repository, parses it into domain models,
+     * and updates the exposed [ConfigState].
+     */
     suspend fun loadConfig() {
         val configStr = configRepo.toJsonString()
         val parsedTabs = configRepo.parseConfig(configStr)
@@ -75,6 +89,13 @@ class ConfigurationService(
         }
     }
 
+    /**
+     * Toggles whether a specific lever should participate in LCC network events.
+     *
+     * @param tabIndex The index of the frame containing the lever.
+     * @param leverIndex The index of the lever within the frame.
+     * @param enabled True to enable LCC communication, false to disable.
+     */
     fun setLeverLccEnabled(tabIndex: Int, leverIndex: Int, enabled: Boolean) {
         val newTabsJson = configRepo.currentConfig.tabs.toMutableList()
         val currentTabJson = newTabsJson[tabIndex].copy()
@@ -89,6 +110,12 @@ class ConfigurationService(
         }
     }
 
+    /**
+     * Updates the persistent display layout weighting for different orientations.
+     *
+     * @param landscapeWeight The weight given to the schematic side when in landscape.
+     * @param portraitWeight The weight given to the schematic side when in portrait.
+     */
     fun saveLayoutWeights(landscapeWeight: Float, portraitWeight: Float) {
         val newConfig = configRepo.currentConfig.copy(
             schematic_weight_landscape = landscapeWeight,
@@ -100,6 +127,12 @@ class ConfigurationService(
         }
     }
 
+    /**
+     * Applies a new complete configuration to the system.
+     *
+     * @param newConfig The updated system configuration.
+     * @param rulesOnly If true, bypasses rebuilding the full domain state to quickly update interlocking logic.
+     */
     suspend fun updateSystemConfig(newConfig: JsonConfig, rulesOnly: Boolean = false) {
         configRepo.saveConfig(newConfig)
         if (rulesOnly) {

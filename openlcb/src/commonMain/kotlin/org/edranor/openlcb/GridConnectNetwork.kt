@@ -33,6 +33,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * A singleton implementation of [NetworkTransport] that provides asynchronous, non-blocking 
+ * TCP communication for the OpenLCB GridConnect protocol. It can operate in either 
+ * Server mode (listening for connections) or Client mode (connecting to a hub like JMRI).
+ */
 object GridConnectNetwork : NetworkTransport {
 
     private val _incomingMessages = MutableSharedFlow<String>(extraBufferCapacity = 100)
@@ -217,6 +222,10 @@ object GridConnectNetwork : NetworkTransport {
         activeServerSocket = null
     }
 
+    /**
+     * Stops the network connection by cancelling all active jobs (server, client, and writer),
+     * closing sockets, and resetting the connection status to disconnected.
+     */
     fun stop() {
         serverJob?.cancel()
         clientJob?.cancel()

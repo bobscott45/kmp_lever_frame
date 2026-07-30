@@ -44,6 +44,12 @@ import platform.UIKit.UIApplication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 
+/**
+ * iOS implementation of [Platform]. Provides platform information specific to Apple devices.
+ * 
+ * In this architecture, it satisfies the expect declaration for iOS targets, supplying
+ * device and system version data to the common codebase.
+ */
 class IOSPlatform: Platform {
     override val name: String = UIDevice.currentDevice.systemName() + " " + UIDevice.currentDevice.systemVersion
 }

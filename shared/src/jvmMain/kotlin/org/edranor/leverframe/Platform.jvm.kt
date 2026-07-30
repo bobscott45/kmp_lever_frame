@@ -43,6 +43,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.Composable
 
+/**
+ * JVM implementation of [Platform]. Provides platform information specific to desktop environments.
+ * 
+ * In this architecture, it satisfies the expect declaration for JVM targets, providing 
+ * the underlying Java runtime version.
+ */
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
 }

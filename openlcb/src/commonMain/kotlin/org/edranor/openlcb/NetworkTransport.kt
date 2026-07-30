@@ -24,6 +24,10 @@ package org.edranor.openlcb
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Defines the contract for a network transport layer responsible for connecting to a hub,
+ * sending and receiving messages, and managing connection status.
+ */
 interface NetworkTransport {
     val incomingMessages: SharedFlow<String>
     val connectionStatus: StateFlow<String>
@@ -34,7 +38,22 @@ interface NetworkTransport {
      */
     var onClientConnected: (() -> Unit)?
 
+    /**
+     * Connects to a specified hub using the provided IP address.
+     *
+     * @param hubIp The IP address (and optionally the port) of the hub to connect to.
+     */
     fun connect(hubIp: String)
+    
+    /**
+     * Disconnects the current network connection.
+     */
     fun disconnect()
+    
+    /**
+     * Sends a message through the network transport.
+     *
+     * @param msg The message string to be sent.
+     */
     fun sendMessage(msg: String)
 }

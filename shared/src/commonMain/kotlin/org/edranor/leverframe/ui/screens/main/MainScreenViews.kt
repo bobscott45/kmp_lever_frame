@@ -66,6 +66,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+/**
+ * Renders the top navigation and action bar. Includes the frame selection tabs 
+ * and a dropdown menu for system status, configuration, and JSON import/export.
+ */
 @Composable
 fun TopMenuBar(
     configState: ConfigState,
@@ -219,6 +223,10 @@ fun TopMenuBar(
     }
 }
 
+/**
+ * A horizontally scrollable row of tabs used to switch between different [LeverFrame] 
+ * instances defined in the current configuration.
+ */
 @Composable
 fun RowScope.MainTabRow(
     configState: ConfigState,
@@ -246,6 +254,10 @@ fun RowScope.MainTabRow(
     }
 }
 
+/**
+ * Displays floating alert overlays for system and network errors. 
+ * Animates into view when error states are present in the [TransientUiState].
+ */
 @Composable
 fun ErrorBanners(
     errorMessage: String?,
@@ -300,6 +312,10 @@ fun ErrorBanners(
     }
 }
 
+/**
+ * Renders the primary interactable row of physical lever components for the currently 
+ * selected frame. Handles scaling and horizontal scrolling to fit various screen sizes.
+ */
 @Composable
 fun ColumnScope.LeverTrackGroup(
     domainState: DomainState,
@@ -361,6 +377,10 @@ fun ColumnScope.LeverTrackGroup(
         }
     }
 }
+/**
+ * Renders the block shelf above the levers, displaying a row of [BlockIndicator]s.
+ * Used for monitoring track occupancy and, in simulation mode, manually toggling states.
+ */
 @Composable
 fun BlockShelfGroup(
     domainState: DomainState,
@@ -405,6 +425,10 @@ fun BlockShelfGroup(
     }
 }
 
+/**
+ * A visual indicator for a single track block's occupancy status. 
+ * Features a label and an LED-style circle that turns red when occupied and green when clear.
+ */
 @Composable
 fun BlockIndicator(
     label: String, 
@@ -462,6 +486,10 @@ fun BlockIndicator(
     }
 }
 
+/**
+ * A side-effect handler that monitors the domain state for interlocking conflicts.
+ * Triggers an alarm sound via the [SoundPlayer] if levers remain in an alarmed state.
+ */
 @Composable
 fun ConflictSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlayer) {
     LaunchedEffect(domainState.conflictingLevers) {
@@ -472,6 +500,10 @@ fun ConflictSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlaye
     }
 }
 
+/**
+ * A side-effect handler that tracks changes in track block occupancy across all frames.
+ * Plays bell sounds (single ding for clear, double ding for occupied) when states change.
+ */
 @Composable
 fun BlockSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlayer) {
     var previousBlocks by remember { mutableStateOf<List<BooleanArray>?>(null) }
@@ -502,6 +534,11 @@ fun BlockSoundEffectHandler(domainState: DomainState, soundPlayer: SoundPlayer) 
 }
 
 
+/**
+ * The core layout container for the main operational view. 
+ * Manages the split-pane presentation of the track schematic and the lever/block controls,
+ * handling draggable resizing and orientation-aware layouts (portrait vs landscape).
+ */
 @Composable
 fun NavContent(
     domainState: DomainState,

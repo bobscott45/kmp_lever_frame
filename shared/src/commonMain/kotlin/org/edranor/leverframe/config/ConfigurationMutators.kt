@@ -40,6 +40,12 @@ import org.edranor.leverframe.ui.screens.schematic.*
 import org.edranor.leverframe.domain.engine.*
 import org.edranor.leverframe.domain.parser.*
 
+/**
+ * Creates a copy of the configuration with all lever rules and logic stripped out.
+ * Useful for exporting a bare-bones configuration or resetting interlocking logic.
+ *
+ * @return A new [JsonConfig] instance with empty rules.
+ */
 fun JsonConfig.withoutRules(): JsonConfig {
     return this.copy(
         tabs = this.tabs.map { tab ->
@@ -52,6 +58,12 @@ fun JsonConfig.withoutRules(): JsonConfig {
     )
 }
 
+/**
+ * Creates a minimal copy of the configuration by removing UI layout, rules, and LCC events.
+ * Returns a sterile structure primarily useful as a blank slate for generating new node configurations.
+ *
+ * @return A minimized [JsonConfig] instance.
+ */
 fun JsonConfig.withoutUiAndRules(): JsonConfig {
     return this.copy(
         jmri_hub_ip = "",
@@ -96,6 +108,13 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
 }
 
 // AST Index mutators
+/**
+ * Traverses the AST and updates lever indices to account for a lever being deleted from the frame.
+ * If a node directly references the deleted index, it (and potentially its parents) may be invalidated and return null.
+ *
+ * @param deletedIndex The index of the lever that was removed.
+ * @return The updated [AstNode] or null if the logic becomes invalid.
+ */
 fun AstNode.updateLeverIndicesForDelete(deletedIndex: Int): AstNode? {
     return when (this) {
         is LeverStateNode -> {
@@ -119,6 +138,13 @@ fun AstNode.updateLeverIndicesForDelete(deletedIndex: Int): AstNode? {
     }
 }
 
+/**
+ * Traverses the AST and updates block indices to account for a block being deleted from the frame.
+ * If a node directly references the deleted index, it may return null to invalidate the rule.
+ *
+ * @param deletedIndex The index of the block that was removed.
+ * @return The updated [AstNode] or null if the logic becomes invalid.
+ */
 fun AstNode.updateBlockIndicesForDelete(deletedIndex: Int): AstNode? {
     return when (this) {
         is BlockStateNode -> {
@@ -142,6 +168,14 @@ fun AstNode.updateBlockIndicesForDelete(deletedIndex: Int): AstNode? {
     }
 }
 
+/**
+ * Traverses the AST and swaps occurrences of two lever indices.
+ * Used to keep logic intact when the user reorders levers in the editor.
+ *
+ * @param indexA The first lever index.
+ * @param indexB The second lever index.
+ * @return The newly updated [AstNode] with swapped indices.
+ */
 fun AstNode.updateLeverIndicesForSwap(indexA: Int, indexB: Int): AstNode {
     return when (this) {
         is LeverStateNode -> {
@@ -156,6 +190,14 @@ fun AstNode.updateLeverIndicesForSwap(indexA: Int, indexB: Int): AstNode {
     }
 }
 
+/**
+ * Traverses the AST and swaps occurrences of two block indices.
+ * Used to keep logic intact when the user reorders blocks in the editor.
+ *
+ * @param indexA The first block index.
+ * @param indexB The second block index.
+ * @return The newly updated [AstNode] with swapped indices.
+ */
 fun AstNode.updateBlockIndicesForSwap(indexA: Int, indexB: Int): AstNode {
     return when (this) {
         is BlockStateNode -> {
@@ -171,6 +213,15 @@ fun AstNode.updateBlockIndicesForSwap(indexA: Int, indexB: Int): AstNode {
 }
 
 
+/**
+ * Safely swaps two blocks in the tab configuration.
+ * Automatically cascades the index swap to all schematic elements, legacy interlocking rules, and AST nodes.
+ *
+ * @param tab The tab configuration containing the blocks.
+ * @param indexA The first block index to swap.
+ * @param indexB The second block index to swap.
+ * @return A new [JsonTab] with blocks, schematic links, and logic correctly updated.
+ */
 fun swapBlocksSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     val newBlocks = tab.blocks.toMutableList()
     val temp = newBlocks[indexA]
@@ -204,6 +255,15 @@ fun swapBlocksSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
 }
 
+/**
+ * Safely swaps two levers in the tab configuration.
+ * Automatically cascades the index swap to all schematic elements, legacy interlocking rules, and AST nodes.
+ *
+ * @param tab The tab configuration containing the levers.
+ * @param indexA The first lever index to swap.
+ * @param indexB The second lever index to swap.
+ * @return A new [JsonTab] with levers, schematic links, and logic correctly updated.
+ */
 fun swapLeversSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     val newLevers = tab.levers.toMutableList()
     val temp = newLevers[indexA]
@@ -240,6 +300,14 @@ fun swapLeversSafe(tab: JsonTab, indexA: Int, indexB: Int): JsonTab {
     return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
 }
 
+/**
+ * Safely deletes a block from the tab configuration and shifts subsequent block indices down.
+ * Updates all schematic elements and removes or updates any rules referencing the block.
+ *
+ * @param tab The tab configuration to modify.
+ * @param index The index of the block to delete.
+ * @return A new [JsonTab] reflecting the deletion.
+ */
 fun deleteBlockSafe(tab: JsonTab, index: Int): JsonTab {
     val newBlocks = tab.blocks.toMutableList()
     newBlocks.removeAt(index)
@@ -270,6 +338,14 @@ fun deleteBlockSafe(tab: JsonTab, index: Int): JsonTab {
     return tab.copy(blocks = newBlocks, schematic_elements = newSchematicElements, levers = newLevers)
 }
 
+/**
+ * Safely deletes a lever from the tab configuration and shifts subsequent lever indices down.
+ * Updates all schematic elements and removes or updates any rules referencing the lever.
+ *
+ * @param tab The tab configuration to modify.
+ * @param index The index of the lever to delete.
+ * @return A new [JsonTab] reflecting the deletion.
+ */
 fun deleteLeverSafe(tab: JsonTab, index: Int): JsonTab {
     val newLevers = tab.levers.toMutableList()
     newLevers.removeAt(index)
@@ -303,6 +379,13 @@ fun deleteLeverSafe(tab: JsonTab, index: Int): JsonTab {
     return tab.copy(levers = newLeversMapped, schematic_elements = newSchematicElements)
 }
 
+/**
+ * Generates an initialism short code from a full label string.
+ * Used as a default short code when creating new blocks.
+ *
+ * @param label The full text label.
+ * @return A capitalized short code (e.g., "Down Main" -> "DM").
+ */
 fun generateShortCode(label: String): String {
     return label.split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString("") { it.take(1).uppercase() }
 }

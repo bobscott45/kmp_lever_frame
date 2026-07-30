@@ -59,6 +59,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.graphics.Brush
 
+/**
+ * A modal dialog showing detailed real-time diagnostic information for a specific lever,
+ * including its physical state, interlocking rule evaluations, and network properties.
+ */
 @Composable
 fun LeverStatusScreen(
     leverIndex: Int,

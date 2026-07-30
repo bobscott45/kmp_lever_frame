@@ -54,6 +54,12 @@ object AndroidAppContext {
     var applicationContext: Context? = null
 }
 
+/**
+ * Android implementation of [Platform]. Provides platform information specific to Android devices.
+ * 
+ * In this architecture, it satisfies the expect declaration for Android targets, making
+ * OS version information available to the shared codebase.
+ */
 class AndroidPlatform : Platform {
     override val name: String = "Android ${android.os.Build.VERSION.SDK_INT}"
 }

@@ -79,10 +79,17 @@ class InterlockingService(
         domainStateFlow = domainState
     )
 
+    /**
+     * Triggers the persistence service to save the current domain state to disk,
+     * if the configuration has state saving enabled.
+     */
     fun persistStatesIfEnabled() {
         persistenceService.triggerSave()
     }
 
+    /**
+     * Clears all saved domain states from persistent storage.
+     */
     suspend fun clearSavedStates() {
         persistenceRepo.clearSavedStates()
     }
@@ -276,6 +283,12 @@ class InterlockingService(
         return ToggleResult(didChange, errorMessage)
     }
 
+    /**
+     * Toggles a software "white collar" lock on a lever, preventing interaction.
+     *
+     * @param tabIndex The index of the frame containing the lever.
+     * @param leverIndex The index of the lever within the frame.
+     */
     fun toggleManualLock(tabIndex: Int, leverIndex: Int) {
         _domainState.update { currentDomain ->
             val updatedFrames = currentDomain.frames.toMutableList()

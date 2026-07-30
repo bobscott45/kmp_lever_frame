@@ -31,14 +31,44 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 
+/**
+ * Defines a client interface for interacting with the LCC network.
+ */
 interface LccNetworkClient {
     val externalEvents: SharedFlow<String>
     val connectionStatus: kotlinx.coroutines.flow.StateFlow<String>
     val connectionErrors: SharedFlow<String>
+    
+    /**
+     * Initializes the network client.
+     */
     fun initialize()
+    
+    /**
+     * Disconnects the network client.
+     */
     fun disconnect()
+    
+    /**
+     * Produces a specific event on the network.
+     *
+     * @param eventIdStr The event ID string to produce.
+     */
     fun produceEvent(eventIdStr: String)
+    
+    /**
+     * Parses an event ID string into a standardized format.
+     *
+     * @param eventIdStr The event ID string to parse.
+     * @return The parsed event ID string.
+     */
     fun parseEventId(eventIdStr: String): String
+    
+    /**
+     * Initiates the identify producer process for the given event ID.
+     *
+     * @param eventIdStr The event ID string to identify.
+     */
     fun identifyProducer(eventIdStr: String)
 }
 
@@ -54,6 +84,14 @@ object OpenLcbEngine : LccNetworkClient {
 
     private var transport: NetworkTransport? = null
 
+    /**
+     * Configures the OpenLcbEngine with the required components for operation.
+     *
+     * @param config The OpenLcbConfig object containing basic configuration.
+     * @param memoryHandler The MemorySpaceHandler for CDI and memory space reading/writing.
+     * @param eventProvider The EventProducerProvider to supply produced event IDs.
+     * @param networkTransport The NetworkTransport implementation to handle network communication.
+     */
     fun configure(
         config: OpenLcbConfig,
         memoryHandler: MemorySpaceHandler,

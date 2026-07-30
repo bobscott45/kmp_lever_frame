@@ -72,6 +72,10 @@ class PersistenceService(
         }
     }
 
+    /**
+     * Emits a signal to save the domain state. The write is debounced by 500ms
+     * to prevent rapid sequential writes during cascading events.
+     */
     fun triggerSave() {
         if (configRepo.currentConfig.restore_last_state) {
             saveStateTrigger.tryEmit(Unit)

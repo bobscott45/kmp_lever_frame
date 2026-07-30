@@ -50,6 +50,10 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/**
+ * An extension function on [DrawScope] responsible for rendering a single schematic element
+ * (like a straight track, turnout, or signal) at its assigned grid coordinates.
+ */
 fun DrawScope.drawSchematicElement(
     element: SchematicElementDef,
     tabDef: TabDef,
@@ -60,6 +64,10 @@ fun DrawScope.drawSchematicElement(
     gridSizeY: Float,
     startX: Float
 ) {
+    /**
+     * Determines the fill color of a track block based on its occupancy state.
+     * @return [Color.Red] if occupied, otherwise [Color.White] or [Color.Gray] if invalid.
+     */
     fun getBlockColor(blockIdx: Int): Color {
         if (blockIdx < 0 || blockIdx >= tabDef.blocks.size) return Color.Gray
         val occupied = if (blockIdx in blocks.indices) blocks[blockIdx].isOccupied else false

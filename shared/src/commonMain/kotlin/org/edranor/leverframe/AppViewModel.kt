@@ -312,6 +312,12 @@ class AppViewModel(
         }
     }
 
+    /**
+     * Saves the user's preferred layout ratio weights for landscape and portrait orientations.
+     *
+     * @param landscapeWeight The weight ratio for landscape orientation.
+     * @param portraitWeight The weight ratio for portrait orientation.
+     */
     fun saveLayoutWeights(landscapeWeight: Float, portraitWeight: Float) {
         configService.saveLayoutWeights(landscapeWeight, portraitWeight)
     }

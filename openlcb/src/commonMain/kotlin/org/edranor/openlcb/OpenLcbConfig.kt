@@ -21,18 +21,52 @@
  */
 package org.edranor.openlcb
 
+/**
+ * Configuration data for OpenLCB node initialization and setup.
+ */
 interface OpenLcbConfig {
     val nodeId: String
     val nodeName: String
     val jmriHubIp: String
 }
 
+/**
+ * Handles operations related to memory spaces within the OpenLCB protocol.
+ */
 interface MemorySpaceHandler {
+    /**
+     * Retrieves the Configuration Description Information (CDI) XML payload.
+     *
+     * @return A byte array containing the CDI XML data.
+     */
     fun getCdiXml(): ByteArray
+    
+    /**
+     * Reads data from a specified memory space.
+     *
+     * @param space The identifier of the memory space to read from.
+     * @return A byte array containing the data read from the memory space.
+     */
     fun readMemorySpace(space: Int): ByteArray
+    
+    /**
+     * Writes data to a specified memory space at the given address.
+     *
+     * @param space The identifier of the memory space to write to.
+     * @param address The 64-bit address within the memory space to start writing at.
+     * @param data The byte array containing the data to be written.
+     */
     fun writeMemorySpace(space: Int, address: Long, data: ByteArray)
 }
 
+/**
+ * Provides a list of event IDs that the node can produce.
+ */
 interface EventProducerProvider {
+    /**
+     * Retrieves the list of event IDs produced by this node.
+     *
+     * @return A list of produced event ID strings.
+     */
     fun getProducedEvents(): List<String>
 }

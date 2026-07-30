@@ -57,16 +57,49 @@ object OpenLcbConstants {
 /** Contract for reading, parsing, and writing the JSON configuration file to/from persistent storage. */
 interface ConfigurationRepository {
     var currentConfig: JsonConfig
+    /**
+     * Initializes the configuration by loading it from persistent storage.
+     * Falls back to a default configuration if reading or parsing fails.
+     */
     suspend fun initConfig()
+    /**
+     * Serializes the current configuration into a JSON string representation.
+     * 
+     * @return The JSON string of the current configuration.
+     */
     fun toJsonString(): String
+    /**
+     * Parses a JSON string into a list of tabs mapping names to [TabDef] objects.
+     * 
+     * @param jsonString The raw JSON string to parse.
+     * @return A list mapping tab names to their respective [TabDef] domains.
+     */
     fun parseConfig(jsonString: String): List<Pair<String, TabDef>>
+    /**
+     * Saves the provided configuration to persistent storage and updates the current state.
+     * 
+     * @param newConfig The new configuration to save.
+     */
     suspend fun saveConfig(newConfig: JsonConfig)
 }
 
 /** Contract for saving and loading the physical state (Reversed/Normal) of the frame across reboots. */
 interface StatePersistenceRepository {
+    /**
+     * Loads the previously saved lever and block states from persistent storage.
+     * 
+     * @return The saved states data, or null if no valid data is found.
+     */
     suspend fun loadSavedStates(): SavedStatesData?
+    /**
+     * Persists the current lever and block states to storage.
+     * 
+     * @param states The current state snapshot to save.
+     */
     suspend fun saveCurrentStates(states: SavedStatesData)
+    /**
+     * Clears all saved state information from persistent storage.
+     */
     suspend fun clearSavedStates()
 }
 
@@ -94,6 +127,10 @@ data class JsonConfig(
     val tabs: List<JsonTab> = emptyList()
 )
 
+/**
+ * JSON representation of a single frame or tab configuration.
+ * Defines layout settings, levers, blocks, and schematic elements for the tab.
+ */
 @Serializable
 data class JsonTab(
     val name: String,
@@ -112,6 +149,10 @@ data class JsonTab(
     val schematic_elements: List<JsonSchematicElement> = emptyList()
 )
 
+/**
+ * JSON representation of a visual schematic element on the track diagram.
+ * Supports linking to levers or blocks to show real-time states and routes.
+ */
 @Serializable
 data class JsonSchematicElement(
     val type: SchematicElementType = SchematicElementType.STRAIGHT_H,
@@ -125,6 +166,10 @@ data class JsonSchematicElement(
     val nx_button_color: NxButtonColor = NxButtonColor.BLACK
 )
 
+/**
+ * JSON representation of a track block section.
+ * Configures LCC event IDs for occupancy and its simulation mode.
+ */
 @Serializable
 data class JsonBlock(
     val label: String = "",
@@ -134,6 +179,10 @@ data class JsonBlock(
     val mode: BlockMode = BlockMode.LOCAL_ONLY
 )
 
+/**
+ * JSON representation of a lever on the frame.
+ * Includes its label, type, LCC events, and interlocking logic definition.
+ */
 @Serializable
 data class JsonLever(
     val label: String = "",
@@ -147,6 +196,10 @@ data class JsonLever(
     val ast_logic: AstNode? = null
 )
 
+/**
+ * JSON representation of a legacy interlocking rule or locking table entry.
+ * Defines dependencies on targets (other levers or blocks) and alternative targets.
+ */
 @Serializable
 data class JsonInterlocking(
     val target: Int,
@@ -157,6 +210,9 @@ data class JsonInterlocking(
     val alt_target_type: TargetType = TargetType.LEVER
 )
 
+/**
+ * Holds the persisted snapshot of lever and block states to restore across reboots.
+ */
 @Serializable
 data class SavedStatesData(
     val tabs: List<List<Boolean>> = emptyList(),

@@ -62,6 +62,10 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Provides an interactive canvas-based editor for designing the layout's track schematic.
+ * Allows users to place signals, turnouts, blocks, and NX buttons on a grid.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchematicEditorScreen(

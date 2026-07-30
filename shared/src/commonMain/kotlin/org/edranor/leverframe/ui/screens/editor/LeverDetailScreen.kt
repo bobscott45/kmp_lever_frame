@@ -368,6 +368,10 @@ fun LeverDetailScreen(
     }
 }
 
+/**
+ * A mobile-optimized layout for editing legacy `JsonInterlocking` rules. 
+ * Provides dropdowns and checkboxes to configure target and state requirements compactly.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MobileRuleCard(

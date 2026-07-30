@@ -39,6 +39,13 @@ import org.edranor.leverframe.ui.screens.schematic.*
 import org.edranor.leverframe.domain.engine.*
 import org.edranor.leverframe.domain.parser.*
 
+/**
+ * Represents the platform on which the application is running, providing a unified interface
+ * to access platform-specific details.
+ * 
+ * In this architecture, [Platform] acts as an abstraction layer to decouple cross-platform
+ * business logic from underlying OS idiosyncrasies, such as OS names or SDK versions.
+ */
 interface Platform {
     val name: String
 }
