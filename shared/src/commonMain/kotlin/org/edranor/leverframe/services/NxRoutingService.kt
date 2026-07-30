@@ -42,7 +42,10 @@ import org.edranor.leverframe.*
 
 /** Result sum type for a requested NX route operation. */
 sealed class NxRoutingResult {
+    /** Represents a successful NX route creation. */
     object Success : NxRoutingResult()
+    
+    /** Represents a cancelled NX route operation. */
     object Cancelled : NxRoutingResult()
     /** 
      * Represents a routing failure due to configuration, state, or an interlocking conflict.

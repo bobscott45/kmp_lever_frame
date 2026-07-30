@@ -42,8 +42,14 @@ import org.edranor.leverframe.domain.parser.*
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Core typography and styling definitions for the LeverFrame application.
+ */
 object LeverFrameTheme {
-    object Colors {
+    /**
+ * Pre-defined color palette used across the UI, aligned with physical signal box aesthetics.
+ */
+object Colors {
         val Brass = Color(0xFFd4af37)
         val PaleBlue = Color(0xFFa2b4c7)
         
@@ -70,7 +76,10 @@ object LeverFrameTheme {
         val ErrorText = Color(0xFFa63c3c) // Softer, less aggressive red
     }
     
-    object Animation {
+    /**
+ * Standard animation durations and tween configurations for UI transitions.
+ */
+object Animation {
         const val LeverSpringStiffness = 200f
         const val LeverSpringDamping = 0.6f
         const val ShakeDurationMs = 40

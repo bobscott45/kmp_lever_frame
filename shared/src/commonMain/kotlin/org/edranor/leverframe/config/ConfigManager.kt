@@ -47,6 +47,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+/**
+ * Global constants defining default OpenLCB network configuration values and protocol details.
+ */
 object OpenLcbConstants {
     const val MAX_LABEL_LENGTH = 23
     const val MAX_SHORT_CODE_LENGTH = 7

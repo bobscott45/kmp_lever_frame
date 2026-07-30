@@ -50,6 +50,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
+/**
+ * A singleton container that holds a weak reference to the Android Application Context,
+ * necessary for platform-specific capabilities like sound playback and persistent storage.
+ */
 object AndroidAppContext {
     var applicationContext: Context? = null
 }

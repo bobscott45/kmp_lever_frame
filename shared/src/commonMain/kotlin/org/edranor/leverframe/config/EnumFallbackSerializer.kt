@@ -28,11 +28,19 @@ open class EnumFallbackSerializer<T : Enum<T>>(
     }
 }
 
+/** Serializer for TargetType, defaulting to LEVER */
 object TargetTypeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.TargetType>(org.edranor.leverframe.domain.engine.TargetType.LEVER, org.edranor.leverframe.domain.engine.TargetType.entries)
+/** Serializer for LeverType, defaulting to SPARE */
 object LeverTypeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.LeverType>(org.edranor.leverframe.domain.engine.LeverType.SPARE, org.edranor.leverframe.domain.engine.LeverType.entries)
+/** Serializer for RestoreOverride, defaulting to DEFAULT */
 object RestoreOverrideSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.RestoreOverride>(org.edranor.leverframe.domain.engine.RestoreOverride.DEFAULT, org.edranor.leverframe.domain.engine.RestoreOverride.entries)
+/** Serializer for BlockMode, defaulting to LOCAL_ONLY */
 object BlockModeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.BlockMode>(org.edranor.leverframe.domain.engine.BlockMode.LOCAL_ONLY, org.edranor.leverframe.domain.engine.BlockMode.entries)
+/** Serializer for NxButtonType, defaulting to NONE */
 object NxButtonTypeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.NxButtonType>(org.edranor.leverframe.domain.engine.NxButtonType.NONE, org.edranor.leverframe.domain.engine.NxButtonType.entries)
+/** Serializer for NxButtonPlacement, defaulting to DEFAULT */
 object NxButtonPlacementSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.NxButtonPlacement>(org.edranor.leverframe.domain.engine.NxButtonPlacement.DEFAULT, org.edranor.leverframe.domain.engine.NxButtonPlacement.entries)
+/** Serializer for NxButtonColor, defaulting to BLACK */
 object NxButtonColorSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.NxButtonColor>(org.edranor.leverframe.domain.engine.NxButtonColor.BLACK, org.edranor.leverframe.domain.engine.NxButtonColor.entries)
+/** Serializer for SchematicElementType, defaulting to STRAIGHT_H */
 object SchematicElementTypeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.SchematicElementType>(org.edranor.leverframe.domain.engine.SchematicElementType.STRAIGHT_H, org.edranor.leverframe.domain.engine.SchematicElementType.entries)

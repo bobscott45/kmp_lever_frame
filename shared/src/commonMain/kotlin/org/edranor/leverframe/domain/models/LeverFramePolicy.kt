@@ -55,6 +55,9 @@ enum class ConflictPolicy(val id: Int) {
     /** Accepts incoming LCC network events but marks the conflicting levers for visual alarm. */
     ALARM(3);
     
+    /**
+     * Factory methods and evaluation policies for LeverFrame operations.
+     */
     companion object { 
         /** Resolves a [ConflictPolicy] from its integer ID, defaulting to [PERMISSIVE]. */
         fun of(id: Int) = entries.firstOrNull { it.id == id } ?: PERMISSIVE 

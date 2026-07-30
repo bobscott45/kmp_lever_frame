@@ -72,6 +72,10 @@ interface LccNetworkClient {
     fun identifyProducer(eventIdStr: String)
 }
 
+/**
+ * The core engine responsible for parsing OpenLCB messages, identifying network producers/consumers, 
+ * and handling grid connect frames. It acts as the primary [LccNetworkClient].
+ */
 object OpenLcbEngine : LccNetworkClient {
 
     private var NODE_ALIAS = "12A" // Using a fixed alias for simplicity
