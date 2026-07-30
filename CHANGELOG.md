@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Architecture**: Refactored JSON DTOs (`JsonLever`, `JsonBlock`, `JsonSchematicElement`, `JsonInterlocking`) to eliminate primitive obsession. Configuration fields previously stored as raw Strings (such as lever types, block modes, and interlocking states) have been migrated to strict, type-safe Enums (`LeverType`, `BlockMode`, `TargetType`, `SchematicElementType`, etc.).
 - **Architecture**: Introduced a robust `EnumFallbackSerializer` to ensure that malformed or legacy JSON configurations do not crash the application, gracefully falling back to a default value while still providing strict type safety within the codebase.
+- **Architecture**: Fully migrated internal logic in `NxRoutingEngine` and `SchematicDrawingExtensions` to match directly on `SchematicElementType` and `LeverType` enums instead of their string representations, improving compile-time safety and exhaustiveness.
 
 - **Architecture**: Reorganized the project package structure into well-defined `domain`, `ui`, `config`, and `network` layers.
 - **Architecture**: Further refactored the `AppContent` composable in `App.kt` into smaller, highly cohesive modular composables (`AppTheme`, `ResumeInputBlocker`, `MainAppRouter`, `StatusOverlayRouter`).
