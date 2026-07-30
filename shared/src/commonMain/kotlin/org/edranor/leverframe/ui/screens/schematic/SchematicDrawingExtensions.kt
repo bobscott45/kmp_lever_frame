@@ -24,6 +24,8 @@
  * Encapsulates the visual rendering logic for turnouts, signals, crossovers, and NX buttons.
  */
 package org.edranor.leverframe.ui.screens.schematic
+import org.edranor.leverframe.domain.engine.LeverType
+import org.edranor.leverframe.domain.engine.SchematicElementType
 import org.edranor.leverframe.*
 
 import org.edranor.leverframe.network.*
@@ -79,20 +81,20 @@ fun DrawScope.drawSchematicElement(
 
     val trackColor = getBlockColor(element.linkedBlock)
 
-    when (element.type.name) {
-        "STRAIGHT_H" -> drawLine(
+    when (element.type) {
+        SchematicElementType.STRAIGHT_H -> drawLine(
             color = trackColor,
             start = Offset(px, py + gridSizeY / 2),
             end = Offset(px + gridSizeX, py + gridSizeY / 2),
             strokeWidth = 4f
         )
-        "STRAIGHT_V" -> drawLine(
+        SchematicElementType.STRAIGHT_V -> drawLine(
             color = trackColor,
             start = Offset(px + gridSizeX / 2, py),
             end = Offset(px + gridSizeX / 2, py + gridSizeY),
             strokeWidth = 4f
         )
-        "TURNOUT_LEFT" -> {
+        SchematicElementType.TURNOUT_LEFT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
@@ -110,7 +112,7 @@ fun DrawScope.drawSchematicElement(
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f))
             }
         }
-        "TURNOUT_RIGHT" -> {
+        SchematicElementType.TURNOUT_RIGHT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
@@ -128,7 +130,7 @@ fun DrawScope.drawSchematicElement(
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f))
             }
         }
-        "TURNOUT_LEFT_TRAILING" -> {
+        SchematicElementType.TURNOUT_LEFT_TRAILING -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
@@ -147,7 +149,7 @@ fun DrawScope.drawSchematicElement(
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.15f))
             }
         }
-        "TURNOUT_RIGHT_TRAILING" -> {
+        SchematicElementType.TURNOUT_RIGHT_TRAILING -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val mainRightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
@@ -166,20 +168,20 @@ fun DrawScope.drawSchematicElement(
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.85f))
             }
         }
-        "DIAMOND_CROSSING" -> {
+        SchematicElementType.DIAMOND_CROSSING -> {
             drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
             drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
         }
-        "SIGNAL_LEFT" -> {
+        SchematicElementType.SIGNAL_LEFT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
             if (leftElement == null) {
                 // Check if a turnout from the row below points up to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type.name == "TURNOUT_LEFT"
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == SchematicElementType.TURNOUT_LEFT }
             }
             if (leftElement == null) {
                 // Check if a turnout from the row above points down to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type.name == "TURNOUT_RIGHT" } }
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == SchematicElementType.TURNOUT_RIGHT }
             }
             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             
@@ -201,7 +203,7 @@ fun DrawScope.drawSchematicElement(
                 strokeWidth = 4f
             )
             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
-            val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+            val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
             val signalColor = if (isReversed) Color.Green else normalColor
             drawCircle(
                 color = signalColor,
@@ -223,16 +225,16 @@ fun DrawScope.drawSchematicElement(
                 topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
             )
         }
-        "SIGNAL_RIGHT" -> {
+        SchematicElementType.SIGNAL_RIGHT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             var leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y }
             if (leftElement == null) {
                 // Check if a turnout from the row below points up to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type.name == "TURNOUT_LEFT"
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 && it.type == SchematicElementType.TURNOUT_LEFT }
             }
             if (leftElement == null) {
                 // Check if a turnout from the row above points down to this cell
-                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type.name == "TURNOUT_RIGHT" } }
+                leftElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 && it.type == SchematicElementType.TURNOUT_RIGHT }
             }
             val rightElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y }
             
@@ -254,7 +256,7 @@ fun DrawScope.drawSchematicElement(
                 strokeWidth = 4f
             )
             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
-            val normalColor = if (leverType?.name == "DISTANT_SIGNAL") Color.Yellow else Color.Red
+            val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
             val signalColor = if (isReversed) Color.Green else normalColor
             drawCircle(
                 color = signalColor,
@@ -276,7 +278,7 @@ fun DrawScope.drawSchematicElement(
                 topLeft = Offset(px + gridSizeX / 2 - gridSizeY / 10, py + gridSizeY * 0.75f)
             )
         }
-        "BRACKET_SIGNAL", "BRACKET_SIGNAL_LEFT" -> {
+        SchematicElementType.BRACKET_SIGNAL_LEFT -> {
             val isReversed1 = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val isReversed2 = if (element.linkedLever2 in levers.indices) levers[element.linkedLever2].isReversed else false
             
@@ -355,7 +357,7 @@ fun DrawScope.drawSchematicElement(
                 topLeft = Offset(px + gridSizeX * 0.35f - gridSizeY / 10, py - gridSizeY * 0.4f)
             )
         }
-        "BRACKET_SIGNAL_RIGHT" -> {
+        SchematicElementType.BRACKET_SIGNAL_RIGHT -> {
             val isReversed1 = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
             val isReversed2 = if (element.linkedLever2 in levers.indices) levers[element.linkedLever2].isReversed else false
             

@@ -24,6 +24,7 @@
  * Calculates valid routes through turnouts and crossings, and translates them into required lever states.
  */
 package org.edranor.leverframe.domain.engine
+import org.edranor.leverframe.domain.engine.SchematicElementType
 import org.edranor.leverframe.*
 
 import org.edranor.leverframe.network.*
@@ -66,8 +67,8 @@ object NxRoutingEngine {
         val y = element.y
         val conns = mutableListOf<Pair<Int, Int>>()
         
-        when (element.type.name) {
-            "STRAIGHT_H", "SIGNAL_LEFT", "SIGNAL_RIGHT", "BRACKET_SIGNAL_LEFT", "BRACKET_SIGNAL_RIGHT" -> {
+        when (element.type) {
+            SchematicElementType.STRAIGHT_H, SchematicElementType.SIGNAL_LEFT, SchematicElementType.SIGNAL_RIGHT, SchematicElementType.BRACKET_SIGNAL_LEFT, SchematicElementType.BRACKET_SIGNAL_RIGHT -> {
                 // Connects right
                 conns.add(Pair(x + 1, y))
                 
@@ -78,44 +79,44 @@ object NxRoutingEngine {
                 }
                 // Connects left to a turnout coming from below
                 val leftTurnoutUp = map[Pair(x - 1, y + 1)]
-                if (leftTurnoutUp?.type?.name == "TURNOUT_LEFT") {
+                if (leftTurnoutUp?.type == SchematicElementType.TURNOUT_LEFT) {
                     conns.add(Pair(x - 1, y + 1))
                 }
                 // Connects left to a turnout coming from above
                 val leftTurnoutDown = map[Pair(x - 1, y - 1)]
-                if (leftTurnoutDown?.type?.name == "TURNOUT_RIGHT") {
+                if (leftTurnoutDown?.type == SchematicElementType.TURNOUT_RIGHT) {
                     conns.add(Pair(x - 1, y - 1))
                 }
                 // Fallback: if there's nothing diagonal, we still report left so we don't break simple tracks
-                if (leftTurnoutUp?.type?.name != "TURNOUT_LEFT" && leftTurnoutDown?.type?.name != "TURNOUT_RIGHT") {
+                if (leftTurnoutUp?.type != SchematicElementType.TURNOUT_LEFT && leftTurnoutDown?.type != SchematicElementType.TURNOUT_RIGHT) {
                     conns.add(Pair(x - 1, y))
                 }
             }
-            "STRAIGHT_V" -> {
+            SchematicElementType.STRAIGHT_V -> {
                 conns.add(Pair(x, y - 1))
                 conns.add(Pair(x, y + 1))
             }
-            "TURNOUT_LEFT" -> {
+            SchematicElementType.TURNOUT_LEFT -> {
                 conns.add(Pair(x - 1, y))
                 conns.add(Pair(x + 1, y))
                 conns.add(Pair(x + 1, y - 1))
             }
-            "TURNOUT_RIGHT" -> {
+            SchematicElementType.TURNOUT_RIGHT -> {
                 conns.add(Pair(x - 1, y))
                 conns.add(Pair(x + 1, y))
                 conns.add(Pair(x + 1, y + 1))
             }
-            "TURNOUT_LEFT_TRAILING" -> {
+            SchematicElementType.TURNOUT_LEFT_TRAILING -> {
                 conns.add(Pair(x - 1, y))
                 conns.add(Pair(x + 1, y))
                 conns.add(Pair(x - 1, y - 1))
             }
-            "TURNOUT_RIGHT_TRAILING" -> {
+            SchematicElementType.TURNOUT_RIGHT_TRAILING -> {
                 conns.add(Pair(x - 1, y))
                 conns.add(Pair(x + 1, y))
                 conns.add(Pair(x - 1, y + 1))
             }
-            "DIAMOND_CROSSING" -> {
+            SchematicElementType.DIAMOND_CROSSING -> {
                 // Connects the straights
                 conns.add(Pair(x - 1, y))
                 conns.add(Pair(x + 1, y))
