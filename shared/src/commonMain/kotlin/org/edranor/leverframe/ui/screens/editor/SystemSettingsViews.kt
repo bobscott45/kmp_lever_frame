@@ -173,6 +173,36 @@ private fun BehaviorSettings(config: JsonConfig, onConfigChange: (JsonConfig) ->
             }
         }
     }
+
+    var posExpanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = posExpanded,
+        onExpandedChange = { posExpanded = !posExpanded }
+    ) {
+        OutlinedTextField(
+            value = config.landscape_schematic_position.displayName,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Landscape Schematic Position") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = posExpanded) },
+            modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+            colors = brassTextFieldColors()
+        )
+        ExposedDropdownMenu(
+            expanded = posExpanded,
+            onDismissRequest = { posExpanded = false }
+        ) {
+            LandscapeSchematicPosition.entries.forEach { pos ->
+                DropdownMenuItem(
+                    text = { Text(pos.displayName) },
+                    onClick = {
+                        onConfigChange(config.copy(landscape_schematic_position = pos))
+                        posExpanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable

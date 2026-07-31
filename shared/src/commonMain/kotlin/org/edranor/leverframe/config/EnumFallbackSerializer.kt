@@ -44,3 +44,5 @@ object NxButtonPlacementSerializer : EnumFallbackSerializer<org.edranor.leverfra
 object NxButtonColorSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.NxButtonColor>(org.edranor.leverframe.domain.engine.NxButtonColor.BLACK, org.edranor.leverframe.domain.engine.NxButtonColor.entries)
 /** Serializer for SchematicElementType, defaulting to STRAIGHT_H */
 object SchematicElementTypeSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.SchematicElementType>(org.edranor.leverframe.domain.engine.SchematicElementType.STRAIGHT_H, org.edranor.leverframe.domain.engine.SchematicElementType.entries)
+/** Serializer for LandscapeSchematicPosition, defaulting to SIDE_BY_SIDE */
+object LandscapeSchematicPositionSerializer : EnumFallbackSerializer<org.edranor.leverframe.domain.engine.LandscapeSchematicPosition>(org.edranor.leverframe.domain.engine.LandscapeSchematicPosition.SIDE_BY_SIDE, org.edranor.leverframe.domain.engine.LandscapeSchematicPosition.entries)

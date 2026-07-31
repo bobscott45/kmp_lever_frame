@@ -97,6 +97,13 @@ enum class BlockMode {
     LOCAL_ONLY
 }
 
+/** Defines the display position of the schematic relative to the lever frame in landscape mode. */
+@Serializable(with = LandscapeSchematicPositionSerializer::class)
+enum class LandscapeSchematicPosition(val displayName: String) {
+    SIDE_BY_SIDE("Side-by-Side (Left)"),
+    TOP("Above Lever Frame (Top)")
+}
+
 /** Core domain definition for a track circuit or occupancy block. */
 data class BlockDef(
     val label: String = "",

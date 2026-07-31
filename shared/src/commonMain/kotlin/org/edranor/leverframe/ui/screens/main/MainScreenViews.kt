@@ -561,13 +561,13 @@ fun NavContent(
                     val parentMaxWidth = maxWidth
                     val parentMaxHeight = maxHeight
                     val isLandscapeMode = maxWidth > maxHeight
-                    val isLandscapeCompact = isLandscapeMode && maxHeight < 600.dp
+                    val useSideBySideLayout = isLandscapeMode && configState.config.landscape_schematic_position == LandscapeSchematicPosition.SIDE_BY_SIDE
                     Column(modifier = Modifier.fillMaxSize()) {
-                        if (!isLandscapeMode) {
+                        if (!useSideBySideLayout) {
                             TopMenuBar(configState, uiState, viewModel)
                         }
                         
-                        if (isLandscapeMode) {
+                        if (useSideBySideLayout) {
                             Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
                                 if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
                                     val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
@@ -695,7 +695,7 @@ fun NavContent(
                     }
                     
                     // Floating Error Banners Overlay
-                    Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = if (isLandscapeCompact) 8.dp else 56.dp)) {
+                    Box(modifier = Modifier.align(Alignment.TopCenter).padding(top = if (useSideBySideLayout) 8.dp else 56.dp)) {
                         ErrorBanners(
                             errorMessage = uiState.errorMessage,
                             networkError = uiState.networkError,

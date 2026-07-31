@@ -127,6 +127,7 @@ data class JsonConfig(
     val rule_display_mode: String = "LOCKING_TABLE",
     val sim_mode: Boolean = false,
     val ui_scale: Float = 0.0f,
+    val landscape_schematic_position: org.edranor.leverframe.domain.engine.LandscapeSchematicPosition = org.edranor.leverframe.domain.engine.LandscapeSchematicPosition.SIDE_BY_SIDE,
     val tabs: List<JsonTab> = emptyList()
 )
 

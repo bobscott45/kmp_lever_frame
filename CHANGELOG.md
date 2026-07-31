@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Added
+- **UI/UX**: Added a configurable "Landscape Schematic Position" setting in Behavior Settings, allowing users on larger screens (such as iPad Pro) to switch between positioning the schematic "Side-by-Side (Left)" or "Above Lever Frame (Top)".
 - **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
 - **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.
 - **UI/UX**: Implemented a complete "Entrance-Exit" (NX) Routing Engine. Users can now tap an Entrance signal and an Exit signal on the active schematic to automatically establish complex routes.
