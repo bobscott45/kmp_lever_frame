@@ -89,6 +89,7 @@ This controls the top-level behavior of the application and its connection to th
     *   **OFF (Unchecked)**: The frame acts as a "dumb panel". It ignores external events (block sensors or remote lever commands) and relies purely on your manual clicks and its internal static state.
 *   **Enable Sound**: Toggles auditory feedback.
 *   **UI Scale**: Adjusts the global scaling of the user interface (levers, schematics, and text). This is particularly useful for overriding the default scaling on high-DPI kiosks like Raspberry Pi touchscreens. Set to `0.0` or leave empty to default to the `--ui-scale` command-line runtime parameter (or `1.0` if no parameter is provided).
+*   **Landscape Schematic Position**: Controls the visual layout of the schematic relative to the lever frame in landscape orientation. Choose `Side-by-Side (Left)` (default) or `Above Lever Frame (Top)`. This setting updates immediately without requiring a state reset.
 *   **Default Rule Display Mode**: Controls what view is shown immediately when opening the Rules tab for a lever. Options are `Locking Table` (a read-only standard interlocking table), `Clause Builder` (a visual UI for interlocking clauses), or `Text Formula` (raw text syntax).
 *   **Default Rule Editor**: When the Display Mode is set to `Locking Table`, this determines which editor mode opens when you click the "Edit Rules" button (`Clause Builder` or `Text Formula`). If the Display Mode is already set to an editor mode, this setting is ignored as you will edit directly in that view.
 
