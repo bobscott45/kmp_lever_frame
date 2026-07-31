@@ -4,7 +4,7 @@ A Kotlin Multiplatform application targeting **Android, Desktop (JVM), and iOS**
 
 This project is a successor to the [ESP32 Lever Frame](https://github.com/bobscott45/esp32_lever_frame), rebuilt using **Compose Multiplatform**.
 
-> **Project Status:** Fully functional and tested with physical LCC hardware via a JMRI hub. Currently built and tested extensively on **Android and Desktop (JVM)**. While the architecture supports iOS out of the box, it has not yet been compiled or physically tested on Apple devices.
+> **Project Status:** Fully functional and tested with physical LCC hardware via a JMRI hub. Built and verified on **Android, Desktop (JVM), and iOS** (compiled and tested natively on Apple devices including iPad Pro).
 
 **📖 See the [User Guide](USER_GUIDE.md) for detailed instructions on how to configure and use the application.**
 **💻 See the [API Documentation](https://bobscott45.github.io/kmp_lever_frame/) for detailed developer documentation of the source code.**
@@ -135,10 +135,10 @@ sudo systemctl enable leverframe.service
 sudo systemctl start leverframe.service
 ```
 
-### iOS (Experimental)
-Open the `iosApp/iosApp.xcworkspace` folder in Xcode, select a target device or simulator, and run the project. 
+### iOS
+Open `iosApp/iosApp.xcodeproj` in Xcode, select your connected iPad or iPhone (or an iOS Simulator), select your free Personal Team under **Signing & Capabilities**, and press **Run (`Cmd + R`)**.
 
-*(Note regarding iOS distribution: Due to Apple's developer program fees and maintenance overhead, pre-compiled iOS binaries are not provided via the App Store. However, because the source code is fully available under the GPLv3 license, iOS users with a Mac can open the project in Xcode and compile/install it directly to their iPads at no cost.)*
+*(Note regarding iOS distribution: Due to Apple's developer program fees and maintenance overhead, pre-compiled iOS binaries are not provided via the App Store. However, because the source code is fully available under the GPLv3 license, iOS users with a Mac can open the project in Xcode and compile/install it directly to their iPads at no cost using a standard free Apple ID.)*
 
 ### Running Tests
 Tests live under the `shared/` and `:openlcb` modules and run on the host JVM.
