@@ -76,6 +76,7 @@ fun JsonConfig.withoutUiAndRules(): JsonConfig {
         lcc_master = false,
         enable_sound = false,
         ui_scale = 0.0f,
+        landscape_schematic_position = org.edranor.leverframe.domain.engine.LandscapeSchematicPosition.SIDE_BY_SIDE,
         rule_editor_mode = "",
         rule_display_mode = "",
         tabs = this.tabs.map { tab ->
