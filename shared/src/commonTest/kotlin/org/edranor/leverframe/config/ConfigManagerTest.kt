@@ -123,4 +123,35 @@ class ConfigManagerTest {
         assertEquals("05.01.01.01.03.01.11.01", lever.lcc_event_normal)
         assertEquals("05.01.01.01.03.01.11.02", lever.lcc_event_reversed)
     }
+
+    @Test
+    fun testLandscapeSchematicPositionSerializationAndFallback() {
+        val json = """
+            {
+                "landscape_schematic_position": "TOP"
+            }
+        """.trimIndent()
+        val config = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(json)
+        assertEquals(LandscapeSchematicPosition.TOP, config.landscape_schematic_position)
+
+        val invalidJson = """
+            {
+                "landscape_schematic_position": "UNKNOWN_POS"
+            }
+        """.trimIndent()
+        val configFallback = ConfigManager.jsonFormat.decodeFromString<JsonConfig>(invalidJson)
+        assertEquals(LandscapeSchematicPosition.SIDE_BY_SIDE, configFallback.landscape_schematic_position)
+    }
+
+    @Test
+    fun testLandscapeSchematicPositionIsExcludedFromHardwareResetCheck() {
+        val initial = JsonConfig(landscape_schematic_position = LandscapeSchematicPosition.SIDE_BY_SIDE)
+        val modified = initial.copy(landscape_schematic_position = LandscapeSchematicPosition.TOP)
+
+        assertEquals(
+            initial.withoutUiAndRules(),
+            modified.withoutUiAndRules(),
+            "Changing landscape_schematic_position should be treated as a silent UI update"
+        )
+    }
 }
