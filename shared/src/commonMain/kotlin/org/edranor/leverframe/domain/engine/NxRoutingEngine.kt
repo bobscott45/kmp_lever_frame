@@ -133,8 +133,13 @@ object NxRoutingEngine {
     }
 
     /**
-     * Helper function: getactiveconnections
-     * Returns only the connections that are physically aligned based on current point (turnout) lever positions.
+     * Retrieves only the track connections that are physically aligned based on the current point (turnout) lever positions.
+     * This is useful for tracing routes that are already set, rather than discovering all possible routes.
+     *
+     * @param element The schematic element to evaluate.
+     * @param map A lookup map of all elements on the grid, keyed by (X, Y) coordinates.
+     * @param levers The current state of all levers in the frame, used to determine if turnouts are normal or reversed.
+     * @return A list of (X, Y) coordinates this element currently connects to.
      */
     fun getActiveConnections(element: SchematicElementDef, map: Map<Pair<Int, Int>, SchematicElementDef>, levers: List<DomainLever>): List<Pair<Int, Int>> {
         val x = element.x
@@ -170,8 +175,14 @@ object NxRoutingEngine {
     }
 
     /**
-     * Helper function: tracebacktoalignedsignal
-     * Traces backward from a given start coordinate, following only aligned paths, to find a signal.
+     * Traces backward from a given start coordinate, following only aligned track paths, to find the 
+     * entrance signal for the currently set route. This serves as a fallback for route clearance when 
+     * the entrance signal has auto-reversed to danger due to track occupancy.
+     *
+     * @param entrancePos The grid coordinates of the clicked NX button (typically the Exit button).
+     * @param map A lookup map of all elements on the grid, keyed by (X, Y) coordinates.
+     * @param levers The current state of all levers in the frame.
+     * @return The (X, Y) coordinates of the entrance signal, or null if no aligned route traces back to a signal.
      */
     fun traceBackToAlignedSignal(entrancePos: Pair<Int, Int>, map: Map<Pair<Int, Int>, SchematicElementDef>, levers: List<DomainLever>): Pair<Int, Int>? {
         var q = listOf(entrancePos)
