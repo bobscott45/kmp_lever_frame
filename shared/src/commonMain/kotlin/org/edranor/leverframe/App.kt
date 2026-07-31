@@ -84,7 +84,7 @@ import kotlinx.coroutines.delay
 
 
 import org.koin.compose.KoinContext
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.context.startKoin
 
 /**
@@ -128,7 +128,7 @@ fun AppContent(runtimeUiScale: Float) {
     
     AppTheme {
         ResumeInputBlocker {
-            val viewModel = koinViewModel<AppViewModel>()
+            val viewModel = koinInject<AppViewModel>()
             val domainState by viewModel.domainState.collectAsState()
             val configState by viewModel.configState.collectAsState()
             val uiState by viewModel.uiState.collectAsState()
@@ -163,7 +163,9 @@ private fun AppTheme(content: @Composable () -> Unit) {
         secondary = LeverFrameTheme.Colors.Brass,
         onSecondary = Color.Black,
         tertiary = LeverFrameTheme.Colors.Brass,
-        onTertiary = Color.Black
+        onTertiary = Color.Black,
+        background = LeverFrameTheme.Colors.DarkSurface,
+        surface = LeverFrameTheme.Colors.DarkSurface
     )
     
     val defaultTypography = Typography()
@@ -177,7 +179,12 @@ private fun AppTheme(content: @Composable () -> Unit) {
     )
 
     MaterialTheme(colorScheme = customColorScheme, typography = customTypography) {
-        content()
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = LeverFrameTheme.Colors.DarkSurface
+        ) {
+            content()
+        }
     }
 }
 

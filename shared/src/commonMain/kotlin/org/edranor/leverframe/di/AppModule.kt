@@ -40,6 +40,7 @@ import org.edranor.leverframe.domain.engine.*
 import org.edranor.leverframe.domain.parser.*
 
 import org.edranor.openlcb.LccNetworkClient
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -51,5 +52,7 @@ val appModule = module {
     single { ConfigurationService(get()) }
     single { InterlockingService(get(), get(), get(), get(), get()) }
     single { org.edranor.leverframe.services.NxRoutingService(get(), get()) }
+    singleOf(::AppViewModel)
     viewModelOf(::AppViewModel)
 }
+

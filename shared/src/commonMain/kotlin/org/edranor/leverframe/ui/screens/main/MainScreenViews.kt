@@ -560,13 +560,14 @@ fun NavContent(
                 ) {
                     val parentMaxWidth = maxWidth
                     val parentMaxHeight = maxHeight
-                    val isLandscapeCompact = maxWidth > maxHeight && maxHeight < 600.dp
+                    val isLandscapeMode = maxWidth > maxHeight
+                    val isLandscapeCompact = isLandscapeMode && maxHeight < 600.dp
                     Column(modifier = Modifier.fillMaxSize()) {
-                        if (!isLandscapeCompact) {
+                        if (!isLandscapeMode) {
                             TopMenuBar(configState, uiState, viewModel)
                         }
                         
-                        if (isLandscapeCompact) {
+                        if (isLandscapeMode) {
                             Row(modifier = Modifier.fillMaxSize().padding(top = 8.dp)) {
                                 if (configState.tabs.isNotEmpty() && uiState.selectedTabIndex < configState.tabs.size) {
                                     val currentTabDef = configState.tabs[uiState.selectedTabIndex].second

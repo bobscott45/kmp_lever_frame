@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Updated `ARCHITECTURE.md`, license headers, and added missing KDocs to routing helpers.
 
 ### Fixed
+- **iOS / KMP**: Resolved iOS simulator/device startup white screen issue by replacing `koinViewModel` with `koinInject` in `App.kt`, eliminating a Kotlin/Native IR linkage error (`IrLinkageError`) related to `LocalViewModelStoreOwner`.
+- **iOS / KMP**: Enclosed `AppTheme` within a full-screen root `Surface` to enforce consistent dark surface background rendering across iOS/iPadOS views.
+- **UI/UX**: Updated landscape layout detection in `NavContent` to properly render the side-by-side split view on larger screen sizes (e.g. iPad landscape).
 - **UI/UX**: Restored the dynamic color indicator for Turnouts on the schematic. The diverging route leg will now properly illuminate Green when the points are thrown, providing clear visual feedback of the active route.
 
 
