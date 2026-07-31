@@ -133,6 +133,78 @@ object NxRoutingEngine {
     }
 
     /**
+     * Helper function: getactiveconnections
+     * Returns only the connections that are physically aligned based on current point (turnout) lever positions.
+     */
+    fun getActiveConnections(element: SchematicElementDef, map: Map<Pair<Int, Int>, SchematicElementDef>, levers: List<DomainLever>): List<Pair<Int, Int>> {
+        val x = element.x
+        val y = element.y
+        val conns = mutableListOf<Pair<Int, Int>>()
+        
+        when (element.type) {
+            SchematicElementType.TURNOUT_LEFT -> {
+                conns.add(Pair(x - 1, y))
+                val isReversed = if (element.linkedLever >= 0) levers.getOrNull(element.linkedLever)?.isReversed == true else false
+                if (isReversed) conns.add(Pair(x + 1, y - 1)) else conns.add(Pair(x + 1, y))
+            }
+            SchematicElementType.TURNOUT_RIGHT -> {
+                conns.add(Pair(x - 1, y))
+                val isReversed = if (element.linkedLever >= 0) levers.getOrNull(element.linkedLever)?.isReversed == true else false
+                if (isReversed) conns.add(Pair(x + 1, y + 1)) else conns.add(Pair(x + 1, y))
+            }
+            SchematicElementType.TURNOUT_LEFT_TRAILING -> {
+                conns.add(Pair(x + 1, y))
+                val isReversed = if (element.linkedLever >= 0) levers.getOrNull(element.linkedLever)?.isReversed == true else false
+                if (isReversed) conns.add(Pair(x - 1, y - 1)) else conns.add(Pair(x - 1, y))
+            }
+            SchematicElementType.TURNOUT_RIGHT_TRAILING -> {
+                conns.add(Pair(x + 1, y))
+                val isReversed = if (element.linkedLever >= 0) levers.getOrNull(element.linkedLever)?.isReversed == true else false
+                if (isReversed) conns.add(Pair(x - 1, y + 1)) else conns.add(Pair(x - 1, y))
+            }
+            else -> {
+                return getConnections(element, map)
+            }
+        }
+        return conns.distinct()
+    }
+
+    /**
+     * Helper function: tracebacktoalignedsignal
+     * Traces backward from a given start coordinate, following only aligned paths, to find a signal.
+     */
+    fun traceBackToAlignedSignal(entrancePos: Pair<Int, Int>, map: Map<Pair<Int, Int>, SchematicElementDef>, levers: List<DomainLever>): Pair<Int, Int>? {
+        var q = listOf(entrancePos)
+        val v = mutableSetOf(entrancePos)
+        while(q.isNotEmpty()) {
+            val nq = mutableListOf<Pair<Int, Int>>()
+            for (pos in q) {
+                val elem = map[pos] ?: continue
+                if (pos != entrancePos && elem.type.name.contains("SIGNAL")) {
+                    return pos
+                }
+                
+                for (other in map.values) {
+                    val otherPos = Pair(other.x, other.y)
+                    if (!v.contains(otherPos)) {
+                        val activeConns = getActiveConnections(other, map, levers)
+                        if (activeConns.contains(pos)) {
+                            // verify that pos's active connections also contain otherPos (bidirectional aligned path)
+                            val thisActiveConns = getActiveConnections(elem, map, levers)
+                            if (thisActiveConns.contains(otherPos)) {
+                                v.add(otherPos)
+                                nq.add(otherPos)
+                            }
+                        }
+                    }
+                }
+            }
+            q = nq
+        }
+        return null
+    }
+
+    /**
      * Performs a breadth-first search to find all valid, connected NX exit points from a starting coordinate.
      *
      * @param startX The X coordinate of the entrance button.

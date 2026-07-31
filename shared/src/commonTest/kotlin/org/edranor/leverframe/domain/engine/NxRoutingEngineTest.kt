@@ -107,8 +107,48 @@ class NxRoutingEngineTest {
         
         assertTrue(straightRoute != null)
         assertTrue(divergingRoute != null)
-        
         assertEquals(3, straightRoute?.pathCells?.size)
         assertEquals(3, divergingRoute?.pathCells?.size)
+    }
+
+    @Test
+    fun testTraceBackToAlignedSignal() {
+        val elements = listOf(
+            SchematicElementDef(x = 0, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.ENTRANCE_ONLY, linkedLever = 1),
+            SchematicElementDef(x = 1, y = 0, type = SchematicElementType.TURNOUT_RIGHT, linkedLever = 2),
+            SchematicElementDef(x = 2, y = 0, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.EXIT_ONLY), // Straight route
+            SchematicElementDef(x = 2, y = 1, type = SchematicElementType.SIGNAL_LEFT, nxButton = NxButtonType.EXIT_ONLY)  // Diverging route
+        )
+        val map = elements.associateBy { Pair(it.x, it.y) }
+        
+        // Signal is NORMAL (e.g., track occupied), Point is REVERSED
+        val leversReversed = listOf(
+            DomainLever(id = 0, isReversed = false), // dummy
+            DomainLever(id = 1, isReversed = false), // Signal: Normal
+            DomainLever(id = 2, isReversed = true)   // Point: Reversed
+        )
+        
+        // We click the diverging exit button at (2,1). It should trace back to the signal at (0,0)
+        val entranceDiverging = NxRoutingEngine.traceBackToAlignedSignal(Pair(2, 1), map, leversReversed)
+        assertEquals(Pair(0, 0), entranceDiverging)
+        
+        // We click the straight exit button at (2,0). It should NOT trace back to (0,0) because points are reversed
+        val entranceStraight = NxRoutingEngine.traceBackToAlignedSignal(Pair(2, 0), map, leversReversed)
+        assertEquals(null, entranceStraight)
+        
+        // Now set Point to NORMAL
+        val leversNormal = listOf(
+            DomainLever(id = 0, isReversed = false),
+            DomainLever(id = 1, isReversed = false), // Signal: Normal
+            DomainLever(id = 2, isReversed = false)  // Point: Normal
+        )
+        
+        // Click diverging exit -> Should fail
+        val entranceDivergingNormal = NxRoutingEngine.traceBackToAlignedSignal(Pair(2, 1), map, leversNormal)
+        assertEquals(null, entranceDivergingNormal)
+        
+        // Click straight exit -> Should trace to (0,0)
+        val entranceStraightNormal = NxRoutingEngine.traceBackToAlignedSignal(Pair(2, 0), map, leversNormal)
+        assertEquals(Pair(0, 0), entranceStraightNormal)
     }
 }

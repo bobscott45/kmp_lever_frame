@@ -102,8 +102,9 @@ class NxRoutingService(
         if (!isClickedSignalReversed) {
             val reversedSignals = tabDef.schematicElements.filter { isSignalReversed(it, levers) }
             val foundStart = traceReversedSignalsToEntrance(reversedSignals, entrancePos, map)
-            if (foundStart != null) {
-                return foundStart
+            val alignedStart = NxRoutingEngine.traceBackToAlignedSignal(entrancePos, map, levers)
+            if (alignedStart != null) {
+                return alignedStart
             }
         }
         return entrancePos
