@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Updated `ARCHITECTURE.md`, license headers, and added missing KDocs to routing helpers.
 
 ### Fixed
+- **iOS / KMP**: Fixed an issue where iOS settings (such as configuration and lever states) were not preserved on app restart by properly implementing `NSUserDefaults` serialization.
 - **UI/UX**: Fixed a bug where double-tapping the Exit button to cancel an NX route would fail if the entrance signal had already auto-reversed to danger due to track occupancy. The engine now uses point alignment fallback tracing to successfully clear these routes.
 - **iOS / KMP**: Resolved iOS simulator/device startup white screen issue by replacing `koinViewModel` with `koinInject` in `App.kt`, eliminating a Kotlin/Native IR linkage error (`IrLinkageError`) related to `LocalViewModelStoreOwner`.
 - **iOS / KMP**: Enclosed `AppTheme` within a full-screen root `Surface` to enforce consistent dark surface background rendering across iOS/iPadOS views.

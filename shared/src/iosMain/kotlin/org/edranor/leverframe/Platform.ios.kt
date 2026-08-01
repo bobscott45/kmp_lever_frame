@@ -41,6 +41,7 @@ import org.edranor.leverframe.domain.parser.*
 
 import platform.UIKit.UIDevice
 import platform.UIKit.UIApplication
+import platform.Foundation.NSUserDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 
@@ -63,24 +64,23 @@ actual fun getLocalIpAddress(): String {
 }
 
 actual suspend fun saveConfigToFile(json: String) {
-    // Placeholder for iOS
+    NSUserDefaults.standardUserDefaults.setObject(json, forKey = "leverframe_config")
 }
 
 actual suspend fun loadConfigFromFile(): String? {
-    // Placeholder for iOS
-    return null
+    return NSUserDefaults.standardUserDefaults.stringForKey("leverframe_config")
 }
 
 actual suspend fun saveLeverStatesToFile(json: String) {
-    // Placeholder
+    NSUserDefaults.standardUserDefaults.setObject(json, forKey = "leverframe_states")
 }
 
 actual suspend fun loadLeverStatesFromFile(): String? {
-    return null
+    return NSUserDefaults.standardUserDefaults.stringForKey("leverframe_states")
 }
 
 actual suspend fun clearLeverStatesFile() {
-    // Placeholder
+    NSUserDefaults.standardUserDefaults.removeObjectForKey("leverframe_states")
 }
 
 @Composable
