@@ -44,6 +44,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import org.edranor.leverframe.ui.components.horizontalTouchScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -106,10 +107,12 @@ fun SchematicScreen(
         val gridDpX = calculatedGridSizeX.coerceIn(minGridSizeX, maxGridSizeX)
         val widthDp = gridDpX * cellsX
 
+        val scrollState = rememberScrollState()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .horizontalScroll(rememberScrollState()),
+                .horizontalScroll(scrollState)
+                .horizontalTouchScroll(scrollState),
             contentAlignment = Alignment.Center
         ) {
             val heightDp = (cellsY * tabDef.schematicGridSize + 10).dp // Add 10dp padding at the bottom to prevent text clipping

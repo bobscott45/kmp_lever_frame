@@ -45,6 +45,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import org.edranor.leverframe.ui.components.horizontalTouchScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -104,10 +105,12 @@ fun SchematicEditorScreen(
 
         val heightDp = (cellsY * tabDef.schematic_grid_size).dp
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .horizontalScroll(rememberScrollState()),
+            val scrollState = rememberScrollState()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .horizontalScroll(scrollState)
+                    .horizontalTouchScroll(scrollState),
             contentAlignment = Alignment.Center
         ) {
             Canvas(

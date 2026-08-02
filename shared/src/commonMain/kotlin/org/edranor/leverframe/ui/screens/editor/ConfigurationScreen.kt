@@ -150,8 +150,10 @@ fun ConfigurationScreen(
         ) {
             if (initialMode == ConfigMode.SYSTEM) {
                 // SYSTEM SETTINGS VIEW
+                val listState = androidx.compose.foundation.lazy.rememberLazyListState()
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    state = listState,
+                    modifier = Modifier.fillMaxSize().touchScroll(listState),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {

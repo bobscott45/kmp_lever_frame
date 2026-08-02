@@ -26,6 +26,15 @@ This project is a successor to the [ESP32 Lever Frame](https://github.com/bobsco
 * **Flexible Complexity**: From a simple set of standalone switches to a rigid prototypical simulator. You can configure the app to control just a few points without any signals, blocks, or interlocking rules, or you can scale it up to a highly complex signalled layout. The app supports prototypical operation but does not enforce it.
 * **State Persistence**: Saves and restores lever states and configurations across reboots automatically.
 
+## Tested Platforms
+
+The application has been actively tested and verified to run successfully on the following combinations of operating systems and hardware:
+
+* **Linux**: Desktop PC, and Raspberry Pi (with the official Touch Display 2 running in bare Wayland Kiosk mode)
+* **macOS**: Mac Mini (M4)
+* **Android**: Google Pixel Pro 7
+* **iOS**: iPad 13 Pro
+
 ## Prerequisites
 
 To bridge the wireless Wi-Fi LCC events from this app to a physical CAN-based layout, a **Wi-Fi to CAN LCC bridge** is required. A common approach is to use JMRI.
@@ -71,22 +80,48 @@ To build a fat JAR (UberJar) that includes all necessary native dependencies (su
 ```
 *(Note: Because this is an UberJar, it bundles native binaries for multiple architectures including ARM64. Even if it outputs a file named after your desktop's host OS like `desktopApp/build/compose/jars/LeverFrame-linux-x64-X.X.X.jar`, you can simply copy this file to your Raspberry Pi and it will run perfectly).*
 
-To run it on the Pi with Cage:
+To run it on the Pi with Labwc (the officially supported Raspberry Pi OS Wayland compositor):
 ```bash
-cage -- java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
+labwc
 ```
-*(Tip: High-DPI screens, like a 10.5" 1080p display, may render the interface extremely small on a bare X11/Wayland server. You can scale up the entire UI by passing the `--ui-scale` argument as shown above. You can also configure this persistently in the app's System Settings menu).*
+*(Note: You will need an autostart configuration for Labwc to actually launch the app, see the Kiosk section below).*
+*(Tip: High-DPI screens, like a 10.5" 1080p display, may render the interface extremely small on a bare Wayland server. You can scale up the entire UI by passing the `--ui-scale` argument to the jar. You can also configure this persistently in the app's System Settings menu).*
+
+#### Screen Rotation (Landscape Mode)
+If your screen is natively portrait (like the official DSI screens) and you want to run the app in landscape mode, do **not** use the legacy `video=` or `display_rotate` parameters in `/boot/firmware/cmdline.txt`, as these often crash hardware acceleration on modern Pi OS.
+
+Instead, configure Labwc to rotate the display and then launch the app.
+Create an autostart file (`~/.config/labwc/autostart`):
+```bash
+# Rotate the display (adjust 90 to 180 or 270 as needed)
+wlr-randr --output DSI-1 --transform 90
+# Launch the application
+java -jar LeverFrame-linux-x64-X.X.X.jar --ui-scale 1.5
+```
+
+**Note on Touchscreens:** Rotating the display output via `wlr-randr` does *not* automatically rotate the underlying hardware touchscreen inputs in a bare kiosk environment. You must add a `udev` rule to rotate the input matrix at the system level. 
+
+Create `/etc/udev/rules.d/99-touchscreen.rules` (find your exact device name using `libinput list-devices`). For example, to map a native-portrait screen (like the official Raspberry Pi Touch Display 2) to landscape:
+
+```udev
+# 90° / 270° Rotation Matrix (required for the Raspberry Pi Touch Display 2 in landscape)
+ENV{ID_INPUT_TOUCHSCREEN}=="1", ATTRS{name}=="Goodix Capacitive TouchScreen", ENV{LIBINPUT_CALIBRATION_MATRIX}="0 -1 1 1 0 0"
+```
+*(If your touches register on the wrong axis, you may need a different matrix. Common alternatives are `"0 1 0 -1 0 1"` or `"-1 0 1 0 -1 1"`).*
+
+Reload the rules with `sudo udevadm control --reload-rules && sudo udevadm trigger`, or simply reboot the Pi.
 
 #### Dedicated Kiosk Mode (Systemd)
 For a permanent physical interlocking frame, it is highly recommended to run LeverFrame on **Raspberry Pi OS Lite (64-bit)** (which has no desktop GUI overhead). 
 
 **Hardware Note:** The application has been verified to run successfully on a basic **Raspberry Pi 4 (2GB RAM)**. However, upgrading to a **Raspberry Pi 5 (with 2GB or more of RAM)** is highly recommended for much faster JVM load times and a noticeably smoother UI due to its superior CPU and GPU architecture. Note that because LeverFrame is lightweight and runs without a heavy desktop environment, 2GB of RAM is perfectly sufficient—purchasing a model with 4GB or 8GB of RAM will not provide any additional performance benefits for this specific application.
 
-You can create a `systemd` service to boot directly into the app using Cage without requiring a login.
+You can create a `systemd` service to boot directly into the app using Labwc without requiring a login.
 
-1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre cage`
-2. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
-3. Paste the following configuration (assuming your username is `pi` with UID `1000`):
+1. Ensure prerequisites are installed: `sudo apt install openjdk-17-jre labwc wlr-randr`
+2. Configure your `~/.config/labwc/autostart` script as shown in the Screen Rotation section above to launch the `.jar` file.
+3. Create the service file: `sudo nano /etc/systemd/system/leverframe.service`
+4. Paste the following configuration. **Important:** You MUST replace `<your_username>` with your actual Linux username (e.g., `pi`) before saving:
 
 ```ini
 [Unit]
@@ -94,14 +129,14 @@ Description=LeverFrame Kiosk
 After=network.target systemd-user-sessions.service systemd-logind.service
 
 [Service]
-User=pi
-Group=pi
-WorkingDirectory=/home/pi
+User=<your_username>
+Group=<your_username>
+WorkingDirectory=/home/<your_username>
 
-# CRITICAL: Force a logind session to grant Cage access to the GPU/DRM
+# CRITICAL: Force a logind session to grant labwc access to the GPU/DRM
 PAMName=login
 
-# CRITICAL: Tell Cage where to place the Wayland socket (usually /run/user/<UID>)
+# CRITICAL: Tell labwc where to place the Wayland socket (usually /run/user/<UID>)
 Environment=XDG_RUNTIME_DIR=/run/user/1000
 
 # Prevent wlroots from crashing if no keyboard/mouse is plugged in during boot
@@ -116,8 +151,8 @@ StandardError=journal
 ExecStartPre=/bin/sleep 3
 ExecStartPre=/usr/bin/chvt 7
 
-# Launch LeverFrame natively without decorations
-ExecStart=/usr/bin/cage -- java -jar /home/pi/LeverFrame.jar --ui-scale 1.5
+# Launch labwc natively (it will automatically read ~/.config/labwc/autostart)
+ExecStart=/usr/bin/labwc
 
 # Automatically restart if the app crashes (but not if it exits cleanly via ESC, thanks to on-failure)
 Restart=on-failure

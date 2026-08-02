@@ -79,8 +79,10 @@ fun LeverDetailScreen(
             Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }, text = { Text("Rules") })
         }
         
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         LazyColumn(
-            modifier = Modifier.fillMaxSize().weight(1f),
+            state = listState,
+            modifier = Modifier.fillMaxSize().weight(1f).touchScroll(listState),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

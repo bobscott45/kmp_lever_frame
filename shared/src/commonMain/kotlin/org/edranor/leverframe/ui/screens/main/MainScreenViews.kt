@@ -48,6 +48,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
+import org.edranor.leverframe.ui.components.horizontalTouchScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -335,11 +336,13 @@ fun ColumnScope.LeverTrackGroup(
                 val scale = minOf(heightScale, baseWidthScale)
                 val leverWidthScale = if (maxWidth > maxHeight) maxOf(scale, 0.75f) else scale
                 
+                val scrollState = rememberScrollState()
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp * leverWidthScale, Alignment.CenterHorizontally),
                     modifier = Modifier
                         .fillMaxSize()
-                        .horizontalScroll(rememberScrollState())
+                        .horizontalScroll(scrollState)
+                        .horizontalTouchScroll(scrollState)
                 ) {
                     currentTabDef.levers.forEachIndexed { index, leverDef ->
                         val isReversed = levers[index].isReversed
@@ -392,11 +395,13 @@ fun BlockShelfGroup(
         val currentTabDef = configState.tabs[uiState.selectedTabIndex].second
         val blocks = domainState.frames.getOrNull(uiState.selectedTabIndex)?.blocks
         if (blocks != null && currentTabDef.blocks.isNotEmpty()) {
+            val scrollState = rememberScrollState()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp, bottom = 8.dp)
-                    .horizontalScroll(rememberScrollState()),
+                    .horizontalScroll(scrollState)
+                    .horizontalTouchScroll(scrollState),
                 horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
