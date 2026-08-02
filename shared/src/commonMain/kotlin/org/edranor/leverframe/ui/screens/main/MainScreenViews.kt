@@ -81,6 +81,7 @@ fun TopMenuBar(
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
+    var showShutdownDialog by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -156,6 +157,27 @@ fun TopMenuBar(
                         menuExpanded = false
                     }
                 )
+                if (isAppExitAvailable || isSystemPowerControlAvailable) {
+                    Divider(modifier = Modifier.padding(vertical = 4.dp))
+                }
+                if (isAppExitAvailable) {
+                    DropdownMenuItem(
+                        text = { Text("Exit Application", fontSize = 14.sp) },
+                        onClick = { 
+                            exitApp()
+                            menuExpanded = false
+                        }
+                    )
+                }
+                if (isSystemPowerControlAvailable) {
+                    DropdownMenuItem(
+                        text = { Text("Shutdown System", fontSize = 14.sp, color = Color.Red) },
+                        onClick = { 
+                            showShutdownDialog = true
+                            menuExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
@@ -219,6 +241,25 @@ fun TopMenuBar(
                     showImportDialog = false
                     importText = ""
                 }) { Text("Cancel") }
+            }
+        )
+    }
+
+    if (showShutdownDialog) {
+        AlertDialog(
+            onDismissRequest = { showShutdownDialog = false },
+            title = { Text("Shutdown System") },
+            text = { Text("Are you sure you want to shut down the system? This will power off the device.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showShutdownDialog = false
+                    shutdownSystem()
+                }) {
+                    Text("Shutdown", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showShutdownDialog = false }) { Text("Cancel") }
             }
         )
     }

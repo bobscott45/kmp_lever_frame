@@ -92,3 +92,9 @@ actual fun KeepScreenOn(keepOn: Boolean) {
         }
     }
 }
+
+actual val isAppExitAvailable: Boolean = false
+actual fun exitApp() {}
+
+actual val isSystemPowerControlAvailable: Boolean = false
+actual fun shutdownSystem() {}

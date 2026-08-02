@@ -129,3 +129,20 @@ actual fun KeepScreenOn(keepOn: Boolean) {
     // Desktop power management is complex and requires OS-level native bindings 
     // (like JNA). If you don't need this on Desktop, leave it as a no-op.
 }
+
+actual val isAppExitAvailable: Boolean = true
+
+actual fun exitApp() {
+    kotlin.system.exitProcess(0)
+}
+
+actual val isSystemPowerControlAvailable: Boolean = System.getProperty("os.name").contains("Linux", ignoreCase = true) &&
+        (System.getProperty("os.arch").contains("arm", ignoreCase = true) || System.getProperty("os.arch").contains("aarch64", ignoreCase = true))
+
+actual fun shutdownSystem() {
+    try {
+        Runtime.getRuntime().exec(arrayOf("sh", "-c", "systemctl poweroff || sudo poweroff || sudo shutdown -h now"))
+    } catch (e: Exception) {
+        println("Failed to shutdown: ${e.message}")
+    }
+}

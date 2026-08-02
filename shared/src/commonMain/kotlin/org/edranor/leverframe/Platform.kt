@@ -66,3 +66,9 @@ expect suspend fun saveLeverStatesToFile(json: String)
 expect suspend fun loadLeverStatesFromFile(): String?
 
 expect suspend fun clearLeverStatesFile()
+
+expect val isAppExitAvailable: Boolean
+expect fun exitApp()
+
+expect val isSystemPowerControlAvailable: Boolean
+expect fun shutdownSystem()

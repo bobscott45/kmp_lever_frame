@@ -51,7 +51,7 @@ Because the application is built as an inter-dependent system, we recommend foll
 
 ## The Hamburger Menu
 
-Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with five options:
+Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown with several options:
 
 <screenshot of the hamburger menu dropdown>
 
@@ -60,6 +60,8 @@ Tapping the **Hamburger Menu (⋮)** in the top right corner opens a dropdown wi
 3.  **Frame Configuration**: Enters the configuration mode to edit the frames, levers, and interlocking rules.
 4.  **Import**: Loads a JSON configuration, overwriting the current setup.
 5.  **Export**: Exports your entire frame, blocks, and interlocking configuration as standard JSON.
+6.  **Exit Application** *(Desktop Only)*: Exits the application gracefully.
+7.  **Shutdown System** *(Raspberry Pi Only)*: Prompts for confirmation and then powers off the underlying Linux operating system.
 
 
 ### System Status
