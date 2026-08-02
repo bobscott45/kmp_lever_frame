@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX**: Restored the dynamic color indicator for Turnouts on the schematic. The diverging route leg will now properly illuminate Green when the points are thrown, providing clear visual feedback of the active route.
 - **UI/UX**: Adjusted spacing to provide more padding between the occupancy indicators (block shelf) and the resizer slider for better visual separation.
 - **iOS / KMP**: Fixed an issue where the satisfied rule checkmark in the Lever Status screen rendered as a grey emoji instead of green text on iOS by replacing the heavy checkmark character with a standard text checkmark.
+- **Desktop / KMP**: Reduced the stroke width of schematic track lines and signal arrows from 4f/3f to 2f to prevent them from rendering too bold or thick on Linux and Desktop Skia engines.
 
 ### Added
 - **UI/UX**: Added a configurable "Landscape Schematic Position" setting in Behavior Settings, allowing users on larger screens (such as iPad Pro) to switch between positioning the schematic "Side-by-Side (Left)" or "Above Lever Frame (Top)". UI preferences save silently without resetting active lever states.
