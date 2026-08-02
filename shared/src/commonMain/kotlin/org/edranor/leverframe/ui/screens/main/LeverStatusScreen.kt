@@ -216,7 +216,7 @@ private fun LeverStatusRulesSection(
                         modifier = Modifier.weight(1f)
                     )
                     Text(
-                        if (isSatisfied) "✔" else "✘",
+                        if (isSatisfied) "✓" else "✗",
                         color = if (isSatisfied) Color.Green else Color.Red,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
