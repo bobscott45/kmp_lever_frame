@@ -86,13 +86,13 @@ fun DrawScope.drawSchematicElement(
             color = trackColor,
             start = Offset(px, py + gridSizeY / 2),
             end = Offset(px + gridSizeX, py + gridSizeY / 2),
-            strokeWidth = 4f
+            strokeWidth = 2f
         )
         SchematicElementType.STRAIGHT_V -> drawLine(
             color = trackColor,
             start = Offset(px + gridSizeX / 2, py),
             end = Offset(px + gridSizeX / 2, py + gridSizeY),
-            strokeWidth = 4f
+            strokeWidth = 2f
         )
         SchematicElementType.TURNOUT_LEFT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
@@ -100,14 +100,14 @@ fun DrawScope.drawSchematicElement(
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
 
             // Draw left half of main line
-            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw right half of main line
-            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw diverging line
             val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y - 1 }
             val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
             val divergeColor = if (isReversed) Color.Green else divergeBlockColor
-            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py - gridSizeY / 2), strokeWidth = 2f)
             if (element.linkedLever >= 0) {
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.15f))
             }
@@ -118,14 +118,14 @@ fun DrawScope.drawSchematicElement(
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
 
             // Draw left half of main line
-            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw right half of main line
-            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw diverging line
             val divergeElement = tabDef.schematicElements.find { it.x == element.x + 1 && it.y == element.y + 1 }
             val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
             val divergeColor = if (isReversed) Color.Green else divergeBlockColor
-            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 4f)
+            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY * 1.5f), strokeWidth = 2f)
             if (element.linkedLever >= 0) {
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.7f, py + gridSizeY * 0.85f))
             }
@@ -136,15 +136,15 @@ fun DrawScope.drawSchematicElement(
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
 
             // Draw left half of main line
-            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw right half of main line
-            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 2f)
             
             val divergeElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y - 1 }
             val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
             val divergeColor = if (isReversed) Color.Green else divergeBlockColor
             
-            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px, py - gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px, py - gridSizeY / 2), strokeWidth = 2f)
             if (element.linkedLever >= 0) {
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.15f))
             }
@@ -155,22 +155,22 @@ fun DrawScope.drawSchematicElement(
             val mainRightColor = mainRightElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
 
             // Draw left half of main line
-            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = trackColor, start = Offset(px, py + gridSizeY / 2), end = Offset(px + gridSizeX / 2, py + gridSizeY / 2), strokeWidth = 2f)
             // Draw right half of main line
-            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
+            drawLine(color = mainRightColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 2f)
 
             val divergeElement = tabDef.schematicElements.find { it.x == element.x - 1 && it.y == element.y + 1 }
             val divergeBlockColor = divergeElement?.let { getBlockColor(it.linkedBlock) } ?: trackColor
             val divergeColor = if (isReversed) Color.Green else divergeBlockColor
 
-            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px, py + gridSizeY * 1.5f), strokeWidth = 4f)
+            drawLine(color = divergeColor, start = Offset(px + gridSizeX / 2, py + gridSizeY / 2), end = Offset(px, py + gridSizeY * 1.5f), strokeWidth = 2f)
             if (element.linkedLever >= 0) {
                 drawText(textMeasurer = textMeasurer, text = "${element.linkedLever + 1}", style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold), topLeft = Offset(px + gridSizeX * 0.1f, py + gridSizeY * 0.85f))
             }
         }
         SchematicElementType.DIAMOND_CROSSING -> {
-            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 4f)
-            drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 4f)
+            drawLine(trackColor, Offset(px, py + gridSizeY / 2), Offset(px + gridSizeX, py + gridSizeY / 2), strokeWidth = 2f)
+            drawLine(trackColor, Offset(px + gridSizeX / 2, py), Offset(px + gridSizeX / 2, py + gridSizeY), strokeWidth = 2f)
         }
         SchematicElementType.SIGNAL_LEFT -> {
             val isReversed = if (element.linkedLever in levers.indices) levers[element.linkedLever].isReversed else false
@@ -193,14 +193,14 @@ fun DrawScope.drawSchematicElement(
                 color = leftColor,
                 start = Offset(px, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             // Draw right half of track through the signal cell
             drawLine(
                 color = rightColor,
                 start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
             val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
@@ -215,9 +215,9 @@ fun DrawScope.drawSchematicElement(
             val cy = py + gridSizeY / 2
             val arrowWidth = gridSizeY / 5 * 1.2f
             val arrowHeight = gridSizeY / 5 * 0.8f
-            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 3f)
-            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 3f)
-            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 3f)
+            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 2f)
+            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 2f)
+            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx - arrowWidth / 2 + arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 2f)
             drawText(
                 textMeasurer = textMeasurer,
                 text = "${element.linkedLever + 1}",
@@ -246,14 +246,14 @@ fun DrawScope.drawSchematicElement(
                 color = leftColor,
                 start = Offset(px, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             // Draw right half of track through the signal cell
             drawLine(
                 color = rightColor,
                 start = Offset(px + gridSizeX / 2, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             val leverType = tabDef.levers.getOrNull(element.linkedLever)?.type
             val normalColor = if (leverType == LeverType.DISTANT_SIGNAL) Color.Yellow else Color.Red
@@ -268,9 +268,9 @@ fun DrawScope.drawSchematicElement(
             val cy = py + gridSizeY / 2
             val arrowWidth = gridSizeY / 5 * 1.2f
             val arrowHeight = gridSizeY / 5 * 0.8f
-            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 3f)
-            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 3f)
-            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 3f)
+            drawLine(arrowColor, Offset(cx - arrowWidth / 2, cy), Offset(cx + arrowWidth / 2, cy), strokeWidth = 2f)
+            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy - arrowHeight / 2), strokeWidth = 2f)
+            drawLine(arrowColor, Offset(cx + arrowWidth / 2, cy), Offset(cx + arrowWidth / 2 - arrowHeight / 2, cy + arrowHeight / 2), strokeWidth = 2f)
             drawText(
                 textMeasurer = textMeasurer,
                 text = "${element.linkedLever + 1}",
@@ -293,14 +293,14 @@ fun DrawScope.drawSchematicElement(
                 color = leftColor,
                 start = Offset(px, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             // Draw right half of track
             drawLine(
                 color = rightColor,
                 start = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             
             // Draw branch stem (feather diverging to the left)
@@ -323,9 +323,9 @@ fun DrawScope.drawSchematicElement(
             val cy1 = py + gridSizeY / 2
             val arrowWidth1 = gridSizeY / 5 * 1.2f
             val arrowHeight1 = gridSizeY / 5 * 0.8f
-            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 3f)
-            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 3f)
-            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 3f)
+            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 2f)
+            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 2f)
+            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 2f)
             drawText(
                 textMeasurer = textMeasurer,
                 text = "${element.linkedLever + 1}",
@@ -346,9 +346,9 @@ fun DrawScope.drawSchematicElement(
             val arrowWidth2 = gridSizeY / 5 * 1.2f
             val arrowHeight2 = gridSizeY / 5 * 0.8f
             rotate(-45f, Offset(cx2, cy2)) {
-                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
-                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
-                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
+                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 2f)
+                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 2f)
+                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 2f)
             }
             drawText(
                 textMeasurer = textMeasurer,
@@ -372,14 +372,14 @@ fun DrawScope.drawSchematicElement(
                 color = leftColor,
                 start = Offset(px, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             // Draw right half of track
             drawLine(
                 color = rightColor,
                 start = Offset(px + gridSizeX * 0.65f, py + gridSizeY / 2),
                 end = Offset(px + gridSizeX, py + gridSizeY / 2),
-                strokeWidth = 4f
+                strokeWidth = 2f
             )
             
             // Draw branch stem (feather diverging to the right)
@@ -402,9 +402,9 @@ fun DrawScope.drawSchematicElement(
             val cy1 = py + gridSizeY / 2
             val arrowWidth1 = gridSizeY / 5 * 1.2f
             val arrowHeight1 = gridSizeY / 5 * 0.8f
-            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 3f)
-            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 3f)
-            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 3f)
+            drawLine(arrowColor1, Offset(cx1 - arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2, cy1), strokeWidth = 2f)
+            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 - arrowHeight1 / 2), strokeWidth = 2f)
+            drawLine(arrowColor1, Offset(cx1 + arrowWidth1 / 2, cy1), Offset(cx1 + arrowWidth1 / 2 - arrowHeight1 / 2, cy1 + arrowHeight1 / 2), strokeWidth = 2f)
             drawText(
                 textMeasurer = textMeasurer,
                 text = "${element.linkedLever + 1}",
@@ -425,9 +425,9 @@ fun DrawScope.drawSchematicElement(
             val arrowWidth2 = gridSizeY / 5 * 1.2f
             val arrowHeight2 = gridSizeY / 5 * 0.8f
             rotate(45f, Offset(cx2, cy2)) {
-                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 3f)
-                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 3f)
-                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 3f)
+                drawLine(arrowColor2, Offset(cx2 - arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2, cy2), strokeWidth = 2f)
+                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 - arrowHeight2 / 2), strokeWidth = 2f)
+                drawLine(arrowColor2, Offset(cx2 + arrowWidth2 / 2, cy2), Offset(cx2 + arrowWidth2 / 2 - arrowHeight2 / 2, cy2 + arrowHeight2 / 2), strokeWidth = 2f)
             }
             drawText(
                 textMeasurer = textMeasurer,
