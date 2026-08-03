@@ -63,10 +63,12 @@ To generate an APK for manual installation:
 *(The generated APK will be located in `androidApp/build/outputs/apk/debug/`)*
 
 ### Desktop (JVM)
-To run the standalone desktop application:
+To run the standalone desktop application directly from the source code during development:
 ```bash
 ./gradlew :desktopApp:run
 ```
+
+#### Native Installers
 To package the app for the current operating system (creates `.deb` and `.rpm` on Linux, `.dmg` on macOS, or `.msi` on Windows):
 ```bash
 ./gradlew :desktopApp:packageDistributionForCurrentOS
@@ -74,11 +76,20 @@ To package the app for the current operating system (creates `.deb` and `.rpm` o
 *(The generated installer packages will be located in `desktopApp/build/compose/binaries/main/` within format-specific subdirectories).*
 *(Note for Linux users: The above command attempts to build both DEB and RPM packages. If your system lacks the required tools like `dpkg` or `rpmbuild`, it will fail. You can explicitly build just the package type your system supports by running `./gradlew :desktopApp:packageDeb` or `./gradlew :desktopApp:packageRpm` instead).*
 
+**To run the installed app:** Install the generated `.deb`, `.rpm`, `.msi`, or `.dmg` file using your operating system's standard package manager. Once installed, you can launch "LeverFrame" directly from your system's application menu.
+
+#### Standalone Directory
 To build a generic Linux/OS-agnostic distributable (creates a standalone directory containing the binaries and a shell script launcher, which can be run without installing via a package manager):
 ```bash
 ./gradlew :desktopApp:createDistributable
 ```
 *(The generated standalone directory will be located at `desktopApp/build/compose/binaries/main/app/LeverFrame/`)*
+
+**To run the standalone app:**
+```bash
+cd desktopApp/build/compose/binaries/main/app/LeverFrame/bin/
+./LeverFrame
+```
 
 ### Raspberry Pi (Raspbian / Linux ARM64)
 You do **not** need to compile the application on the Raspberry Pi itself, which can be very slow. You can run the following build command directly on your standard desktop machine (Windows, macOS, or Linux x64) to build the app, and then copy the resulting JAR over to the Pi.
