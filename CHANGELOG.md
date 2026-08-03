@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changlog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 1.2.0-dev
+## [1.2.0] - 2026-08-03
 
 ### Changed
 - **Architecture**: Refactored JSON DTOs (`JsonLever`, `JsonBlock`, `JsonSchematicElement`, `JsonInterlocking`) to eliminate primitive obsession. Configuration fields previously stored as raw Strings (such as lever types, block modes, and interlocking states) have been migrated to strict, type-safe Enums (`LeverType`, `BlockMode`, `TargetType`, `SchematicElementType`, etc.).
