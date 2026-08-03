@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Desktop / KMP**: Reduced the stroke width of schematic track lines and signal arrows from 4f/3f to 2f to prevent them from rendering too bold or thick on Linux and Desktop Skia engines.
 
 ### Added
+- **Documentation**: Added instructions to the README on how to build and run the UberJar (Fat JAR) for desktop systems.
 - **UI/UX**: Added a configurable "Landscape Schematic Position" setting in Behavior Settings, allowing users on larger screens (such as iPad Pro) to switch between positioning the schematic "Side-by-Side (Left)" or "Above Lever Frame (Top)". UI preferences save silently without resetting active lever states.
 - **UI/UX**: NX Routing now seamlessly handles "Fleeting Routes". If an active route conflicts with a newly requested route from the same Entrance, LeverFrame will automatically cancel the old route, normalize its levers, and then immediately build the new route.
 - **UI/UX**: Added `TURNOUT_LEFT_TRAILING`, `TURNOUT_RIGHT_TRAILING`, and `DIAMOND_CROSSING` elements to the Schematic Editor to allow users to graphically represent complete crossovers and complex track topologies.

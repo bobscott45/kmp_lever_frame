@@ -91,6 +91,21 @@ cd desktopApp/build/compose/binaries/main/app/LeverFrame/bin/
 ./LeverFrame
 ```
 
+#### UberJar (Fat JAR)
+You can also package the application as a single, portable "UberJar" (Fat JAR). This is useful if you want a single executable file that can be easily copied and run on other machines with the same operating system architecture, without needing to run an installer or deal with multiple directories. 
+
+To build an UberJar for your current desktop operating system:
+```bash
+./gradlew :desktopApp:packageUberJarForCurrentOS
+```
+*(The generated UberJar will be located in `desktopApp/build/compose/jars/`)*
+
+**To run the generated UberJar manually from the terminal:**
+```bash
+java -jar desktopApp/build/compose/jars/LeverFrame-*.jar
+```
+*(Requires Java 11 or higher).*
+
 ### Raspberry Pi (Raspbian / Linux ARM64)
 You do **not** need to compile the application on the Raspberry Pi itself, which can be very slow. You can run the following build command directly on your standard desktop machine (Windows, macOS, or Linux x64) to build the app, and then copy the resulting JAR over to the Pi.
 
@@ -100,6 +115,12 @@ To build a fat JAR (UberJar) that includes all necessary native dependencies (su
 ```
 *(The generated UberJar will be located in `desktopApp/build/compose/jars/`)*
 *(Note: Because this is an UberJar, it bundles native binaries for multiple architectures including ARM64. Even if it outputs a file named after your desktop's host OS like `desktopApp/build/compose/jars/LeverFrame-linux-x64-X.X.X.jar`, you can simply copy this file to your Raspberry Pi and it will run perfectly).*
+
+**To run the generated JAR manually from the terminal:**
+```bash
+java -jar desktopApp/build/compose/jars/LeverFrame-*.jar
+```
+*(Requires Java 11 or higher).*
 
 To run it on the Pi with Labwc (the officially supported Raspberry Pi OS Wayland compositor):
 ```bash
