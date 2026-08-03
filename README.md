@@ -66,9 +66,15 @@ To run the standalone desktop application:
 ```bash
 ./gradlew :desktopApp:run
 ```
-To package the app for the current operating system (creates `.deb`, `.dmg`, or `.msi` depending on your host OS):
+To package the app for the current operating system (creates `.deb` and `.rpm` on Linux, `.dmg` on macOS, or `.msi` on Windows):
 ```bash
 ./gradlew :desktopApp:packageDistributionForCurrentOS
+```
+*(Note for Linux users: The above command attempts to build both DEB and RPM packages. If your system lacks the required tools like `dpkg` or `rpmbuild`, it will fail. You can explicitly build just the package type your system supports by running `./gradlew :desktopApp:packageDeb` or `./gradlew :desktopApp:packageRpm` instead).*
+
+To build a generic Linux/OS-agnostic distributable (creates a standalone directory containing the binaries and a shell script launcher, which can be run without installing via a package manager):
+```bash
+./gradlew :desktopApp:createDistributable
 ```
 
 ### Raspberry Pi (Raspbian / Linux ARM64)
